@@ -1,0 +1,5 @@
+[workspace]
+members = [ "homie-api", "homie-core",
+    "homie-data", "homie-webapp",
+]
+resolver = "2"

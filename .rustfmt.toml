@@ -1,0 +1,13 @@
+edition = "2021"
+
+group_imports = "StdExternalCrate"
+imports_granularity = "Module"
+newline_style = "Unix"
+
+reorder_impl_items = true
+use_field_init_shorthand = true
+
+format_strings = true
+
+wrap_comments = true
+normalize_comments = true
