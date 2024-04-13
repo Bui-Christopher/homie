@@ -26,28 +26,29 @@ pub enum Region {
     },
 }
 
-impl Region {
-    pub fn city(&self) -> &str {
-        match self {
-            Region::County { city, .. } => city,
-            Region::Zipcode { city, .. } => city,
-        }
-    }
-
-    pub fn county(&self) -> &str {
-        match self {
-            Region::County { county, .. } => county,
-            Region::Zipcode { county, .. } => county,
-        }
-    }
-
-    pub fn zipcode(&self) -> &str {
-        match self {
-            Region::County { zipcode, .. } => zipcode,
-            Region::Zipcode { zipcode, .. } => zipcode,
-        }
-    }
-}
+// TODO: Check if needed
+// impl Region {
+//     pub fn city(&self) -> &str {
+//         match self {
+//             Region::County { city, .. } => city,
+//             Region::Zipcode { city, .. } => city,
+//         }
+//     }
+//
+//     pub fn county(&self) -> &str {
+//         match self {
+//             Region::County { county, .. } => county,
+//             Region::Zipcode { county, .. } => county,
+//         }
+//     }
+//
+//     pub fn zipcode(&self) -> &str {
+//         match self {
+//             Region::County { zipcode, .. } => zipcode,
+//             Region::Zipcode { zipcode, .. } => zipcode,
+//         }
+//     }
+// }
 
 pub type Regions = Vec<Region>;
 

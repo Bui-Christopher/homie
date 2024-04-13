@@ -5,17 +5,42 @@ use serde::{Deserialize, Serialize};
 
 use crate::Entry;
 
+type TreasuryYields = Vec<TreasuryYield>;
+
 #[derive(Debug, Serialize, Deserialize)]
-pub struct TenYearYield {
-    date: NaiveDate,
-    yield_return: f64,
+pub enum TreasuryYield {
+    TenYearYield { date: NaiveDate, yield_return: f32 },
 }
 
-type TenYearYields = Vec<TenYearYield>;
+pub trait Persistence {
+    fn create(&self) -> Result<(), Box<dyn Error>>;
+    fn read(&self) -> Result<(), Box<dyn Error>>;
+    fn update(&self) -> Result<(), Box<dyn Error>>;
+    fn delete(&self) -> Result<(), Box<dyn Error>>;
+}
+
+// How do I handle which repository to write to?
+impl Persistence for TreasuryYield {
+    fn create(&self) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
+
+    fn read(&self) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
+
+    fn update(&self) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
+
+    fn delete(&self) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TreasuryYieldData {
-    ten_year_yields: TenYearYields,
+    ten_year_yields: TreasuryYields,
 }
 
 // TODO:
@@ -34,7 +59,7 @@ pub fn read_fed_yields() -> Result<TreasuryYieldData, Box<dyn Error>> {
     Ok(TreasuryYieldData { ten_year_yields })
 }
 
-fn read_fed_ten_yields() -> Result<TenYearYields, Box<dyn Error>> {
+fn read_fed_ten_yields() -> Result<TreasuryYields, Box<dyn Error>> {
     let fed_h15 = "datasets/fed-h15/FRB_H15.csv";
 
     let mut rdr = csv::ReaderBuilder::new()
@@ -55,7 +80,7 @@ fn read_fed_ten_yields() -> Result<TenYearYields, Box<dyn Error>> {
         let month = parts[1].parse().unwrap();
         let date = to_ymd_date(year, month, None).unwrap();
         let yield_return = entry.0[1].parse().unwrap();
-        ten_year_yields.push(TenYearYield { date, yield_return });
+        ten_year_yields.push(TreasuryYield::TenYearYield { date, yield_return });
     }
 
     Ok(ten_year_yields)

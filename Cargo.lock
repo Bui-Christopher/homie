@@ -84,6 +84,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "db-test"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "serde",
+]
+
+[[package]]
 name = "homie-api"
 version = "0.1.0"
 

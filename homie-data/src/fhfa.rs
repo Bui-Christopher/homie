@@ -9,20 +9,21 @@ pub enum RegionHPI {
     CountyHPI {
         county: String,
         year: u32,
-        annual_change: Option<f32>,
         hpi: Option<f32>,
+        annual_change: Option<f32>,
         hpi_1990_base: Option<f32>,
         hpi_2000_base: Option<f32>,
     },
     ZipcodeHPI {
         zip: String,
         year: u32,
-        annual_change: Option<f32>,
         hpi: Option<f32>,
+        annual_change: Option<f32>,
         hpi_1990_base: Option<f32>,
         hpi_2000_base: Option<f32>,
     },
 }
+
 type RegionHPIs = Vec<RegionHPI>;
 
 #[derive(Debug, Serialize, Deserialize)]
