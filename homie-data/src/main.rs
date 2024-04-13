@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::fed_h15::*;
 use crate::fhfa::*;
-use crate::huduser::{read_huduser_regions, CountyCross};
+use crate::huduser::*;
 use crate::zillow::*;
 
 mod fed_h15;
@@ -16,24 +16,24 @@ mod zillow;
 pub struct Entry(Vec<String>);
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // let ten_year_yield_data = read_fed_ten_yield()?;
+    // let ten_year_yield_data = read_fed_yields()?;
     // println!("{:#?}", ten_year_yield_data);
 
-    // let fhfa_hpi_data = read_fhfa_hpi()?;
+    // let fhfa_hpi_data = read_fhfa_hpis()?;
     // println!("{:#?}", fhfa_hpi_data);
 
-    let regions = read_huduser_regions()?;
-    let tmp: Vec<CountyCross> = regions
-        .counties
-        .into_iter()
-        .filter(|region| region.city == "IRVINE")
-        .collect();
-    println!("{:#?}", tmp);
+    // let regions = read_huduser_regions()?;
+    // println!("{:#?}", regions);
 
-    // println!("{:#?}", regions.counties.counties.first().unwrap());
-    // println!("{:#?}", regions.zipcodes.zipcodes.first().unwrap());
+    // TODO: Delete (for testing)
+    // let tmp: Regions = regions
+    //     .counties
+    //     .into_iter()
+    //     .filter(|region| region.city() == "IRVINE")
+    //     .collect();
+    // println!("{:#?}", tmp);
 
-    // let zillow_zhvi_data = read_zillow_zhvi()?;
+    let zillow_zhvi_data = read_zillow_zhvis()?;
     // println!("{:#?}", zillow_zhvi_data);
 
     Ok(())

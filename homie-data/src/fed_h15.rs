@@ -18,9 +18,11 @@ pub struct TreasuryYieldData {
     ten_year_yields: TenYearYields,
 }
 
-// TODO: From<Entry> for TenTreasuryYield
+// TODO:
+// impl From<Entry> for TenTreasuryYield
+// Unit tests
 
-fn to_ymd_date(year: u32, month: u32, day: Option<u32>) -> Result<NaiveDate, Box<dyn Error>> {
+pub fn to_ymd_date(year: u32, month: u32, day: Option<u32>) -> Result<NaiveDate, Box<dyn Error>> {
     // If day is not present, default to 15
     let day = day.unwrap_or(15);
     let year = year as i32;
@@ -32,7 +34,7 @@ pub fn read_fed_yields() -> Result<TreasuryYieldData, Box<dyn Error>> {
     Ok(TreasuryYieldData { ten_year_yields })
 }
 
-pub fn read_fed_ten_yields() -> Result<TenYearYields, Box<dyn Error>> {
+fn read_fed_ten_yields() -> Result<TenYearYields, Box<dyn Error>> {
     let fed_h15 = "datasets/fed-h15/FRB_H15.csv";
 
     let mut rdr = csv::ReaderBuilder::new()

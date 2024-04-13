@@ -5,42 +5,70 @@ use serde::{Deserialize, Serialize};
 use crate::Entry;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CountyCross {
-    pub county: String,
-    pub zip: String,
-    pub city: String,
-    pub res_ratio: f64, // Ratio of Residential Addresses
-    pub bus_ratio: f64, // Ratio of Business Addresses
+pub enum Region {
+    County {
+        county: String,
+        zipcode: String,
+        city: String,
+        // Ratio of Residential Addresses
+        // Ratio of Business Addresses
+        res_ratio: f64,
+        bus_ratio: f64,
+    },
+    Zipcode {
+        zipcode: String,
+        county: String,
+        city: String,
+        // Ratio of Residential Addresses
+        // Ratio of Business Addresses
+        res_ratio: f64,
+        bus_ratio: f64,
+    },
 }
+
+impl Region {
+    pub fn city(&self) -> &str {
+        match self {
+            Region::County { city, .. } => city,
+            Region::Zipcode { city, .. } => city,
+        }
+    }
+
+    pub fn county(&self) -> &str {
+        match self {
+            Region::County { county, .. } => county,
+            Region::Zipcode { county, .. } => county,
+        }
+    }
+
+    pub fn zipcode(&self) -> &str {
+        match self {
+            Region::County { zipcode, .. } => zipcode,
+            Region::Zipcode { zipcode, .. } => zipcode,
+        }
+    }
+}
+
+pub type Regions = Vec<Region>;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ZipCross {
-    zip: String,
-    county: String,
-    city: String,
-    pub res_ratio: f64, // Ratio of Residential Addresses
-    pub bus_ratio: f64, // Ratio of Business Addresses
+pub struct RegionData {
+    pub counties: Regions,
+    pub zipcodes: Regions,
 }
 
-type Counties = Vec<CountyCross>;
-type Zipcodes = Vec<ZipCross>;
+// TODO:
+// impl From<Entry> for RegionCossData
+// Unit tests
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RegionCrossData {
-    pub counties: Counties,
-    pub zipcodes: Zipcodes,
-}
-
-// TODO: From<Entry> for RegionCossData
-
-pub fn read_huduser_regions() -> Result<RegionCrossData, Box<dyn Error>> {
+pub fn read_huduser_regions() -> Result<RegionData, Box<dyn Error>> {
     let counties = read_county_zipcodes()?;
     let zipcodes = read_zip_counties()?;
 
-    Ok(RegionCrossData { counties, zipcodes })
+    Ok(RegionData { counties, zipcodes })
 }
 
-pub fn read_county_zipcodes() -> Result<Counties, Box<dyn Error>> {
+fn read_county_zipcodes() -> Result<Regions, Box<dyn Error>> {
     let huduser_crosswalk = "datasets/huduser-crosswalk/COUNTY_ZIP_122023.csv";
 
     let mut rdr = csv::ReaderBuilder::new()
@@ -61,8 +89,8 @@ pub fn read_county_zipcodes() -> Result<Counties, Box<dyn Error>> {
         let city = entry.0[2].clone();
         let res_ratio = entry.0[4].parse().unwrap();
         let bus_ratio = entry.0[5].parse().unwrap();
-        counties.push(CountyCross {
-            zip,
+        counties.push(Region::County {
+            zipcode: zip,
             county,
             city,
             res_ratio,
@@ -73,7 +101,7 @@ pub fn read_county_zipcodes() -> Result<Counties, Box<dyn Error>> {
     Ok(counties)
 }
 
-pub fn read_zip_counties() -> Result<Zipcodes, Box<dyn Error>> {
+fn read_zip_counties() -> Result<Regions, Box<dyn Error>> {
     let huduser_crosswalk = "datasets/huduser-crosswalk/ZIP_COUNTY_122023.csv";
 
     let mut rdr = csv::ReaderBuilder::new()
@@ -94,9 +122,9 @@ pub fn read_zip_counties() -> Result<Zipcodes, Box<dyn Error>> {
         let city = entry.0[2].clone();
         let res_ratio = entry.0[4].parse().unwrap();
         let bus_ratio = entry.0[5].parse().unwrap();
-        zipcodes.push(ZipCross {
+        zipcodes.push(Region::Zipcode {
             county,
-            zip,
+            zipcode: zip,
             city,
             res_ratio,
             bus_ratio,
