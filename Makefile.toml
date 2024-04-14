@@ -14,6 +14,10 @@ args = [
 command = "cargo"
 args = [
   "test",
+  "--bin",
+  "db-test",
+  "--",
+  "--nocapture",
 ]
 
 [tasks.bb]

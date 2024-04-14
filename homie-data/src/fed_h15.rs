@@ -12,32 +12,6 @@ pub enum TreasuryYield {
     TenYearYield { date: NaiveDate, yield_return: f32 },
 }
 
-pub trait Persistence {
-    fn create(&self) -> Result<(), Box<dyn Error>>;
-    fn read(&self) -> Result<(), Box<dyn Error>>;
-    fn update(&self) -> Result<(), Box<dyn Error>>;
-    fn delete(&self) -> Result<(), Box<dyn Error>>;
-}
-
-// How do I handle which repository to write to?
-impl Persistence for TreasuryYield {
-    fn create(&self) -> Result<(), Box<dyn Error>> {
-        todo!()
-    }
-
-    fn read(&self) -> Result<(), Box<dyn Error>> {
-        todo!()
-    }
-
-    fn update(&self) -> Result<(), Box<dyn Error>> {
-        todo!()
-    }
-
-    fn delete(&self) -> Result<(), Box<dyn Error>> {
-        todo!()
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TreasuryYieldData {
     ten_year_yields: TreasuryYields,

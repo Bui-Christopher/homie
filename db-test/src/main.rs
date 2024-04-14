@@ -1,30 +1,18 @@
-use crate::db::{BasicCRUD, FileStorage, MongoDatabase, MyObject};
+use crate::database::file::FileStorage;
+use crate::model::myobject::{MyObject, Persistence};
 
-mod db;
+mod database;
+mod model;
 
 fn main() {
-    let my_object = MyObject {};
-    let mongo_db = MongoDatabase {};
-
-    println!("\nChecking MongoDB");
-    let create = my_object.create(&mongo_db, &my_object).unwrap();
+    let storage = FileStorage {};
+    let object = MyObject {};
+    let create = object.create(&storage).unwrap();
     assert!(create);
-    let read = my_object.read(&mongo_db, &my_object).unwrap();
+    let read = object.read(&storage, "Read Key").unwrap();
     assert!(read);
-    let update = my_object.update(&mongo_db, &my_object).unwrap();
+    let update = object.update(&storage, &object).unwrap();
     assert!(update);
-    let delete = my_object.delete(&mongo_db, &my_object).unwrap();
-    assert!(delete);
-
-    println!("\nChecking FileStorage");
-    let file_storage = FileStorage {};
-    let create = my_object.create(&file_storage, &my_object).unwrap();
-    assert!(create);
-    let read = my_object.read(&file_storage, &my_object).unwrap();
-    assert!(read);
-    let update = my_object.update(&file_storage, &my_object).unwrap();
-    assert!(update);
-    let delete = my_object.delete(&file_storage, &my_object).unwrap();
+    let delete = object.delete(&storage, "Read Key").unwrap();
     assert!(delete);
 }
-
