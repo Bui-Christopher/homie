@@ -30,3 +30,4 @@ In the meantime, it's data has been manually downloaded through Zillow (public d
     - [ ] zillow-zhvi
 - [ ] Unit tests :sob:
 - [ ] Refactor common code to `homie-core`
+- [ ] Double check what structs/mods are exposed may limit it to the crate

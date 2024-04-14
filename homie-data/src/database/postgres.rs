@@ -7,11 +7,11 @@ use crate::database::common::CRUDOperations;
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Postgres {}
 
-// impl Postgres {
-//     pub fn new() -> Self {
-//         Postgres {}
-//     }
-// }
+impl Postgres {
+    pub fn new() -> Self {
+        Postgres {}
+    }
+}
 
 impl<T: Serialize + Deserialize<'static> + std::fmt::Debug> CRUDOperations<T> for Postgres {
     fn create(&self, obj: &T) -> Result<bool, Box<dyn Error>> {

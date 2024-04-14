@@ -50,9 +50,9 @@ type Zhvis = Vec<Zhvi>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ZHVIData {
-    all_homes_zhvis: Zhvis,
-    condo_coops_zhvis: Zhvis,
-    single_family_homes_zhvis: Zhvis,
+    pub all_homes_zhvis: Zhvis,
+    pub condo_coops_zhvis: Zhvis,
+    pub single_family_homes_zhvis: Zhvis,
 }
 
 // TODO:

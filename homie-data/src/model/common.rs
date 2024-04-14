@@ -31,23 +31,35 @@ pub struct Datasets {
     pub zhvi_data: ZHVIData,
 }
 
-// impl Datasets {
-//     fn new() -> Self {
-//         Datasets {
-//             hpi_data: HPIData { three_zip_hpis: vec![], five_zip_hpis:
-// vec![], county_hpis: vec![] },             region_data: RegionData {
-// counties: vec![] zipcodes: vec![] },             t_yield_data: TYieldData {
-// ten_year_yields: vec![] },             zhvi_data: ZHVIData { all_homes_zhvis:
-// vec![], condo_coops_zhvis: vec![], single_family_homes_zhvis: vec![] },
-//         }
-//     }
-// }
-//
-// impl Default for Datasets {
-//     fn default() -> Self {
-//         Self::new()
-//     }
-// }
+impl Datasets {
+    fn new() -> Self {
+        Datasets {
+            hpi_data: HPIData {
+                three_zip_hpis: vec![],
+                five_zip_hpis: vec![],
+                county_hpis: vec![],
+            },
+            region_data: RegionData {
+                counties: vec![],
+                zipcodes: vec![],
+            },
+            t_yield_data: TYieldData {
+                ten_year_yields: vec![],
+            },
+            zhvi_data: ZHVIData {
+                all_homes_zhvis: vec![],
+                condo_coops_zhvis: vec![],
+                single_family_homes_zhvis: vec![],
+            },
+        }
+    }
+}
+
+impl Default for Datasets {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub trait Persistence<T, D: CRUDOperations<T>> {
     fn create(&self, db: &D) -> Result<bool, Box<dyn Error>>;

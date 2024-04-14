@@ -14,7 +14,7 @@ pub enum TYield {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TYieldData {
-    ten_year_yields: TYields,
+    pub ten_year_yields: TYields,
 }
 
 // TODO:

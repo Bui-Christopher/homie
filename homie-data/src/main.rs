@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use database::file::FileStorage;
+use database::postgres::Postgres;
 
 use crate::config::Config;
 use crate::model::common::Datasets;
@@ -18,14 +18,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let config = Config::new();
 
     // TODO: Abstract this
-    let file_storage = FileStorage::new();
+    let postgres = Postgres::new();
 
     // TODO: Switch to builder pattern
     let reader = Reader::new(&config);
-    let writer: Writer<_, Datasets> = Writer::new(file_storage);
+    let postgres_writer: Writer<_, Datasets> = Writer::new(postgres);
 
     let datasets = reader.read_datasets()?;
-    writer.write_datasets(&datasets)?;
+    postgres_writer.write_datasets(&datasets)?;
 
     Ok(())
 }

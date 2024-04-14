@@ -28,9 +28,9 @@ type RegionHPIs = Vec<RegionHPI>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct HPIData {
-    three_zip_hpis: RegionHPIs,
-    five_zip_hpis: RegionHPIs,
-    county_hpis: RegionHPIs,
+    pub three_zip_hpis: RegionHPIs,
+    pub five_zip_hpis: RegionHPIs,
+    pub county_hpis: RegionHPIs,
 }
 
 // TODO:
