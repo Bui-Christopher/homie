@@ -1,8 +1,11 @@
 use std::error::Error;
 
-use crate::common::Datasets;
 use crate::config::Config;
-use crate::{read_fed_yields, read_fhfa_hpis, read_huduser_regions, read_zillow_zhvis};
+use crate::model::common::Datasets;
+use crate::model::hpi::read_fhfa_hpis;
+use crate::model::region::read_huduser_regions;
+use crate::model::t_yield::read_fed_yields;
+use crate::model::zhvi::read_zillow_zhvis;
 
 pub struct Reader {}
 

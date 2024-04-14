@@ -1,37 +1,29 @@
 use std::error::Error;
+use std::marker::PhantomData;
 
-use crate::common::Datasets;
-use crate::config::Config;
+use crate::database::common::CRUDOperations;
+use crate::model::common::Datasets;
 
-pub struct Writer {}
-
-impl Writer {
-    pub fn new(_config: &Config) -> Self {
-        Writer {}
-    }
+pub(crate) struct Writer<D: CRUDOperations<T>, T> {
+    database_client: D,
+    marker: PhantomData<T>,
 }
+impl<D: CRUDOperations<T>, T> Writer<D, T> {
+    pub fn new(database_client: D) -> Self {
+        Writer {
+            database_client,
+            marker: PhantomData,
+        }
+    }
 
-impl Writer {
-    pub fn write_datasets(&self, _datasets: &Datasets) -> Result<(), Box<dyn Error>> {
+    fn database_client(&self) -> &D {
+        &self.database_client
+    }
+
+    pub fn write_datasets(&self, datasets: &Datasets) -> Result<(), Box<dyn Error>> {
+        // TODO: Delete (testing)
+        println!("{:#?}", self.database_client());
+        println!("{:#?}", datasets);
         Ok(())
     }
 }
-// fed_yield_data.write(db);
-// fhfa_hpi_data.write(db);
-// huduser_region-data.write(db);
-// zillow_zhvi_data.write(db);
-
-// fed_yield_data.write(db);
-// for ten_year_yield in fed_yield_data.ten_year_yields {}
-// for yield in fed_yield_data {
-//     yield.write(db);
-// }
-// for hpi in fhfa_hpi_data {
-//     hpi.write(db);
-// }
-// for region in huduser_region_data {
-//     region.write(db);
-// }
-// for zhvi in zillow_zhvi_data {
-//     zhvi.write(db);
-// }

@@ -7,6 +7,12 @@ use crate::database::common::CRUDOperations;
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct FileStorage {}
 
+impl FileStorage {
+    pub(crate) fn new() -> Self {
+        FileStorage {}
+    }
+}
+
 impl<T: Serialize + Deserialize<'static> + std::fmt::Debug> CRUDOperations<T> for FileStorage {
     fn create(&self, obj: &T) -> Result<bool, Box<dyn Error>> {
         println!("File: Create object: {:?}", obj);
