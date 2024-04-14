@@ -2,30 +2,32 @@
 default_to_workspace = false
 
 [tasks.build]
+dependencies = ["format"]
 command = "cargo"
 args = [
-  "build",
-  "--bins",
-  "--release",
-  "--locked",
+    "build",
+    "--bins",
+    "--release",
+    "--locked",
 ]
 
 [tasks.format]
 command = "cargo"
 toolchain = "nightly"
 args = [
-  "fmt",
+    "fmt",
 ]
 
 [tasks.test]
+dependencies = ["format"]
 command = "cargo"
 args = [
-  "test",
-  "--",
-  "--nocapture",
+    "test",
+    "--",
+    "--nocapture",
 ]
 
-[tasks.bb]
+[tasks.b]
 alias = "build"
 
 [tasks.t]
