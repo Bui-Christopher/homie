@@ -2,7 +2,7 @@ use std::error::Error;
 
 use serde::{Deserialize, Serialize};
 
-use crate::Entry;
+use crate::model::common::Entry;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum RegionHPI {

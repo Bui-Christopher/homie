@@ -3,37 +3,30 @@ use std::error::Error;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::Entry;
+use crate::model::common::{to_ymd_date, Entry};
 
-type TreasuryYields = Vec<TreasuryYield>;
+type TYields = Vec<TYield>;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum TreasuryYield {
+pub enum TYield {
     TenYearYield { date: NaiveDate, yield_return: f32 },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct TreasuryYieldData {
-    ten_year_yields: TreasuryYields,
+pub struct TYieldData {
+    ten_year_yields: TYields,
 }
 
 // TODO:
 // impl From<Entry> for TenTreasuryYield
 // Unit tests
 
-pub fn to_ymd_date(year: u32, month: u32, day: Option<u32>) -> Result<NaiveDate, Box<dyn Error>> {
-    // If day is not present, default to 15
-    let day = day.unwrap_or(15);
-    let year = year as i32;
-    NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| "Invalid date".into())
-}
-
-pub fn read_fed_yields() -> Result<TreasuryYieldData, Box<dyn Error>> {
+pub fn read_fed_yields() -> Result<TYieldData, Box<dyn Error>> {
     let ten_year_yields = read_fed_ten_yields()?;
-    Ok(TreasuryYieldData { ten_year_yields })
+    Ok(TYieldData { ten_year_yields })
 }
 
-fn read_fed_ten_yields() -> Result<TreasuryYields, Box<dyn Error>> {
+fn read_fed_ten_yields() -> Result<TYields, Box<dyn Error>> {
     let fed_h15 = "datasets/fed-h15/FRB_H15.csv";
 
     let mut rdr = csv::ReaderBuilder::new()
@@ -54,7 +47,7 @@ fn read_fed_ten_yields() -> Result<TreasuryYields, Box<dyn Error>> {
         let month = parts[1].parse().unwrap();
         let date = to_ymd_date(year, month, None).unwrap();
         let yield_return = entry.0[1].parse().unwrap();
-        ten_year_yields.push(TreasuryYield::TenYearYield { date, yield_return });
+        ten_year_yields.push(TYield::TenYearYield { date, yield_return });
     }
 
     Ok(ten_year_yields)

@@ -1,0 +1,23 @@
+[config]
+default_to_workspace = false
+
+# [tasks.test]
+# command = "cargo"
+# args = [
+#   "test",
+#   "--",
+#   "--nocapture",
+# ]
+
+[tasks.bb]
+alias = "build"
+
+[tasks.t]
+alias = "test"
+
+# TODO: Delete
+[tasks.test]
+command = "cargo"
+args = [
+  "run",
+]
