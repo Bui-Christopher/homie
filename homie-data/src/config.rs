@@ -1,7 +1,7 @@
 pub struct Config {}
 
 impl Config {
-    pub fn new() -> Self {
+    pub fn load_config() -> Config {
         Config {}
     }
 }

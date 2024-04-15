@@ -3,7 +3,6 @@ use std::marker::PhantomData;
 
 use crate::database::common::CRUDOperations;
 
-// TODO: Rename to Repository
 pub(crate) struct Writer<D: CRUDOperations<T>, T> {
     database_client: D,
     marker: PhantomData<T>,
@@ -22,8 +21,6 @@ impl<D: CRUDOperations<T>, T: std::fmt::Debug> Writer<D, T> {
     }
 
     pub fn write_datasets(&self, datasets: &T) -> Result<(), Box<dyn Error>> {
-        // TODO: Delete (testing)
-        // println!("{:#?}", self.database_client());
         self.database_client().create(datasets)?;
         self.database_client().read("Read Key")?;
         self.database_client().update(datasets)?;

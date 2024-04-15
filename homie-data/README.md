@@ -28,6 +28,21 @@ In the meantime, it's data has been manually downloaded through Zillow (public d
     - [ ] fhfa-hpi
     - [ ] cities/counties/zipcodes
     - [ ] zillow-zhvi
+    - [ ] Add FactoryMethod to split between postgres and in memory
 - [ ] Unit tests :sob:
 - [ ] Refactor common code to `homie-core`
 - [ ] Double check what structs/mods are exposed may limit it to the crate
+- [ ] Read Software Architecture
+    - [ ] Dependency Inversion Principle
+    - [ ] Singleton vs Dependency Injection
+    - [ ] Test some patterns
+        - [ ] Factory
+        - [ ] Builder
+        - [ ] Singleton
+        - [ ] Mediator
+        - [ ] Facade
+    - [ ] CQRS
+    - [ ] High Level Patterns (Not application level?)
+        - [ ] Model-View-Controller (MVC)
+        - [ ] Service-Oriented Architecture (SOA)
+        - [ ] Event-Driven Architecture (EDA)

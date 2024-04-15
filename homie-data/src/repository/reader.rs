@@ -9,8 +9,9 @@ use crate::model::zhvi::read_zillow_zhvis;
 
 pub struct Reader {}
 
+// config: &'static crate::config::Config,
 impl Reader {
-    pub fn new(_config: &Config) -> Self {
+    pub fn new(_config: &'static Config) -> Self {
         Reader {}
     }
 }
