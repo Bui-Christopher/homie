@@ -1,4 +1,4 @@
-pub(crate) mod common;
+pub mod common;
 pub mod hpi;
 pub mod region;
 pub mod t_yield;

@@ -1,9 +1,10 @@
+#![deny(clippy::all)]
 use std::error::Error;
 
+use database::file::FileStorage;
 use database::postgres::Postgres;
 
 use crate::config::Config;
-use crate::model::common::Datasets;
 use crate::reader::Reader;
 use crate::writer::Writer;
 
@@ -17,15 +18,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     // TODO: Does this need to be global?
     let config = Config::new();
 
-    // TODO: Abstract this
-    let postgres = Postgres::new();
-
     // TODO: Switch to builder pattern
+    // TODO: Rename to DataImporter/DatasetImporter/DatasetReader
     let reader = Reader::new(&config);
-    let postgres_writer: Writer<_, Datasets> = Writer::new(postgres);
-
     let datasets = reader.read_datasets()?;
+
+    // TODO: Remove (testing)
+    // let _reader = Reader::new(&config);
+    // let datasets = model::common::Datasets::default();
+
+    let postgres = Postgres::new();
+    let postgres_writer = Writer::new(postgres);
     postgres_writer.write_datasets(&datasets)?;
+
+    let file_storage = FileStorage::new();
+    let file_writer = Writer::new(file_storage);
+    file_writer.write_datasets(&datasets)?;
 
     Ok(())
 }

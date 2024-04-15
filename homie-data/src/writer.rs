@@ -2,13 +2,14 @@ use std::error::Error;
 use std::marker::PhantomData;
 
 use crate::database::common::CRUDOperations;
-use crate::model::common::Datasets;
 
+// TODO: Rename to Repository
 pub(crate) struct Writer<D: CRUDOperations<T>, T> {
     database_client: D,
     marker: PhantomData<T>,
 }
-impl<D: CRUDOperations<T>, T> Writer<D, T> {
+
+impl<D: CRUDOperations<T>, T: std::fmt::Debug> Writer<D, T> {
     pub fn new(database_client: D) -> Self {
         Writer {
             database_client,
@@ -20,10 +21,15 @@ impl<D: CRUDOperations<T>, T> Writer<D, T> {
         &self.database_client
     }
 
-    pub fn write_datasets(&self, datasets: &Datasets) -> Result<(), Box<dyn Error>> {
+    pub fn write_datasets(&self, datasets: &T) -> Result<(), Box<dyn Error>> {
         // TODO: Delete (testing)
-        println!("{:#?}", self.database_client());
-        println!("{:#?}", datasets);
+        // println!("{:#?}", self.database_client());
+        self.database_client().create(datasets)?;
+        self.database_client().read("Read Key")?;
+        self.database_client().update(datasets)?;
+        self.database_client().delete("Delete Key")?;
+
+        println!("\n{:#?}", datasets);
         Ok(())
     }
 }
