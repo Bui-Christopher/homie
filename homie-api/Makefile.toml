@@ -10,6 +10,13 @@ args = [
     "--locked",
 ]
 
+[tasks.format]
+command = "cargo"
+toolchain = "nightly"
+args = [
+    "fmt",
+]
+
 [tasks.test]
 command = "cargo"
 args = [
@@ -23,3 +30,6 @@ alias = "build"
 
 [tasks.t]
 alias = "test"
+
+[tasks.f]
+alias = "format"
