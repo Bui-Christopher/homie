@@ -7,16 +7,19 @@ use crate::model::region::read_huduser_regions;
 use crate::model::t_yield::read_fed_yields;
 use crate::model::zhvi::read_zillow_zhvis;
 
-pub struct Reader {}
+#[cfg(test)]
+mod test;
 
-// config: &'static crate::config::Config,
-impl Reader {
+pub struct Adapter {}
+
+impl Adapter {
     pub fn new(_config: &'static Config) -> Self {
-        Reader {}
+        Adapter {}
     }
 }
 
-impl Reader {
+impl Adapter {
+    // TODO: Read datasets dependent on what self.datasets exist
     pub fn read_datasets(&self) -> Result<Datasets, Box<dyn Error>> {
         let t_yield_data = read_fed_yields()?;
         let hpi_data = read_fhfa_hpis()?;
