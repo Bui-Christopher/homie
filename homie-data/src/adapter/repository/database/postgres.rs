@@ -2,7 +2,7 @@ use std::error::Error;
 
 use serde::{Deserialize, Serialize};
 
-use crate::database::common::CRUDOperations;
+use crate::adapter::repository::CRUDOperations;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Postgres {}

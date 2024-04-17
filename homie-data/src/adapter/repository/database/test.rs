@@ -2,7 +2,7 @@ use std::error::Error;
 
 use serde::{Deserialize, Serialize};
 
-use crate::database::common::CRUDOperations;
+use crate::adapter::repository::CRUDOperations;
 
 /// Test object that mocks calling different persistences
 #[derive(Debug, Serialize, Deserialize)]

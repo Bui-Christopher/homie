@@ -2,7 +2,7 @@ use std::error::Error;
 
 use serde::{Deserialize, Serialize};
 
-use crate::model::common::Entry;
+use crate::domain::common::Entry;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Region {

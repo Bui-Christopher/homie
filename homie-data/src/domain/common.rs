@@ -3,10 +3,10 @@ use std::error::Error;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::model::hpi::HPIData;
-use crate::model::region::RegionData;
-use crate::model::t_yield::TYieldData;
-use crate::model::zhvi::ZHVIData;
+use crate::domain::hpi::HPIData;
+use crate::domain::region::RegionData;
+use crate::domain::t_yield::TYieldData;
+use crate::domain::zhvi::ZHVIData;
 
 // TODO: Rename to CsvRecord
 // Refactor into reader/dataset_importer

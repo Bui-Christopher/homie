@@ -1,8 +1,10 @@
 use std::error::Error;
 use std::marker::PhantomData;
 
+use crate::adapter::repository::database::common::CRUDOperations;
 use crate::config::Config;
-use crate::database::common::CRUDOperations;
+
+pub(crate) mod database;
 
 pub(crate) struct Repository<D: CRUDOperations<T>, T> {
     database_client: D,

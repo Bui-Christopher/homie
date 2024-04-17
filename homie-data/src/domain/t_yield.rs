@@ -3,7 +3,7 @@ use std::error::Error;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::model::common::{to_ymd_date, Entry};
+use crate::domain::common::{to_ymd_date, Entry};
 
 type TYields = Vec<TYield>;
 

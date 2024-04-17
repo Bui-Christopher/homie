@@ -1,26 +1,24 @@
 #![deny(clippy::all)]
+
 use std::error::Error;
 use std::sync::OnceLock;
 
-use adapter::Adapter;
-use database::file::FileStorage;
-use database::postgres::Postgres;
-use repository::Repository;
-
+use crate::adapter::importer::Importer;
+use crate::adapter::repository::database::file::FileStorage;
+use crate::adapter::repository::database::postgres::Postgres;
+use crate::adapter::repository::Repository;
 use crate::config::Config;
 
 mod adapter;
 mod config;
-mod database;
-mod model;
-mod repository;
+mod domain;
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
 fn main() -> Result<(), Box<dyn Error>> {
     let config = CONFIG.get_or_init(Config::load_config);
 
-    let reader = Adapter::new(config);
+    let reader = Importer::new(config);
     let datasets = reader.read_datasets()?;
 
     // TODO: Remove (testing)
