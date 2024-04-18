@@ -2,35 +2,28 @@
 use std::error::Error;
 use std::sync::OnceLock;
 
-use adapter::repository::database::postgres::PostgresClient;
 use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
+use homie_core::adapter::repository::database::postgres::Postgres;
+use homie_core::adapter::repository::{Config, Repository};
 use homie_core::domain::common::Datasets;
 use homie_core::domain::hpi::HpiData;
 use serde::Deserialize;
-
-use crate::adapter::repository::database::http::HttpClient;
-use crate::adapter::repository::Repository;
-use crate::config::Config;
-
-mod adapter;
-mod config;
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let config = CONFIG.get_or_init(Config::load_config);
-    let client = HttpClient::new();
-    let _postgres = PostgresClient::new();
+    let client = Postgres::new();
     let repository = Repository::new(config, client);
 
     // TODO: Remove (testing)
     let datasets = Datasets::default();
-    repository.run_all_crud(&datasets)?;
+    repository.write_data(&datasets)?;
 
     let app = Router::new()
         .route("/health", get(health))

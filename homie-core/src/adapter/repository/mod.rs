@@ -34,6 +34,7 @@ impl<D: CRUDOperations<T>, T: Debug> Repository<D, T> {
     }
 }
 
+// TODO: Refactor out
 pub struct Config {}
 
 impl Config {

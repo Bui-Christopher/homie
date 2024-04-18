@@ -7,32 +7,38 @@ use serde::{Deserialize, Serialize};
 use crate::adapter::repository::CRUDOperations;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct PostgresClient {}
+pub struct HttpClient {}
 
-impl PostgresClient {
+impl HttpClient {
     pub fn new() -> Self {
-        PostgresClient {}
+        HttpClient {}
     }
 }
 
-impl<T: Serialize + DeserializeOwned + Debug> CRUDOperations<T> for PostgresClient {
+impl Default for HttpClient {
+    fn default() -> Self {
+        HttpClient::new()
+    }
+}
+
+impl<T: Serialize + DeserializeOwned + Debug> CRUDOperations<T> for HttpClient {
     fn create(&self, obj: &T) -> Result<bool, Box<dyn Error>> {
-        println!("Postgres: Create object: {:?}", obj);
+        println!("HttpClient: Create object: {:?}", obj);
         Ok(true)
     }
 
     fn read(&self, key: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Postgres: Read object by key: {:?}", key);
+        println!("HttpClient: Read object by key: {:?}", key);
         Ok(true)
     }
 
     fn update(&self, obj: &T) -> Result<bool, Box<dyn Error>> {
-        println!("Postgres: Update object: {:?}", obj);
+        println!("HttpClient: Update object: {:?}", obj);
         Ok(true)
     }
 
     fn delete(&self, key: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Postgres: Delete object by key: {:?}", key);
+        println!("HttpClient: Delete object by key: {:?}", key);
         Ok(true)
     }
 }
