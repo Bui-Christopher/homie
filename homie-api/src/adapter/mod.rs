@@ -1,9 +1,4 @@
-use crate::Config;
+pub(crate) mod repository;
 
-pub struct Adapter {}
-
-impl Adapter {
-    pub fn new(_config: &'static Config) -> Self {
-        Adapter {}
-    }
-}
+#[cfg(test)]
+mod test;

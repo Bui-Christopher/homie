@@ -7,6 +7,7 @@ use crate::domain::common::{to_ymd_date, Entry};
 
 type TYields = Vec<TYield>;
 
+// TODO: Set yield_return as option because h15 has random null fields???
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TYield {
     TenYearYield { date: NaiveDate, yield_return: f32 },
