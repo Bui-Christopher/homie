@@ -1,12 +1,11 @@
 use std::error::Error;
 
-use homie_core::domain::common::Datasets;
-use homie_core::domain::hpi::read_fhfa_hpis;
-use homie_core::domain::region::read_huduser_regions;
-use homie_core::domain::t_yield::read_fed_yields;
-use homie_core::domain::zhvi::read_zillow_zhvis;
-
-use crate::config::Config;
+use crate::adapter::repository::Config;
+use crate::domain::common::Datasets;
+use crate::domain::hpi::read_fhfa_hpis;
+use crate::domain::region::read_huduser_regions;
+use crate::domain::t_yield::read_fed_yields;
+use crate::domain::zhvi::read_zillow_zhvis;
 
 pub struct Importer {}
 

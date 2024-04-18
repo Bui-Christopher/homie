@@ -3,14 +3,10 @@
 use std::error::Error;
 use std::sync::OnceLock;
 
-use crate::adapter::importer::Importer;
-use crate::adapter::repository::database::file::FileStorage;
-use crate::adapter::repository::database::postgres::Postgres;
-use crate::adapter::repository::Repository;
-use crate::config::Config;
-
-mod adapter;
-mod config;
+use homie_core::adapter::importer::Importer;
+use homie_core::adapter::repository::database::file::FileStorage;
+use homie_core::adapter::repository::database::postgres::Postgres;
+use homie_core::adapter::repository::{Config, Repository};
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 

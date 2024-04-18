@@ -1,6 +1,6 @@
 pub(crate) mod common;
-pub(crate) mod file;
-pub(crate) mod postgres;
+pub mod file;
+pub mod postgres;
 
 #[cfg(test)]
 mod test;

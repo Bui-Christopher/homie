@@ -7,11 +7,17 @@ use serde::{Deserialize, Serialize};
 use crate::adapter::repository::CRUDOperations;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct FileStorage {}
+pub struct FileStorage {}
 
 impl FileStorage {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         FileStorage {}
+    }
+}
+
+impl Default for FileStorage {
+    fn default() -> Self {
+        FileStorage::new()
     }
 }
 

@@ -7,11 +7,17 @@ use serde::{Deserialize, Serialize};
 use crate::adapter::repository::CRUDOperations;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct Postgres {}
+pub struct Postgres {}
 
 impl Postgres {
     pub fn new() -> Self {
         Postgres {}
+    }
+}
+
+impl Default for Postgres {
+    fn default() -> Self {
+        Postgres::new()
     }
 }
 

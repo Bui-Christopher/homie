@@ -3,11 +3,10 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::adapter::repository::database::common::CRUDOperations;
-use crate::config::Config;
 
-pub(crate) mod database;
+pub mod database;
 
-pub(crate) struct Repository<D: CRUDOperations<T>, T> {
+pub struct Repository<D: CRUDOperations<T>, T> {
     client: D,
     marker: PhantomData<T>,
 }
@@ -32,5 +31,13 @@ impl<D: CRUDOperations<T>, T: Debug> Repository<D, T> {
 
         println!("\n{:#?}", data);
         Ok(())
+    }
+}
+
+pub struct Config {}
+
+impl Config {
+    pub fn load_config() -> Config {
+        Config {}
     }
 }
