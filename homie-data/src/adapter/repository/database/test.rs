@@ -1,5 +1,7 @@
 use std::error::Error;
+use std::fmt::Debug;
 
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use crate::adapter::repository::CRUDOperations;
@@ -12,7 +14,7 @@ struct TestObject {}
 #[derive(Debug, Serialize, Deserialize)]
 struct TestStorage {}
 
-impl<T: Serialize + Deserialize<'static> + std::fmt::Debug> CRUDOperations<T> for TestStorage {
+impl<T: Serialize + DeserializeOwned + Debug> CRUDOperations<T> for TestStorage {
     fn create(&self, obj: &T) -> Result<bool, Box<dyn Error>> {
         println!("Test: Create object: {:?}", obj);
         Ok(true)
@@ -38,7 +40,7 @@ impl<T: Serialize + Deserialize<'static> + std::fmt::Debug> CRUDOperations<T> fo
 #[derive(Debug, Serialize, Deserialize)]
 struct OtherTestStorage {}
 
-impl<T: Serialize + Deserialize<'static> + std::fmt::Debug> CRUDOperations<T> for OtherTestStorage {
+impl<T: Serialize + DeserializeOwned + Debug> CRUDOperations<T> for OtherTestStorage {
     fn create(&self, obj: &T) -> Result<bool, Box<dyn Error>> {
         println!("Other test: Create object: {:?}", obj);
         Ok(true)

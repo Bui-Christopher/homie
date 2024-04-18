@@ -3,9 +3,8 @@ use std::error::Error;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::domain::common::{to_ymd_date, Entry};
-
-type TYields = Vec<TYield>;
+use crate::domain::common::CsvRecord;
+use crate::domain::util::to_ymd_date;
 
 // TODO: Set yield_return as option because h15 has random null fields???
 #[derive(Debug, Serialize, Deserialize)]
@@ -17,6 +16,8 @@ pub enum TYield {
 pub struct TYieldData {
     pub ten_year_yields: TYields,
 }
+
+pub type TYields = Vec<TYield>;
 
 // TODO:
 // impl From<Entry> for TenTreasuryYield
@@ -38,7 +39,7 @@ fn read_fed_ten_yields() -> Result<TYields, Box<dyn Error>> {
     let mut entries = vec![];
     let mut ten_year_yields = vec![];
     for result in rdr.deserialize() {
-        let r: Entry = result?;
+        let r: CsvRecord = result?;
         entries.push(r);
     }
 

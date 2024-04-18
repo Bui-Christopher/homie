@@ -2,7 +2,7 @@ use std::error::Error;
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::common::Entry;
+use crate::domain::common::CsvRecord;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum RegionHPI {
@@ -24,25 +24,25 @@ pub enum RegionHPI {
     },
 }
 
-type RegionHPIs = Vec<RegionHPI>;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct HPIData {
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct HpiData {
     pub three_zip_hpis: RegionHPIs,
     pub five_zip_hpis: RegionHPIs,
     pub county_hpis: RegionHPIs,
 }
+
+pub type RegionHPIs = Vec<RegionHPI>;
 
 // TODO:
 // impl From<Entry> for ZipHPI
 // impl From<Entry> for CountyHPI
 // Unit tests
 
-pub fn read_fhfa_hpis() -> Result<HPIData, Box<dyn Error>> {
+pub fn read_fhfa_hpis() -> Result<HpiData, Box<dyn Error>> {
     let three_zip_hpis = read_three_zip_fhfa_hpis()?;
     let five_zip_hpis = read_five_zip_fhfa_hpis()?;
     let county_hpis = read_county_fhfa_hpis()?;
-    Ok(HPIData {
+    Ok(HpiData {
         three_zip_hpis,
         five_zip_hpis,
         county_hpis,
@@ -59,7 +59,7 @@ fn read_three_zip_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
     // TODO: rdr.deserialize().into_iter()?.into().collect();
     let mut entries = vec![];
     for result in rdr.deserialize() {
-        let r: Entry = result?;
+        let r: CsvRecord = result?;
         entries.push(r);
     }
     Ok(entries
@@ -93,7 +93,7 @@ fn read_five_zip_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
     // TODO: rdr.deserialize().into_iter()?.into().collect();
     let mut entries = vec![];
     for result in rdr.deserialize() {
-        let r: Entry = result?;
+        let r: CsvRecord = result?;
         entries.push(r);
     }
 
@@ -128,7 +128,7 @@ fn read_county_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
     // TODO: rdr.deserialize().into_iter()?.into().collect();
     let mut entries = vec![];
     for result in rdr.deserialize() {
-        let r: Entry = result?;
+        let r: CsvRecord = result?;
         entries.push(r);
     }
 

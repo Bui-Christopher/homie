@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use crate::adapter::repository::database::common::CRUDOperations;
@@ -11,7 +12,7 @@ pub(crate) struct Repository<D: CRUDOperations<T>, T> {
     marker: PhantomData<T>,
 }
 
-impl<D: CRUDOperations<T>, T: std::fmt::Debug> Repository<D, T> {
+impl<D: CRUDOperations<T>, T: Debug> Repository<D, T> {
     pub fn new(_config: &'static Config, client: D) -> Self {
         Repository {
             client,

@@ -3,15 +3,8 @@ use std::error::Error;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::domain::common::{to_ymd_date, Entry};
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Price {
-    date: NaiveDate,
-    price: f64,
-}
-
-type Prices = Vec<Price>;
+use crate::domain::common::CsvRecord;
+use crate::domain::util::to_ymd_date;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Region {
@@ -46,7 +39,14 @@ pub enum Zhvi {
     },
 }
 
-type Zhvis = Vec<Zhvi>;
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Price {
+    date: NaiveDate,
+    price: f64,
+}
+
+pub type Prices = Vec<Price>;
+pub type Zhvis = Vec<Zhvi>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ZHVIData {
@@ -122,7 +122,7 @@ fn read_mid_city_all_homes() -> Result<Zhvis, Box<dyn Error>> {
     let mut entries = vec![];
     let mut mid_all_homes = vec![];
     for result in rdr.deserialize() {
-        let r: Entry = result?;
+        let r: CsvRecord = result?;
         entries.push(r);
     }
     let headers = rdr.headers()?;
@@ -162,7 +162,7 @@ fn read_mid_county_all_homes() -> Result<Zhvis, Box<dyn Error>> {
     let mut entries = vec![];
     let mut mid_all_homes = vec![];
     for result in rdr.deserialize() {
-        let r: Entry = result?;
+        let r: CsvRecord = result?;
         entries.push(r);
     }
     let headers = rdr.headers()?;
@@ -202,7 +202,7 @@ fn read_mid_zip_all_homes() -> Result<Zhvis, Box<dyn Error>> {
     let mut entries = vec![];
     let mut mid_all_homes = vec![];
     for result in rdr.deserialize() {
-        let r: Entry = result?;
+        let r: CsvRecord = result?;
         entries.push(r);
     }
     let headers = rdr.headers()?;

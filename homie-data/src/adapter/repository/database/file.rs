@@ -1,5 +1,7 @@
 use std::error::Error;
+use std::fmt::Debug;
 
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use crate::adapter::repository::CRUDOperations;
@@ -13,7 +15,7 @@ impl FileStorage {
     }
 }
 
-impl<T: Serialize + Deserialize<'static> + std::fmt::Debug> CRUDOperations<T> for FileStorage {
+impl<T: Serialize + DeserializeOwned + Debug> CRUDOperations<T> for FileStorage {
     fn create(&self, obj: &T) -> Result<bool, Box<dyn Error>> {
         println!("File: Create object: {:?}", obj);
         Ok(true)

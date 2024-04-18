@@ -2,7 +2,7 @@ use std::error::Error;
 
 use serde::{Deserialize, Serialize};
 
-use crate::domain::common::Entry;
+use crate::domain::common::CsvRecord;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Region {
@@ -26,37 +26,13 @@ pub enum Region {
     },
 }
 
-// TODO: Check if needed
-// impl Region {
-//     pub fn city(&self) -> &str {
-//         match self {
-//             Region::County { city, .. } => city,
-//             Region::Zipcode { city, .. } => city,
-//         }
-//     }
-//
-//     pub fn county(&self) -> &str {
-//         match self {
-//             Region::County { county, .. } => county,
-//             Region::Zipcode { county, .. } => county,
-//         }
-//     }
-//
-//     pub fn zipcode(&self) -> &str {
-//         match self {
-//             Region::County { zipcode, .. } => zipcode,
-//             Region::Zipcode { zipcode, .. } => zipcode,
-//         }
-//     }
-// }
-
-pub type Regions = Vec<Region>;
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RegionData {
     pub counties: Regions,
     pub zipcodes: Regions,
 }
+
+pub type Regions = Vec<Region>;
 
 // TODO:
 // impl From<Entry> for RegionCossData
@@ -80,7 +56,7 @@ fn read_county_zipcodes() -> Result<Regions, Box<dyn Error>> {
     let mut entries = vec![];
     let mut counties = vec![];
     for result in rdr.deserialize() {
-        let r: Entry = result?;
+        let r: CsvRecord = result?;
         entries.push(r);
     }
 
@@ -113,7 +89,7 @@ fn read_zip_counties() -> Result<Regions, Box<dyn Error>> {
     let mut entries = vec![];
     let mut zipcodes = vec![];
     for result in rdr.deserialize() {
-        let r: Entry = result?;
+        let r: CsvRecord = result?;
         entries.push(r);
     }
 

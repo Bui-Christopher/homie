@@ -11,7 +11,6 @@ use crate::config::Config;
 
 mod adapter;
 mod config;
-mod domain;
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
@@ -25,14 +24,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let _reader = Reader::new(CONFIG.get_or_init(Config::load_config));
     // let datasets = model::common::Datasets::default();
 
-    // TODO: Handle the database type by config
+    // TODO: Abstract the repo client by config
     let postgres = Postgres::new();
     let postgres_writer = Repository::new(config, postgres);
-    postgres_writer.write_datasets(&datasets)?;
+    postgres_writer.write_data(&datasets)?;
 
     let file_storage = FileStorage::new();
     let file_writer = Repository::new(config, file_storage);
-    file_writer.write_datasets(&datasets)?;
+    file_writer.write_data(&datasets)?;
 
     Ok(())
 }
