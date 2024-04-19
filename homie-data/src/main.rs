@@ -4,30 +4,23 @@ use std::error::Error;
 use std::sync::OnceLock;
 
 use homie_core::adapter::importer::Importer;
-use homie_core::adapter::repository::database::file::FileStorage;
-use homie_core::adapter::repository::database::postgres::Postgres;
 use homie_core::adapter::repository::{Config, Repository};
+// use homie_core::domain::common::Datasets;
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
 fn main() -> Result<(), Box<dyn Error>> {
     let config = CONFIG.get_or_init(Config::load_config);
 
-    let reader = Importer::new(config);
-    let datasets = reader.read_datasets()?;
+    let _reader = Importer::new(config);
+    let datasets = _reader.read_datasets()?;
+    // let datasets = Datasets::default();
 
-    // TODO: Remove (testing)
-    // let _reader = Reader::new(CONFIG.get_or_init(Config::load_config));
-    // let datasets = model::common::Datasets::default();
+    let postgres_writer = Repository::new(config);
+    postgres_writer.call_all_crud(&datasets)?;
 
-    // TODO: Abstract the repo client by config
-    let postgres = Postgres::new();
-    let postgres_writer = Repository::new(config, postgres);
-    postgres_writer.write_data(&datasets)?;
-
-    let file_storage = FileStorage::new();
-    let file_writer = Repository::new(config, file_storage);
-    file_writer.write_data(&datasets)?;
+    let file_writer = Repository::new(config);
+    file_writer.call_all_crud(&datasets)?;
 
     Ok(())
 }

@@ -1,7 +1,6 @@
 use std::error::Error;
 use std::fmt::Debug;
 
-use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use crate::adapter::repository::CRUDOperations;
@@ -21,7 +20,7 @@ impl Default for Postgres {
     }
 }
 
-impl<T: Serialize + DeserializeOwned + Debug> CRUDOperations<T> for Postgres {
+impl<T: Debug> CRUDOperations<T> for Postgres {
     fn create(&self, obj: &T) -> Result<bool, Box<dyn Error>> {
         println!("Postgres: Create object: {:?}", obj);
         Ok(true)
