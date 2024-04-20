@@ -9,18 +9,17 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
 use homie_core::adapter::repository::{Config, Repository};
-use homie_core::domain::common::Datasets;
 use homie_core::domain::hpi::HpiData;
 use serde::Deserialize;
 
 mod error;
 
-struct AppState<T: Debug> {
-    repo: Repository<T>,
+struct AppState {
+    repo: Repository,
 }
 
-impl<T: Debug> AppState<T> {
-    fn new(repo: Repository<T>) -> Self {
+impl AppState {
+    fn new(repo: Repository) -> Self {
         Self { repo }
     }
 }
@@ -31,7 +30,7 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
 async fn main() -> Result<(), Box<dyn Error>> {
     let config = CONFIG.get_or_init(Config::load_config);
 
-    let repo: Repository<Datasets> = Repository::new(config);
+    let repo: Repository = Repository::new(config);
     let state = Arc::new(AppState::new(repo));
 
     let app = Router::new()
@@ -49,11 +48,8 @@ async fn health() -> &'static str {
     "Service is running."
 }
 
-async fn read_zhvis<T: Debug + Send + Sync + Default>(
-    State(state): State<Arc<AppState<T>>>,
-) -> impl IntoResponse {
-    let datasets = T::default();
-    state.repo.read_data(&datasets).unwrap();
+async fn read_zhvis(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    state.repo.session().read("hello").unwrap();
     let dummy = HpiData::default();
     (StatusCode::OK, Json(dummy))
 }

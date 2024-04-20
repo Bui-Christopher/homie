@@ -17,10 +17,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let datasets = Datasets::default();
 
     let postgres_writer = Repository::new(config);
-    postgres_writer.call_all_crud(&datasets)?;
+    datasets.read(postgres_writer.session(), "key")?;
 
     let file_writer = Repository::new(config);
-    file_writer.call_all_crud(&datasets)?;
+    datasets.read(file_writer.session(), "key")?;
 
     Ok(())
 }

@@ -1,9 +1,26 @@
 use std::error::Error;
-use std::fmt::Debug;
 
-pub trait CRUDOperations<T>: Debug + Send + Sync {
-    fn create(&self, obj: &T) -> Result<bool, Box<dyn Error>>;
-    fn read(&self, key: &str) -> Result<bool, Box<dyn Error>>;
-    fn update(&self, obj: &T) -> Result<bool, Box<dyn Error>>;
-    fn delete(&self, key: &str) -> Result<bool, Box<dyn Error>>;
+use crate::domain::dataset::DatasetPersist;
+
+pub trait FilePersist<S, Q> {
+    fn create(&self, session: &S) -> Result<bool, Box<dyn Error>>;
+    fn read(&self, session: &S, key: &str) -> Result<bool, Box<dyn Error>>;
+    fn read_by_query(&self, session: &S, query: Q) -> Result<bool, Box<dyn Error>>;
+    fn update(&self, session: &S) -> Result<bool, Box<dyn Error>>;
+    fn delete(&self, session: &S, key: &str) -> Result<bool, Box<dyn Error>>;
 }
+
+pub trait PostgresPersist<S, Q> {
+    fn create(&self, session: &S) -> Result<bool, Box<dyn Error>>;
+    fn read(&self, session: &S, key: &str) -> Result<bool, Box<dyn Error>>;
+    fn read_by_query(&self, session: &S, query: Q) -> Result<bool, Box<dyn Error>>;
+    fn update(&self, session: &S) -> Result<bool, Box<dyn Error>>;
+    fn delete(&self, session: &S, key: &str) -> Result<bool, Box<dyn Error>>;
+}
+
+pub trait HttpPersist<S, Q> {
+    fn read(&self, session: &S, id: &str) -> Result<bool, Box<dyn Error>>;
+    fn read_by_query(&self, session: &S, query: Q) -> Result<bool, Box<dyn Error>>;
+}
+
+pub trait Session: Send + Sync + DatasetPersist {}

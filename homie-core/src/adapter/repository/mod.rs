@@ -1,50 +1,24 @@
-use std::error::Error;
-use std::fmt::Debug;
-
 use self::database::file::FileStorage;
 use self::database::postgres::Postgres;
-use crate::adapter::repository::database::common::CRUDOperations;
+use crate::domain::dataset::DatasetPersist;
 
 pub mod database;
 
-#[derive(Debug)]
-pub struct Repository<T> {
-    client: Box<dyn CRUDOperations<T>>,
+pub struct Repository {
+    pub session: Box<dyn DatasetPersist>,
 }
 
-impl<T: Debug + Send + Sync> Repository<T> {
+impl Repository {
     pub fn new(config: &'static Config) -> Self {
-        let client = create_client(config);
-        Repository { client }
+        let session = establish_session(config);
+        Repository { session }
     }
 
-    fn client(&self) -> &dyn CRUDOperations<T> {
-        &*self.client
-    }
-
-    pub fn read_data(&self, data: &T) -> Result<(), Box<dyn Error>> {
-        self.client().create(data)?;
-        self.client().read("data")?;
-        self.client().update(data)?;
-        self.client().delete("data")?;
-
-        println!("\n{:#?}", self);
-        println!("\n{:#?}", data);
-        Ok(())
-    }
-
-    pub fn call_all_crud(&self, data: &T) -> Result<(), Box<dyn Error>> {
-        self.client().create(data)?;
-        self.client().read("data")?;
-        self.client().update(data)?;
-        self.client().delete("data")?;
-
-        println!("\n{:#?}", self);
-        println!("\n{:#?}", data);
-        Ok(())
+    pub fn session(&self) -> &dyn DatasetPersist {
+        &*self.session
     }
 }
-fn create_client<T: Debug>(config: &'static Config) -> Box<dyn CRUDOperations<T>> {
+fn establish_session(config: &'static Config) -> Box<dyn DatasetPersist> {
     if config.use_db {
         Box::new(Postgres::new())
     } else {
