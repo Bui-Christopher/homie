@@ -38,6 +38,13 @@ pub type Regions = Vec<Region>;
 // impl From<Entry> for RegionCossData
 // Unit tests
 
+pub trait RegionPersist: Send + Sync {
+    // fn create_region(&self, region: &Region) -> Result<bool, Box<dyn Error>>;
+    fn read_region_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    // fn update_region(&self, region: &Region) -> Result<bool, Box<dyn Error>>;
+    // fn delete_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+}
+
 pub fn read_huduser_regions() -> Result<RegionData, Box<dyn Error>> {
     let counties = read_county_zipcodes()?;
     let zipcodes = read_zip_counties()?;

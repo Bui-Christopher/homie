@@ -1,25 +1,25 @@
-use crate::adapter::repository::database::common::Session;
-use crate::domain::dataset::DatasetPersist;
+use crate::adapter::repository::Persist;
+use crate::domain::t_yield::TYieldPersist;
 
-pub struct Postgres {}
+pub struct PostgresClient;
 
-impl Postgres {
+impl PostgresClient {
     pub fn new() -> Self {
-        Postgres {}
+        PostgresClient {}
     }
 }
 
-impl Default for Postgres {
+impl Default for PostgresClient {
     fn default() -> Self {
-        Postgres::new()
+        PostgresClient::new()
     }
 }
 
-impl Session for Postgres {}
-
-impl DatasetPersist for Postgres {
-    fn read(&self, _key: &str) -> Result<bool, Box<dyn std::error::Error>> {
-        println!("Calling dataset read from Postgres.");
+impl TYieldPersist for PostgresClient {
+    fn read_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
+        println!("Calling t_yield read with id: {id}  from Postgres.");
         Ok(true)
     }
 }
+
+impl Persist for PostgresClient {}

@@ -1,7 +1,7 @@
-use super::common::Session;
-use crate::domain::dataset::DatasetPersist;
+use crate::adapter::repository::Persist;
+use crate::domain::t_yield::TYieldPersist;
 
-pub struct HttpClient {}
+pub struct HttpClient;
 
 impl HttpClient {
     pub fn new() -> Self {
@@ -15,11 +15,11 @@ impl Default for HttpClient {
     }
 }
 
-impl Session for HttpClient {}
-
-impl DatasetPersist for HttpClient {
-    fn read(&self, _key: &str) -> Result<bool, Box<dyn std::error::Error>> {
-        println!("Calling dataset read from HttpClient.");
+impl TYieldPersist for HttpClient {
+    fn read_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
+        println!("Calling t_yield read with id: {id} from HttpClient.");
         Ok(true)
     }
 }
+
+impl Persist for HttpClient {}

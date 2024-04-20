@@ -10,6 +10,7 @@ use axum::routing::get;
 use axum::{Json, Router};
 use homie_core::adapter::repository::{Config, Repository};
 use homie_core::domain::hpi::HpiData;
+use homie_core::domain::t_yield::TYield;
 use serde::Deserialize;
 
 mod error;
@@ -48,8 +49,7 @@ async fn health() -> &'static str {
     "Service is running."
 }
 
-async fn read_zhvis(State(state): State<Arc<AppState>>) -> impl IntoResponse {
-    state.repo.session().read("hello").unwrap();
+async fn read_zhvis() -> impl IntoResponse {
     let dummy = HpiData::default();
     (StatusCode::OK, Json(dummy))
 }
@@ -58,11 +58,10 @@ async fn read_hpis(_param: Option<Query<HpiParam>>) -> Json<HpiData> {
     Json(HpiData::default())
 }
 
-// async fn read_zhvis(State(state): State<Arc<AppState<Datasets>>>) -> impl
-// IntoResponse {
-async fn read_yields() -> impl IntoResponse {
-    let dummy = HpiData::default();
-    (StatusCode::OK, Json(dummy))
+async fn read_yields(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let t_yield = TYield::default();
+    t_yield.read(state.repo.session(), "key").unwrap();
+    (StatusCode::OK, Json(t_yield))
 }
 
 #[derive(Debug)]

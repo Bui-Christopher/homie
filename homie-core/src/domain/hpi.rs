@@ -33,6 +33,13 @@ pub struct HpiData {
 
 pub type RegionHPIs = Vec<RegionHPI>;
 
+pub trait HpiPersist: Send + Sync {
+    // fn create_hpi(&self, hpi: &RegionHPI) -> Result<bool, Box<dyn Error>>;
+    fn read_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    // fn update_hpi(&self, hpi: &RegionHPI) -> Result<bool, Box<dyn Error>>;
+    // fn delete_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+}
+
 // TODO:
 // impl From<Entry> for ZipHPI
 // impl From<Entry> for CountyHPI

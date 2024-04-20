@@ -3,8 +3,8 @@ use std::error::Error;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::domain::common::CsvRecord;
-use crate::domain::util::to_ymd_date;
+use crate::adapter::repository::Persist;
+use crate::domain::common::{to_ymd_date, CsvRecord};
 
 // TODO: Set yield_return as option because h15 has random null fields???
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,6 +18,28 @@ pub struct TYieldData {
 }
 
 pub type TYields = Vec<TYield>;
+
+pub trait TYieldPersist: Send + Sync {
+    // fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
+    fn read_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    // fn update_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
+    // fn delete_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+}
+
+impl TYield {
+    pub fn read(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+        client.read_t_yield_by_id(id)
+    }
+}
+
+impl Default for TYield {
+    fn default() -> Self {
+        TYield::TenYearYield {
+            date: NaiveDate::default(),
+            yield_return: 0.0,
+        }
+    }
+}
 
 // TODO:
 // impl From<Entry> for TenTreasuryYield

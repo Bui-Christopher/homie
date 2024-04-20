@@ -3,9 +3,7 @@ use std::error::Error;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::domain::common::CsvRecord;
-use crate::domain::util::to_ymd_date;
-
+use crate::domain::common::{to_ymd_date, CsvRecord};
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Region {
     Zipcode(String),
@@ -53,6 +51,13 @@ pub struct ZHVIData {
     pub all_homes_zhvis: Zhvis,
     pub condo_coops_zhvis: Zhvis,
     pub single_family_homes_zhvis: Zhvis,
+}
+
+pub trait ZhviPersist: Send + Sync {
+    // fn create_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>>;
+    fn read_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    // fn update_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>>;
+    // fn delete_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
 }
 
 // TODO:

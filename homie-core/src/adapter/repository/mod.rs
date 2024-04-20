@@ -1,28 +1,36 @@
-use self::database::file::FileStorage;
-use self::database::postgres::Postgres;
-use crate::domain::dataset::DatasetPersist;
+use self::database::postgres::PostgresClient;
+use crate::adapter::repository::database::http::HttpClient;
+use crate::domain::t_yield::TYieldPersist;
 
 pub mod database;
 
+pub trait Persist: TYieldPersist {}
+
 pub struct Repository {
-    pub session: Box<dyn DatasetPersist>,
+    client: Box<dyn Persist>,
 }
 
 impl Repository {
-    pub fn new(config: &'static Config) -> Self {
-        let session = establish_session(config);
-        Repository { session }
+    // Define a new function taking Config as a parameter
+    pub fn new(config: &Config) -> Self {
+        let client = Repository::establish_session(config);
+        Repository { client }
     }
 
-    pub fn session(&self) -> &dyn DatasetPersist {
-        &*self.session
+    // Method to establish session using the provided config
+    fn establish_session(config: &Config) -> Box<dyn Persist> {
+        if config.use_db {
+            println!("Using PostgreSQL client.");
+            Box::new(PostgresClient)
+        } else {
+            println!("Using HTTP client.");
+            Box::new(HttpClient)
+        }
     }
-}
-fn establish_session(config: &'static Config) -> Box<dyn DatasetPersist> {
-    if config.use_db {
-        Box::new(Postgres::new())
-    } else {
-        Box::new(FileStorage::new())
+
+    // Getter method to access the client
+    pub fn session(&self) -> &dyn Persist {
+        &*self.client
     }
 }
 
