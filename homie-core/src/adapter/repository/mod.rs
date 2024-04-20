@@ -1,11 +1,11 @@
 use self::database::file::FileStorage;
 use self::database::postgres::Postgres;
-use crate::domain::dataset::DatasetPersist;
+use crate::adapter::repository::database::common::Session;
 
 pub mod database;
 
 pub struct Repository {
-    pub session: Box<dyn DatasetPersist>,
+    pub session: Box<dyn Session>,
 }
 
 impl Repository {
@@ -14,11 +14,11 @@ impl Repository {
         Repository { session }
     }
 
-    pub fn session(&self) -> &dyn DatasetPersist {
+    pub fn session(&self) -> &dyn Session {
         &*self.session
     }
 }
-fn establish_session(config: &'static Config) -> Box<dyn DatasetPersist> {
+fn establish_session(config: &'static Config) -> Box<dyn Session> {
     if config.use_db {
         Box::new(Postgres::new())
     } else {
