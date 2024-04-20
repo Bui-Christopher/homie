@@ -10,7 +10,7 @@ use axum::routing::get;
 use axum::{Json, Router};
 use homie_core::adapter::repository::{Config, Repository};
 use homie_core::domain::hpi::HpiData;
-use homie_core::domain::t_yield::TYield;
+use homie_core::domain::t_yield::{TYield, TYields};
 use serde::Deserialize;
 
 mod error;
@@ -59,9 +59,11 @@ async fn read_hpis(_param: Option<Query<HpiParam>>) -> Json<HpiData> {
 }
 
 async fn read_yields(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let mut t_yields = TYields::default();
     let t_yield = TYield::default();
     t_yield.read(state.repo.session(), "key").unwrap();
-    (StatusCode::OK, Json(t_yield))
+    t_yields.push(t_yield);
+    (StatusCode::OK, Json(t_yields))
 }
 
 #[derive(Debug)]
@@ -71,13 +73,41 @@ pub enum ApiError {
     RequestError { status_code: u16, message: String },
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize)]
+pub struct TYieldParam {
+    pub state_date: String,
+    pub end_date: String,
+    pub interval: String, // Per Year/Month/Day
+}
+
+#[derive(Debug, Deserialize)]
 pub struct HpiParam {
-    pub region: Option<usize>,
-    pub range_time: Option<usize>,
-    pub interval_time: Option<usize>,
-    // pub annual_change: Option<bool>,
-    // pub base_2000: Option<bool>,
+    pub region_type: String, // Prob some enum
+    pub region_id: String,
+    pub state_date: String,
+    pub end_date: String,
+    pub interval: String, // Per Year/Month/Day
+    pub annual_change: Option<bool>,
+    pub base_2000: Option<bool>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RegionParam {
+    pub region_type: String, // Prob some enum
+    pub region_id: String,
+    pub residents: bool,
+    pub businesses: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ZhviParam {
+    pub state_date: String,
+    pub end_date: String,
+    pub interval: String,    // Prob some enum
+    pub region_type: String, // Prob some enum
+    pub region_id: String,
+    pub percentile: String, // Prob some enum
+    pub home_type: String,  // Prob some enum
 }
 
 // pub async fn read_hpis(State(state): State, Json(req): Json<Request>) ->
