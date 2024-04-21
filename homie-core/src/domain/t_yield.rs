@@ -8,6 +8,7 @@ use crate::adapter::repository::Persist;
 use crate::domain::common::{to_ymd_date, CsvRecord};
 
 // TODO: Set yield_return as option because h15 has random null fields???
+// Or set as -1.0 if null instead of None
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TYield {
     TenYearYield { date: NaiveDate, yield_return: f32 },
