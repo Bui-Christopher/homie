@@ -15,6 +15,11 @@ pub struct Importer {
 
 impl Importer {
     pub fn new(_config: &'static Config) -> Self {
+        // TODO: Refactor reading from env with Config struct
+        // let t_yield_config = config.t_yield_config();
+        // let hpi_config = config.hpi_config();
+        // let zhvi_config = config.zhvi_config();
+
         let ten_year_yield_path = env::var("TEN_YEAR_YIELD_PATH").ok();
         let t_yield_config = TYieldConfig::new(ten_year_yield_path);
 
