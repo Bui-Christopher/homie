@@ -15,7 +15,6 @@ impl Importer {
 }
 
 impl Importer {
-    // TODO: Abstract this: read datasets by config
     pub fn read_and_import_datasets(&self) -> Result<(), Box<dyn Error>> {
         let _t_yield_data = read_fed_yields()?;
         let _hpi_data = read_fhfa_hpis()?;

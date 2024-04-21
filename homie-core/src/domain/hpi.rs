@@ -2,6 +2,7 @@ use std::error::Error;
 
 use serde::{Deserialize, Serialize};
 
+use crate::adapter::repository::Persist;
 use crate::domain::common::CsvRecord;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -34,15 +35,32 @@ pub struct HpiData {
 pub type RegionHPIs = Vec<RegionHPI>;
 
 pub trait HpiPersist: Send + Sync {
-    // fn create_hpi(&self, hpi: &RegionHPI) -> Result<bool, Box<dyn Error>>;
+    fn create_hpi(&self, hpi: &RegionHPI) -> Result<bool, Box<dyn Error>>;
     fn read_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
-    // fn update_hpi(&self, hpi: &RegionHPI) -> Result<bool, Box<dyn Error>>;
-    // fn delete_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    fn update_hpi(&self, hpi: &RegionHPI) -> Result<bool, Box<dyn Error>>;
+    fn delete_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+}
+
+impl RegionHPI {
+    pub fn create(&self, client: &dyn Persist) -> Result<bool, Box<dyn Error>> {
+        client.create_hpi(self)
+    }
+
+    pub fn read(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+        client.read_hpi_by_id(id)
+    }
+
+    pub fn update(&self, client: &dyn Persist) -> Result<bool, Box<dyn Error>> {
+        client.update_hpi(self)
+    }
+
+    pub fn delete(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+        client.delete_hpi_by_id(id)
+    }
 }
 
 // TODO:
-// impl From<Entry> for ZipHPI
-// impl From<Entry> for CountyHPI
+// impl From<Entry> for RegionHPI
 // Unit tests
 
 pub fn read_fhfa_hpis() -> Result<HpiData, Box<dyn Error>> {

@@ -1,10 +1,12 @@
 use self::database::postgres::PostgresClient;
 use crate::adapter::repository::database::http::HttpClient;
+use crate::domain::hpi::HpiPersist;
 use crate::domain::t_yield::TYieldPersist;
+use crate::domain::zhvi::ZhviPersist;
 
 pub mod database;
 
-pub trait Persist: TYieldPersist {}
+pub trait Persist: HpiPersist + TYieldPersist + ZhviPersist {}
 
 pub struct Repository {
     client: Box<dyn Persist>,
@@ -35,6 +37,7 @@ impl Repository {
 }
 
 // TODO: Refactor out
+// Maybe create RepositoryConfig trait
 pub struct Config {
     use_db: bool,
 }

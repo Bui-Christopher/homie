@@ -20,15 +20,27 @@ pub struct TYieldData {
 pub type TYields = Vec<TYield>;
 
 pub trait TYieldPersist: Send + Sync {
-    // fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
+    fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
     fn read_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
-    // fn update_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
-    // fn delete_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    fn update_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
+    fn delete_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
 }
 
 impl TYield {
+    pub fn create(&self, client: &dyn Persist) -> Result<bool, Box<dyn Error>> {
+        client.create_t_yield(self)
+    }
+
     pub fn read(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
         client.read_t_yield_by_id(id)
+    }
+
+    pub fn update(&self, client: &dyn Persist) -> Result<bool, Box<dyn Error>> {
+        client.update_t_yield(self)
+    }
+
+    pub fn delete(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+        client.delete_t_yield_by_id(id)
     }
 }
 

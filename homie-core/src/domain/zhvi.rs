@@ -3,6 +3,7 @@ use std::error::Error;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
+use crate::adapter::repository::Persist;
 use crate::domain::common::{to_ymd_date, CsvRecord};
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Region {
@@ -54,10 +55,28 @@ pub struct ZHVIData {
 }
 
 pub trait ZhviPersist: Send + Sync {
-    // fn create_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>>;
+    fn create_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>>;
     fn read_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
-    // fn update_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>>;
-    // fn delete_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    fn update_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>>;
+    fn delete_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+}
+
+impl Zhvi {
+    pub fn create(&self, client: &dyn Persist) -> Result<bool, Box<dyn Error>> {
+        client.create_zhvi(self)
+    }
+
+    pub fn read(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+        client.read_zhvi_by_id(id)
+    }
+
+    pub fn update(&self, client: &dyn Persist) -> Result<bool, Box<dyn Error>> {
+        client.update_zhvi(self)
+    }
+
+    pub fn delete(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+        client.delete_zhvi_by_id(id)
+    }
 }
 
 // TODO:
