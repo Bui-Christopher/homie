@@ -27,9 +27,23 @@ pub enum RegionHPI {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct HpiData {
-    pub three_zip_hpis: RegionHPIs,
-    pub five_zip_hpis: RegionHPIs,
-    pub county_hpis: RegionHPIs,
+    three_zip_hpis: RegionHPIs,
+    five_zip_hpis: RegionHPIs,
+    county_hpis: RegionHPIs,
+}
+
+impl HpiData {
+    pub fn three_zip_hpis(&self) -> &RegionHPIs {
+        &self.three_zip_hpis
+    }
+
+    pub fn five_zip_hpis(&self) -> &RegionHPIs {
+        &self.five_zip_hpis
+    }
+
+    pub fn county_hpis(&self) -> &RegionHPIs {
+        &self.county_hpis
+    }
 }
 
 pub type RegionHPIs = Vec<RegionHPI>;
@@ -63,15 +77,50 @@ impl RegionHPI {
 // impl From<Entry> for RegionHPI
 // Unit tests
 
-pub fn read_fhfa_hpis() -> Result<HpiData, Box<dyn Error>> {
-    let three_zip_hpis = read_three_zip_fhfa_hpis()?;
-    let five_zip_hpis = read_five_zip_fhfa_hpis()?;
-    let county_hpis = read_county_fhfa_hpis()?;
-    Ok(HpiData {
-        three_zip_hpis,
-        five_zip_hpis,
-        county_hpis,
-    })
+pub struct HpiConfig {
+    three_zip_hpis_path: Option<String>,
+    five_zip_hpis_path: Option<String>,
+    county_hpis_path: Option<String>,
+}
+
+impl HpiConfig {
+    pub fn new(
+        three_zip_hpis_path: Option<String>,
+        five_zip_hpis_path: Option<String>,
+        county_hpis_path: Option<String>,
+    ) -> Self {
+        HpiConfig {
+            three_zip_hpis_path,
+            five_zip_hpis_path,
+            county_hpis_path,
+        }
+    }
+
+    fn has_three_zip_hpi_path(&self) -> bool {
+        self.three_zip_hpis_path.is_some()
+    }
+
+    fn has_five_zip_hpi_path(&self) -> bool {
+        self.five_zip_hpis_path.is_some()
+    }
+
+    fn has_county_hpi_path(&self) -> bool {
+        self.county_hpis_path.is_some()
+    }
+}
+
+pub fn read_fhfa_hpis(hpi_config: &HpiConfig) -> Result<HpiData, Box<dyn Error>> {
+    let mut hpi_data = HpiData::default();
+    if hpi_config.has_three_zip_hpi_path() {
+        hpi_data.three_zip_hpis = read_three_zip_fhfa_hpis()?;
+    }
+    if hpi_config.has_five_zip_hpi_path() {
+        hpi_data.five_zip_hpis = read_five_zip_fhfa_hpis()?;
+    }
+    if hpi_config.has_county_hpi_path() {
+        hpi_data.county_hpis = read_county_fhfa_hpis()?;
+    }
+    Ok(hpi_data)
 }
 
 fn read_three_zip_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {

@@ -47,11 +47,25 @@ pub struct Price {
 pub type Prices = Vec<Price>;
 pub type Zhvis = Vec<Zhvi>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ZHVIData {
-    pub all_homes_zhvis: Zhvis,
-    pub condo_coops_zhvis: Zhvis,
-    pub single_family_homes_zhvis: Zhvis,
+    all_homes_zhvis: Zhvis,
+    condo_coops_zhvis: Zhvis,
+    single_family_homes_zhvis: Zhvis,
+}
+
+impl ZHVIData {
+    pub fn all_homes_zhvis(&self) -> &Zhvis {
+        &self.all_homes_zhvis
+    }
+
+    pub fn condo_coops_zhvis(&self) -> &Zhvis {
+        &self.condo_coops_zhvis
+    }
+
+    pub fn single_family_homes_zhvis(&self) -> &Zhvis {
+        &self.single_family_homes_zhvis
+    }
 }
 
 pub trait ZhviPersist: Send + Sync {
@@ -87,50 +101,63 @@ impl Zhvi {
 // }
 // Unit Tests
 
-pub fn read_zillow_zhvis() -> Result<ZHVIData, Box<dyn Error>> {
-    let all_homes_zhvis = read_all_homes_zhvis()?;
+pub struct ZhviConfig {
+    mid_zip_all_homes_path: Option<String>,
+    mid_city_all_homes_path: Option<String>,
+    mid_county_all_homes_path: Option<String>,
+}
+
+impl ZhviConfig {
+    pub fn new(
+        mid_zip_all_homes_path: Option<String>,
+        mid_city_all_homes_path: Option<String>,
+        mid_county_all_homes_path: Option<String>,
+    ) -> Self {
+        ZhviConfig {
+            mid_zip_all_homes_path,
+            mid_city_all_homes_path,
+            mid_county_all_homes_path,
+        }
+    }
+
+    fn has_mid_zip_all_homes_path(&self) -> bool {
+        self.mid_zip_all_homes_path.is_some()
+    }
+
+    fn has_mid_city_all_homes_path(&self) -> bool {
+        self.mid_city_all_homes_path.is_some()
+    }
+
+    fn has_mid_county_all_homes_path(&self) -> bool {
+        self.mid_county_all_homes_path.is_some()
+    }
+}
+
+//     if hpi_config.has_county_hpi_path() {
+//         hpi_data.county_hpis = read_county_fhfa_hpis()?;
+//     }
+pub fn read_zillow_zhvis(zhvi_config: &ZhviConfig) -> Result<ZHVIData, Box<dyn Error>> {
+    let zhvi_data = ZHVIData {
+        all_homes_zhvis: read_all_homes_zhvis(zhvi_config)?,
+        ..Default::default()
+    };
     // let condo_coops_zhvis = read_condo_coops_zhvis()?;
     // let single_family_homes_zhvis = read_single_family_homes_zhvis()?;
 
-    // TODO: Delete (for testing)
-    let condo_coops_zhvis = vec![];
-    let single_family_homes_zhvis = vec![];
-
-    Ok(ZHVIData {
-        all_homes_zhvis,
-        condo_coops_zhvis,
-        single_family_homes_zhvis,
-    })
+    Ok(zhvi_data)
 }
 
-fn read_all_homes_zhvis() -> Result<Zhvis, Box<dyn Error>> {
-    let mut all_homes = vec![];
-    let mut mid_city_all_homes = read_mid_city_all_homes()?;
-    let mut mid_county_all_homes = read_mid_county_all_homes()?;
-    let mut mid_zip_all_homes = read_mid_zip_all_homes()?;
-
-    // TODO: Refactor into unit test
-    // println!("Mid City: First {:?}", mid_city_all_homes.first().unwrap());
-    // println!("Mid City: Last {:?}", mid_city_all_homes.last().unwrap());
-    //
-    // println!(
-    //     "Mid County: First {:?}",
-    //     mid_county_all_homes.first().unwrap()
-    // );
-    // println!(
-    //     "Mid County: Last {:?}",
-    //     mid_county_all_homes.last().unwrap()
-    // );
-    //
-    // println!(
-    //     "Mid Zipcode: First {:?}",
-    //     mid_zip_all_homes.first().unwrap()
-    // );
-    // println!("Mid Zipcode: Last {:?}", mid_zip_all_homes.last().unwrap());
-
-    all_homes.append(&mut mid_city_all_homes);
-    all_homes.append(&mut mid_county_all_homes);
-    all_homes.append(&mut mid_zip_all_homes);
+fn read_all_homes_zhvis(zhvi_config: &ZhviConfig) -> Result<Zhvis, Box<dyn Error>> {
+    let mut all_homes = Zhvis::default();
+    if zhvi_config.has_mid_zip_all_homes_path() {
+        all_homes.append(&mut read_mid_zip_all_homes()?);
+    }
+    if zhvi_config.has_mid_city_all_homes_path() {
+        all_homes.append(&mut read_mid_city_all_homes()?);
+    }
+    if zhvi_config.has_mid_county_all_homes_path() {
+        all_homes.append(&mut read_mid_county_all_homes()?);
+    }
     Ok(all_homes)
 }
 
@@ -253,11 +280,3 @@ fn read_mid_zip_all_homes() -> Result<Zhvis, Box<dyn Error>> {
 
     Ok(mid_all_homes)
 }
-
-// fn read_condo_coops_zhvis() -> Result<Zhvis, Box<dyn Error>> {
-//     todo!()
-// }
-//
-// fn read_single_family_homes_zhvis() -> Result<Zhvis, Box<dyn Error>> {
-//     todo!()
-// }

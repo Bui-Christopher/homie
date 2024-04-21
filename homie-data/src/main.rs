@@ -5,22 +5,20 @@ use std::sync::OnceLock;
 
 use homie_core::adapter::importer::Importer;
 use homie_core::adapter::repository::{Config, Repository};
-use homie_core::domain::t_yield::TYield;
+
+use crate::util::read_and_write_datasets;
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
+
+mod util;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let config = CONFIG.get_or_init(Config::load_config);
 
-    let _reader = Importer::new(config);
-    _reader.read_and_import_datasets()?;
-    let t_yield = TYield::default();
+    let importer = Importer::new(config);
+    let repository = Repository::new(config);
 
-    let postgres_writer = Repository::new(config);
-    t_yield.read(postgres_writer.session(), "key")?;
-
-    let file_writer = Repository::new(config);
-    t_yield.read(file_writer.session(), "key")?;
+    read_and_write_datasets(&importer, &repository)?;
 
     Ok(())
 }

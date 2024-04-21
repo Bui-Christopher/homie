@@ -12,9 +12,15 @@ pub enum TYield {
     TenYearYield { date: NaiveDate, yield_return: f32 },
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct TYieldData {
-    pub ten_year_yields: TYields,
+    ten_year_yields: TYields,
+}
+
+impl TYieldData {
+    pub fn ten_year_yields(&self) -> &TYields {
+        &self.ten_year_yields
+    }
 }
 
 pub type TYields = Vec<TYield>;
@@ -53,13 +59,32 @@ impl Default for TYield {
     }
 }
 
+pub struct TYieldConfig {
+    ten_year_yield_path: Option<String>,
+}
+
+impl TYieldConfig {
+    pub fn new(ten_year_yield_path: Option<String>) -> Self {
+        TYieldConfig {
+            ten_year_yield_path,
+        }
+    }
+
+    fn has_ten_year_yield_path(&self) -> bool {
+        self.ten_year_yield_path.is_some()
+    }
+}
+
 // TODO:
 // impl From<Entry> for TenTreasuryYield
 // Unit tests
 
-pub fn read_fed_yields() -> Result<TYieldData, Box<dyn Error>> {
-    let ten_year_yields = read_fed_ten_yields()?;
-    Ok(TYieldData { ten_year_yields })
+pub fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldData, Box<dyn Error>> {
+    let mut t_yield_data = TYieldData::default();
+    if t_yield_config.has_ten_year_yield_path() {
+        t_yield_data.ten_year_yields = read_fed_ten_yields()?;
+    }
+    Ok(t_yield_data)
 }
 
 fn read_fed_ten_yields() -> Result<TYields, Box<dyn Error>> {
