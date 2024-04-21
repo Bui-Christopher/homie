@@ -1,9 +1,9 @@
 use std::error::Error;
 
 use crate::adapter::repository::Persist;
-use crate::domain::hpi::{Hpi, HpiData, HpiPersist, RegionQuery};
-use crate::domain::t_yield::{TYield, TYieldData, TYieldPersist, TYieldQuery};
-use crate::domain::zhvi::{Zhvi, ZhviData, ZhviPersist, ZhviQuery};
+use crate::domain::hpi::{Hpi, HpiData, HpiPersist, HpiQuery, Hpis};
+use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
+use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviQuery, Zhvis};
 
 pub struct HttpClient;
 
@@ -42,9 +42,9 @@ impl HpiPersist for HttpClient {
         Ok(true)
     }
 
-    fn read_hpi_by_query(&self, query: &RegionQuery) -> Result<HpiData, Box<dyn Error>> {
+    fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Box<dyn Error>> {
         println!("Calling hpi read by: {:?} from HttpClient.", query);
-        Ok(HpiData::default())
+        Ok(HpiData::generate_dummy_data())
     }
 }
 
@@ -69,9 +69,9 @@ impl TYieldPersist for HttpClient {
         Ok(true)
     }
 
-    fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYieldData, Box<dyn Error>> {
+    fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYields, Box<dyn Error>> {
         println!("Calling t_yield read by: {:?} from HttpClient.", query);
-        Ok(TYieldData::default())
+        Ok(TYield::generate_dummy_data())
     }
 }
 
@@ -96,8 +96,8 @@ impl ZhviPersist for HttpClient {
         Ok(true)
     }
 
-    fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<ZhviData, Box<dyn Error>> {
+    fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {
         println!("Calling zhvi read by: {:?} from HttpClient.", query);
-        Ok(ZhviData::default())
+        Ok(Zhvi::generate_dummy_data())
     }
 }

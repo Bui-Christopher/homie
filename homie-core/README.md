@@ -1,4 +1,4 @@
 # homie-core
 
 ## Description
-This service is responsible for defining application models.
+This library is responsible for defining application domain and adapters.

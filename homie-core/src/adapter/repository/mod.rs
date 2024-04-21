@@ -44,6 +44,6 @@ pub struct Config {
 
 impl Config {
     pub fn load_config() -> Config {
-        Config { use_db: false }
+        Config { use_db: true }
     }
 }

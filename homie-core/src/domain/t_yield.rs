@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use chrono::NaiveDate;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use crate::adapter::repository::Persist;
@@ -33,7 +34,7 @@ pub trait TYieldPersist: Send + Sync {
     fn read_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
     fn update_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
     fn delete_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
-    fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYieldData, Box<dyn Error>>;
+    fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYields, Box<dyn Error>>;
 }
 
 impl TYield {
@@ -56,8 +57,29 @@ impl TYield {
     pub fn read_by_query(
         client: &dyn Persist,
         query: &TYieldQuery,
-    ) -> Result<TYieldData, Box<dyn Error>> {
+    ) -> Result<TYields, Box<dyn Error>> {
         client.read_t_yield_by_query(query)
+    }
+
+    // TODO: Delete
+    pub fn generate_dummy_data() -> Vec<TYield> {
+        let mut rng = rand::thread_rng();
+        let mut dummy_data = Vec::new();
+
+        // Generate dummy data for TenYearYield variant
+        for _ in 0..1 {
+            let date = NaiveDate::from_ymd_opt(
+                rng.gen_range(2020..=2020),
+                rng.gen_range(1..=12),
+                rng.gen_range(1..=28),
+            )
+            .unwrap();
+            let yield_return = rng.gen::<f32>();
+            let ten_year_yield = TYield::TenYearYield { date, yield_return };
+            dummy_data.push(ten_year_yield);
+        }
+
+        dummy_data
     }
 }
 

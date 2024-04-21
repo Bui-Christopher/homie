@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use crate::adapter::repository::Persist;
@@ -44,19 +45,46 @@ impl HpiData {
     pub fn county_hpis(&self) -> &Hpis {
         &self.county_hpis
     }
+
+    // TODO: Delete
+    pub fn generate_dummy_data() -> Vec<Hpi> {
+        let mut rng = rand::thread_rng();
+        let mut dummy_data = Vec::new();
+
+        // Generate dummy data for County variant
+        for _ in 0..2 {
+            let county = "Orange County".to_string();
+            let year = rng.gen_range(2000..=2022);
+            let hpi = Some(rng.gen::<f32>());
+            let annual_change = Some(rng.gen::<f32>());
+            let hpi_1990_base = None;
+            let hpi_2000_base = None;
+            let county_hpi = Hpi::County {
+                county,
+                year,
+                hpi,
+                annual_change,
+                hpi_1990_base,
+                hpi_2000_base,
+            };
+            dummy_data.push(county_hpi);
+        }
+
+        dummy_data
+    }
 }
 
 pub type Hpis = Vec<Hpi>;
 
 #[derive(Debug, Default)]
-pub struct RegionQuery {}
+pub struct HpiQuery {}
 
 pub trait HpiPersist: Send + Sync {
     fn create_hpi(&self, hpi: &Hpi) -> Result<bool, Box<dyn Error>>;
     fn read_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
     fn update_hpi(&self, hpi: &Hpi) -> Result<bool, Box<dyn Error>>;
     fn delete_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
-    fn read_hpi_by_query(&self, query: &RegionQuery) -> Result<HpiData, Box<dyn Error>>;
+    fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Box<dyn Error>>;
 }
 
 impl Hpi {
@@ -76,10 +104,7 @@ impl Hpi {
         client.delete_hpi_by_id(id)
     }
 
-    pub fn read_by_query(
-        client: &dyn Persist,
-        query: &RegionQuery,
-    ) -> Result<HpiData, Box<dyn Error>> {
+    pub fn read_by_query(client: &dyn Persist, query: &HpiQuery) -> Result<Hpis, Box<dyn Error>> {
         client.read_hpi_by_query(query)
     }
 }

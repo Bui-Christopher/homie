@@ -9,7 +9,7 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
 use homie_core::adapter::repository::{Config, Repository};
-use homie_core::domain::hpi::{Hpi, RegionQuery};
+use homie_core::domain::hpi::{Hpi, HpiQuery};
 use homie_core::domain::t_yield::{TYield, TYieldQuery};
 use homie_core::domain::zhvi::{Zhvi, ZhviQuery};
 use serde::{Deserialize, Serialize};
@@ -54,7 +54,7 @@ async fn read_hpis(
     param: Option<Query<HpiParam>>,
 ) -> impl IntoResponse {
     let Query(_param) = param.unwrap_or_default();
-    let res = Hpi::read_by_query(state.repo.session(), &RegionQuery::default()).unwrap();
+    let res = Hpi::read_by_query(state.repo.session(), &HpiQuery::default()).unwrap();
     (StatusCode::OK, Json(res))
 }
 

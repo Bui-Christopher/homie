@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use chrono::NaiveDate;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use crate::adapter::repository::Persist;
@@ -76,7 +77,7 @@ pub trait ZhviPersist: Send + Sync {
     fn read_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
     fn update_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>>;
     fn delete_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
-    fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<ZhviData, Box<dyn Error>>;
+    fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>>;
 }
 
 impl Zhvi {
@@ -96,12 +97,41 @@ impl Zhvi {
         client.delete_zhvi_by_id(id)
     }
 
-    pub fn read_by_query(
-        client: &dyn Persist,
-        query: &ZhviQuery,
-    ) -> Result<ZhviData, Box<dyn Error>> {
+    pub fn read_by_query(client: &dyn Persist, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {
         client.read_zhvi_by_query(query)
     }
+
+    // TODO: Delete
+    pub fn generate_dummy_data() -> Vec<Zhvi> {
+        let mut rng = rand::thread_rng();
+        let mut dummy_data = Vec::new();
+        for _ in 0..2 {
+            let prices = generate_dummy_prices(&mut rng);
+            let region = Region::County("Orange County".to_string());
+            let percentile = Percentile::Bottom;
+            let single_family_homes = Zhvi::SingleFamilyHomes {
+                prices,
+                region,
+                percentile,
+            };
+            dummy_data.push(single_family_homes);
+        }
+
+        dummy_data
+    }
+}
+
+// TODO: Delete
+fn generate_dummy_prices(rng: &mut impl Rng) -> Prices {
+    let mut prices = Vec::new();
+    for year in 2022..=2022 {
+        for month in 7..=12 {
+            let date = NaiveDate::from_ymd_opt(year, month, 1).unwrap();
+            let price = rng.gen_range(100_000.0..=1_000_000.0);
+            prices.push(Price { date, price });
+        }
+    }
+    prices
 }
 
 // TODO:
