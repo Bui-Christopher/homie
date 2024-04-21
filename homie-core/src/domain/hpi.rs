@@ -6,8 +6,8 @@ use crate::adapter::repository::Persist;
 use crate::domain::common::CsvRecord;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum RegionHPI {
-    CountyHPI {
+pub enum Hpi {
+    County {
         county: String,
         year: u32,
         hpi: Option<f32>,
@@ -15,7 +15,7 @@ pub enum RegionHPI {
         hpi_1990_base: Option<f32>,
         hpi_2000_base: Option<f32>,
     },
-    ZipcodeHPI {
+    Zipcode {
         zip: String,
         year: u32,
         hpi: Option<f32>,
@@ -27,40 +27,44 @@ pub enum RegionHPI {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct HpiData {
-    three_zip_hpis: RegionHPIs,
-    five_zip_hpis: RegionHPIs,
-    county_hpis: RegionHPIs,
+    three_zip_hpis: Hpis,
+    five_zip_hpis: Hpis,
+    county_hpis: Hpis,
 }
 
 impl HpiData {
-    pub fn three_zip_hpis(&self) -> &RegionHPIs {
+    pub fn three_zip_hpis(&self) -> &Hpis {
         &self.three_zip_hpis
     }
 
-    pub fn five_zip_hpis(&self) -> &RegionHPIs {
+    pub fn five_zip_hpis(&self) -> &Hpis {
         &self.five_zip_hpis
     }
 
-    pub fn county_hpis(&self) -> &RegionHPIs {
+    pub fn county_hpis(&self) -> &Hpis {
         &self.county_hpis
     }
 }
 
-pub type RegionHPIs = Vec<RegionHPI>;
+pub type Hpis = Vec<Hpi>;
+
+#[derive(Debug, Default)]
+pub struct RegionQuery {}
 
 pub trait HpiPersist: Send + Sync {
-    fn create_hpi(&self, hpi: &RegionHPI) -> Result<bool, Box<dyn Error>>;
+    fn create_hpi(&self, hpi: &Hpi) -> Result<bool, Box<dyn Error>>;
     fn read_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
-    fn update_hpi(&self, hpi: &RegionHPI) -> Result<bool, Box<dyn Error>>;
+    fn update_hpi(&self, hpi: &Hpi) -> Result<bool, Box<dyn Error>>;
     fn delete_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    fn read_hpi_by_query(&self, query: &RegionQuery) -> Result<HpiData, Box<dyn Error>>;
 }
 
-impl RegionHPI {
+impl Hpi {
     pub fn create(&self, client: &dyn Persist) -> Result<bool, Box<dyn Error>> {
         client.create_hpi(self)
     }
 
-    pub fn read(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+    pub fn read(client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
         client.read_hpi_by_id(id)
     }
 
@@ -68,8 +72,15 @@ impl RegionHPI {
         client.update_hpi(self)
     }
 
-    pub fn delete(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+    pub fn delete(client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
         client.delete_hpi_by_id(id)
+    }
+
+    pub fn read_by_query(
+        client: &dyn Persist,
+        query: &RegionQuery,
+    ) -> Result<HpiData, Box<dyn Error>> {
+        client.read_hpi_by_query(query)
     }
 }
 
@@ -123,7 +134,7 @@ pub fn read_fhfa_hpis(hpi_config: &HpiConfig) -> Result<HpiData, Box<dyn Error>>
     Ok(hpi_data)
 }
 
-fn read_three_zip_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
+fn read_three_zip_fhfa_hpis() -> Result<Hpis, Box<dyn Error>> {
     let three_zip_hpi = "datasets/fhfa-hpi/HPI_AT_BDL_ZIP3.csv";
 
     let mut rdr = csv::ReaderBuilder::new()
@@ -145,7 +156,7 @@ fn read_three_zip_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
             let hpi = entry.0[3].parse().ok();
             let hpi_1990_base = entry.0[4].parse().ok();
             let hpi_2000_base = entry.0[5].parse().ok();
-            RegionHPI::ZipcodeHPI {
+            Hpi::Zipcode {
                 zip,
                 year,
                 annual_change,
@@ -157,7 +168,7 @@ fn read_three_zip_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
         .collect())
 }
 
-fn read_five_zip_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
+fn read_five_zip_fhfa_hpis() -> Result<Hpis, Box<dyn Error>> {
     let three_zip_hpi = "datasets/fhfa-hpi/HPI_AT_BDL_ZIP5.csv";
 
     let mut rdr = csv::ReaderBuilder::new()
@@ -180,7 +191,7 @@ fn read_five_zip_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
             let hpi = entry.0[3].parse().ok();
             let hpi_1990_base = entry.0[4].parse().ok();
             let hpi_2000_base = entry.0[5].parse().ok();
-            RegionHPI::ZipcodeHPI {
+            Hpi::Zipcode {
                 zip,
                 year,
                 annual_change,
@@ -192,7 +203,7 @@ fn read_five_zip_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
         .collect())
 }
 
-fn read_county_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
+fn read_county_fhfa_hpis() -> Result<Hpis, Box<dyn Error>> {
     let three_zip_hpi = "datasets/fhfa-hpi/HPI_AT_BDL_county.csv";
 
     let mut rdr = csv::ReaderBuilder::new()
@@ -215,7 +226,7 @@ fn read_county_fhfa_hpis() -> Result<RegionHPIs, Box<dyn Error>> {
             let hpi = entry.0[5].parse().ok();
             let hpi_1990_base = entry.0[6].parse().ok();
             let hpi_2000_base = entry.0[7].parse().ok();
-            RegionHPI::CountyHPI {
+            Hpi::County {
                 county,
                 year,
                 annual_change,

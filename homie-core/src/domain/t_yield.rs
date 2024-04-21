@@ -25,11 +25,15 @@ impl TYieldData {
 
 pub type TYields = Vec<TYield>;
 
+#[derive(Debug, Default)]
+pub struct TYieldQuery {}
+
 pub trait TYieldPersist: Send + Sync {
     fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
     fn read_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
     fn update_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
     fn delete_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYieldData, Box<dyn Error>>;
 }
 
 impl TYield {
@@ -37,7 +41,7 @@ impl TYield {
         client.create_t_yield(self)
     }
 
-    pub fn read(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+    pub fn read(client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
         client.read_t_yield_by_id(id)
     }
 
@@ -45,8 +49,15 @@ impl TYield {
         client.update_t_yield(self)
     }
 
-    pub fn delete(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+    pub fn delete(client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
         client.delete_t_yield_by_id(id)
+    }
+
+    pub fn read_by_query(
+        client: &dyn Persist,
+        query: &TYieldQuery,
+    ) -> Result<TYieldData, Box<dyn Error>> {
+        client.read_t_yield_by_query(query)
     }
 }
 

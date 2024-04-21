@@ -9,9 +9,10 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
 use homie_core::adapter::repository::{Config, Repository};
-use homie_core::domain::hpi::HpiData;
-use homie_core::domain::t_yield::{TYield, TYields};
-use serde::Deserialize;
+use homie_core::domain::hpi::{Hpi, RegionQuery};
+use homie_core::domain::t_yield::{TYield, TYieldQuery};
+use homie_core::domain::zhvi::{Zhvi, ZhviQuery};
+use serde::{Deserialize, Serialize};
 
 mod error;
 
@@ -36,12 +37,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let app = Router::new()
         .route("/health", get(health))
-        .route("/zhvis", get(read_zhvis))
         .route("/hpis", get(read_hpis))
         .route("/yields", get(read_yields))
+        .route("/zhvis", get(read_zhvis))
         .with_state(state);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8080").await?;
-
     Ok(axum::serve(listener, app).await?)
 }
 
@@ -49,38 +49,35 @@ async fn health() -> &'static str {
     "Service is running."
 }
 
-async fn read_zhvis() -> impl IntoResponse {
-    let dummy = HpiData::default();
-    (StatusCode::OK, Json(dummy))
+async fn read_hpis(
+    State(state): State<Arc<AppState>>,
+    param: Option<Query<HpiParam>>,
+) -> impl IntoResponse {
+    let Query(_param) = param.unwrap_or_default();
+    let res = Hpi::read_by_query(state.repo.session(), &RegionQuery::default()).unwrap();
+    (StatusCode::OK, Json(res))
 }
 
-async fn read_hpis(_param: Option<Query<HpiParam>>) -> Json<HpiData> {
-    Json(HpiData::default())
+async fn read_yields(
+    State(state): State<Arc<AppState>>,
+    param: Option<Query<TYieldParam>>,
+) -> impl IntoResponse {
+    let Query(_param) = param.unwrap_or_default();
+    let res = TYield::read_by_query(state.repo.session(), &TYieldQuery::default()).unwrap();
+    (StatusCode::OK, Json(res))
 }
 
-async fn read_yields(State(state): State<Arc<AppState>>) -> impl IntoResponse {
-    let mut t_yields = TYields::default();
-    let t_yield = TYield::default();
-    t_yield.read(state.repo.session(), "key").unwrap();
-    t_yields.push(t_yield);
-    (StatusCode::OK, Json(t_yields))
+async fn read_zhvis(
+    State(state): State<Arc<AppState>>,
+    param: Option<Query<ZhviParam>>,
+) -> impl IntoResponse {
+    let Query(_param) = param.unwrap_or_default();
+    let res = Zhvi::read_by_query(state.repo.session(), &ZhviQuery::default()).unwrap();
+    (StatusCode::OK, Json(res))
 }
 
-#[derive(Debug)]
-pub enum ApiError {
-    AuthError { status_code: u16, message: String },
-    DbError { status_code: u16, message: String },
-    RequestError { status_code: u16, message: String },
-}
-
-#[derive(Debug, Deserialize)]
-pub struct TYieldParam {
-    pub state_date: String,
-    pub end_date: String,
-    pub interval: String, // Per Year/Month/Day
-}
-
-#[derive(Debug, Deserialize)]
+// TODO: Remove Serialize (testing)
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct HpiParam {
     pub region_type: String, // Prob some enum
     pub region_id: String,
@@ -91,15 +88,14 @@ pub struct HpiParam {
     pub base_2000: Option<bool>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct RegionParam {
-    pub region_type: String, // Prob some enum
-    pub region_id: String,
-    pub residents: bool,
-    pub businesses: bool,
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct TYieldParam {
+    pub state_date: String,
+    pub end_date: String,
+    pub interval: String, // Per Year/Month/Day
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct ZhviParam {
     pub state_date: String,
     pub end_date: String,
@@ -109,14 +105,3 @@ pub struct ZhviParam {
     pub percentile: String, // Prob some enum
     pub home_type: String,  // Prob some enum
 }
-
-// pub async fn read_hpis(State(state): State, Json(req): Json<Request>) ->
-// RespResult<()> {
-
-// TODO: Delete
-// Notes for later:
-// let tmp: Regions = regions
-//     .counties
-//     .into_iter()
-//     .filter(|region| region.city() == "IRVINE")
-//     .collect();

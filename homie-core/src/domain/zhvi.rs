@@ -48,13 +48,13 @@ pub type Prices = Vec<Price>;
 pub type Zhvis = Vec<Zhvi>;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct ZHVIData {
+pub struct ZhviData {
     all_homes_zhvis: Zhvis,
     condo_coops_zhvis: Zhvis,
     single_family_homes_zhvis: Zhvis,
 }
 
-impl ZHVIData {
+impl ZhviData {
     pub fn all_homes_zhvis(&self) -> &Zhvis {
         &self.all_homes_zhvis
     }
@@ -68,11 +68,15 @@ impl ZHVIData {
     }
 }
 
+#[derive(Debug, Default)]
+pub struct ZhviQuery {}
+
 pub trait ZhviPersist: Send + Sync {
     fn create_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>>;
     fn read_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
     fn update_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>>;
     fn delete_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<ZhviData, Box<dyn Error>>;
 }
 
 impl Zhvi {
@@ -80,7 +84,7 @@ impl Zhvi {
         client.create_zhvi(self)
     }
 
-    pub fn read(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+    pub fn read(client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
         client.read_zhvi_by_id(id)
     }
 
@@ -88,8 +92,15 @@ impl Zhvi {
         client.update_zhvi(self)
     }
 
-    pub fn delete(&self, client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
+    pub fn delete(client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
         client.delete_zhvi_by_id(id)
+    }
+
+    pub fn read_by_query(
+        client: &dyn Persist,
+        query: &ZhviQuery,
+    ) -> Result<ZhviData, Box<dyn Error>> {
+        client.read_zhvi_by_query(query)
     }
 }
 
@@ -133,11 +144,8 @@ impl ZhviConfig {
     }
 }
 
-//     if hpi_config.has_county_hpi_path() {
-//         hpi_data.county_hpis = read_county_fhfa_hpis()?;
-//     }
-pub fn read_zillow_zhvis(zhvi_config: &ZhviConfig) -> Result<ZHVIData, Box<dyn Error>> {
-    let zhvi_data = ZHVIData {
+pub fn read_zillow_zhvis(zhvi_config: &ZhviConfig) -> Result<ZhviData, Box<dyn Error>> {
+    let zhvi_data = ZhviData {
         all_homes_zhvis: read_all_homes_zhvis(zhvi_config)?,
         ..Default::default()
     };
