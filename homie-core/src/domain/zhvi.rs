@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::adapter::repository::Persist;
 use crate::domain::common::{to_ymd_date, CsvRecord};
+
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Region {
     Zipcode(String),
@@ -38,6 +39,17 @@ pub enum Zhvi {
         percentile: Percentile,
     },
 }
+
+// TODO: Refactor ZHVI
+// Use a single enum variant:
+// pub enum Zhvi {
+//     PriceIndex {
+//         prices: Prices,
+//         region: Region,
+//         percentile: Percentile,
+//         index_type: ZhviIndexType,
+//     },
+// }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Price {

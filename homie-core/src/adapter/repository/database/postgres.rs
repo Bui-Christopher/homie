@@ -1,21 +1,26 @@
+use std::env;
 use std::error::Error;
 
-use crate::adapter::repository::Persist;
+use sqlx::postgres::PgPoolOptions;
+use sqlx::{Pool, Postgres};
+
+use crate::adapter::repository::{Config, Persist};
 use crate::domain::hpi::{Hpi, HpiData, HpiPersist, HpiQuery, Hpis};
 use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
 use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviQuery, Zhvis};
 
-pub struct PostgresClient;
-
-impl PostgresClient {
-    pub fn new() -> Self {
-        PostgresClient {}
-    }
+pub struct PostgresClient {
+    pool: Pool<Postgres>,
 }
 
-impl Default for PostgresClient {
-    fn default() -> Self {
-        PostgresClient::new()
+impl PostgresClient {
+    pub async fn new(_config: &Config) -> Self {
+        let pool = PgPoolOptions::new()
+            .max_connections(5)
+            .connect(&env::var("DATABASE_URL").unwrap())
+            .await
+            .unwrap();
+        PostgresClient { pool }
     }
 }
 

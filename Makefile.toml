@@ -27,6 +27,12 @@ args = [
     "--nocapture",
 ]
 
+[tasks.local]
+command = "sh"
+args = [
+    "local_dev/run.sh",
+]
+
 [tasks.b]
 alias = "build"
 
@@ -35,3 +41,6 @@ alias = "test"
 
 [tasks.f]
 alias = "format"
+
+[tasks.l]
+alias = "local"

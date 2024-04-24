@@ -14,16 +14,16 @@ pub struct Repository {
 
 impl Repository {
     // Define a new function taking Config as a parameter
-    pub fn new(config: &Config) -> Self {
-        let client = Repository::establish_session(config);
+    pub async fn new(config: &Config) -> Self {
+        let client = Repository::establish_session(config).await;
         Repository { client }
     }
 
     // Method to establish session using the provided config
-    fn establish_session(config: &Config) -> Box<dyn Persist> {
+    async fn establish_session(config: &Config) -> Box<dyn Persist> {
         if config.use_db {
             println!("Using PostgreSQL client.");
-            Box::new(PostgresClient)
+            Box::new(PostgresClient::new(config).await)
         } else {
             println!("Using HTTP client.");
             Box::new(HttpClient)

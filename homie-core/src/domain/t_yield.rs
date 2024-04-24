@@ -107,6 +107,10 @@ impl TYieldConfig {
     fn has_ten_year_yield_path(&self) -> bool {
         self.ten_year_yield_path.is_some()
     }
+
+    fn ten_year_yield_path(&self) -> &str {
+        self.ten_year_yield_path.as_ref().unwrap()
+    }
 }
 
 // TODO:
@@ -116,14 +120,12 @@ impl TYieldConfig {
 pub fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldData, Box<dyn Error>> {
     let mut t_yield_data = TYieldData::default();
     if t_yield_config.has_ten_year_yield_path() {
-        t_yield_data.ten_year_yields = read_fed_ten_yields()?;
+        t_yield_data.ten_year_yields = read_fed_ten_yields(t_yield_config.ten_year_yield_path())?;
     }
     Ok(t_yield_data)
 }
 
-fn read_fed_ten_yields() -> Result<TYields, Box<dyn Error>> {
-    let fed_h15 = "datasets/fed-h15/FRB_H15.csv";
-
+fn read_fed_ten_yields(fed_h15: &str) -> Result<TYields, Box<dyn Error>> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(fed_h15)?;
