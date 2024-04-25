@@ -32,25 +32,26 @@ impl PostgresClient {
 
 impl Persist for PostgresClient {}
 
+#[async_trait]
 impl HpiPersist for PostgresClient {
-    fn create_hpi(&self, hpi: &Hpi) -> Result<bool, Box<dyn Error>> {
+    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), Box<dyn Error>> {
         println!("Calling hpi create for: {:?} from PostgresClient.", hpi);
-        Ok(true)
+        Ok((String::default(), i32::default()))
     }
 
-    fn read_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Calling hpi read with id: {id} from PostgresClient.");
-        Ok(true)
+    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Box<dyn Error>> {
+        println!("Calling hpi read with id: {:?} from PostgresClient.", id);
+        Ok(Hpi::default())
     }
 
-    fn update_hpi(&self, hpi: &Hpi) -> Result<bool, Box<dyn Error>> {
+    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Box<dyn Error>> {
         println!("Calling hpi update for: {:?} from PostgresClient.", hpi);
-        Ok(true)
+        Ok(())
     }
 
-    fn delete_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Calling hpi delete with id: {id} from PostgresClient.");
-        Ok(true)
+    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Box<dyn Error>> {
+        println!("Calling hpi delete with id: {:?} from PostgresClient.", id);
+        Ok(())
     }
 
     fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Box<dyn Error>> {
@@ -66,18 +67,29 @@ impl TYieldPersist for PostgresClient {
         &self,
         t_yield: &TYield,
     ) -> Result<(String, NaiveDate), Box<dyn Error>> {
-        // TODO: Refactor. Separate calls because of yield_return: Option<f32> issues
-        let (term, date) = match t_yield.yield_return() {
-            Some(_) => self.create_some_t_yield(t_yield).await?,
-            None => self.create_empty_t_yield(t_yield).await?,
-        };
-        Ok((term, date))
+        let record = query!(
+            r#"
+            INSERT INTO tyields
+            (term, date, yield_return)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (term, date) DO NOTHING
+            RETURNING term, date;
+            "#,
+            t_yield.term(),
+            t_yield.date(),
+            *t_yield.yield_return() as Option<f32>
+        )
+        .fetch_one(self.pool())
+        .await?;
+        Ok((record.term, record.date))
     }
 
     async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Box<dyn Error>> {
         let record = query_as!(
             TYield,
-            r#"SELECT * FROM tyields WHERE term = $1 AND date = $2"#,
+            r#"
+            SELECT * FROM tyields
+            WHERE term = $1 AND date = $2"#,
             id.0,
             id.1,
         )
@@ -107,8 +119,8 @@ impl TYieldPersist for PostgresClient {
     async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), Box<dyn Error>> {
         query!(
             r#"
-                DELETE FROM tyields
-                WHERE term = $1 AND date = $2
+            DELETE FROM tyields
+            WHERE term = $1 AND date = $2
             "#,
             id.0,
             id.1,
@@ -152,49 +164,6 @@ impl TYieldPersist for PostgresClient {
             .await?;
         // .unwrap_or_else(|_| Vec::new());
         Ok(yields)
-    }
-}
-
-impl PostgresClient {
-    async fn create_some_t_yield(
-        &self,
-        t_yield: &TYield,
-    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
-        let record = query!(
-            r#"
-            INSERT INTO tyields
-            (term, date, yield_return)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (term, date) DO NOTHING
-            RETURNING term, date;
-            "#,
-            t_yield.term(),
-            t_yield.date(),
-            t_yield.yield_return() as _
-        )
-        .fetch_one(self.pool())
-        .await?;
-        Ok((record.term, record.date))
-    }
-
-    async fn create_empty_t_yield(
-        &self,
-        t_yield: &TYield,
-    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
-        let record = query!(
-            r#"
-            INSERT INTO tyields
-            (term, date)
-            VALUES ($1, $2)
-            ON CONFLICT (term, date) DO NOTHING
-            RETURNING term, date
-            "#,
-            t_yield.term(),
-            t_yield.date(),
-        )
-        .fetch_one(self.pool())
-        .await?;
-        Ok((record.term, record.date))
     }
 }
 

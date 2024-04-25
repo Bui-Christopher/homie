@@ -24,25 +24,26 @@ impl Default for HttpClient {
 
 impl Persist for HttpClient {}
 
+#[async_trait]
 impl HpiPersist for HttpClient {
-    fn create_hpi(&self, hpi: &Hpi) -> Result<bool, Box<dyn Error>> {
+    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), Box<dyn Error>> {
         println!("Calling hpi create for: {:?} from HttpClient.", hpi);
-        Ok(true)
+        Ok((String::default(), i32::default()))
     }
 
-    fn read_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Calling hpi read with id: {id} from HttpClient.");
-        Ok(true)
+    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Box<dyn Error>> {
+        println!("Calling hpi read with id: {:?} from HttpClient.", id);
+        Ok(Hpi::default())
     }
 
-    fn update_hpi(&self, hpi: &Hpi) -> Result<bool, Box<dyn Error>> {
+    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Box<dyn Error>> {
         println!("Calling hpi update for: {:?} from HttpClient.", hpi);
-        Ok(true)
+        Ok(())
     }
 
-    fn delete_hpi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Calling hpi delete with id: {id} from HttpClient.");
-        Ok(true)
+    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Box<dyn Error>> {
+        println!("Calling hpi delete with id: {:?} from HttpClient.", id);
+        Ok(())
     }
 
     fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Box<dyn Error>> {

@@ -8,7 +8,7 @@ pub(crate) async fn read_and_write_datasets(
     repo: &Repository,
 ) -> Result<(), Box<dyn Error>> {
     read_and_write_t_yields(importer, repo).await?;
-    read_and_write_hpi(importer, repo)?;
+    read_and_write_hpi(importer, repo).await?;
     read_and_write_region(importer, repo)?;
     read_and_write_zhvi(importer, repo)?;
 
@@ -51,19 +51,19 @@ async fn read_and_write_t_yields(
     Ok(())
 }
 
-fn read_and_write_hpi(importer: &Importer, repo: &Repository) -> Result<(), Box<dyn Error>> {
+async fn read_and_write_hpi(importer: &Importer, repo: &Repository) -> Result<(), Box<dyn Error>> {
     let hpi_data = importer.read_fhfa_hpis()?;
 
     for hpi in hpi_data.three_zip_hpis() {
-        hpi.create(repo.session())?;
+        hpi.create(repo.session()).await?;
     }
 
     for hpi in hpi_data.five_zip_hpis() {
-        hpi.create(repo.session())?;
+        hpi.create(repo.session()).await?;
     }
 
     for hpi in hpi_data.county_hpis() {
-        hpi.create(repo.session())?;
+        hpi.create(repo.session()).await?;
     }
 
     Ok(())

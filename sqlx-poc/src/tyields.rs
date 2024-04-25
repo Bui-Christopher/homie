@@ -36,7 +36,7 @@ impl TYield {
     pub fn new(date: (i32, u32, u32)) -> Self {
         let term = "TenYear".to_string();
         let date = NaiveDate::from_ymd_opt(date.0, date.1, date.2).unwrap();
-        let yield_return = Some(f32::default());
+        let yield_return = None;
         Self {
             term,
             date,
@@ -47,7 +47,7 @@ impl TYield {
     pub fn default() -> Self {
         let term = "TenYear".to_string();
         let date = Local::now().date_naive();
-        let yield_return = Some(f32::default());
+        let yield_return = None;
         Self {
             term,
             date,
@@ -63,18 +63,6 @@ impl TYield {
         &self,
         pool: &Pool<Postgres>,
     ) -> Result<(String, NaiveDate), Box<dyn Error>> {
-        // TODO: Find a cleaner way to insert yield_return: Option<f32>
-        let (term, date) = match self.yield_return {
-            Some(_) => self.create_some_t_yield(pool).await?,
-            None => self.create_empty_t_yield(pool).await?,
-        };
-        Ok((term, date))
-    }
-
-    async fn create_some_t_yield(
-        &self,
-        pool: &Pool<Postgres>,
-    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
         let record = query!(
             r#"
             INSERT INTO tyields
@@ -85,27 +73,7 @@ impl TYield {
             "#,
             &self.term,
             &self.date,
-            &self.yield_return as _
-        )
-        .fetch_one(pool)
-        .await?;
-        Ok((record.term, record.date))
-    }
-
-    async fn create_empty_t_yield(
-        &self,
-        pool: &Pool<Postgres>,
-    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
-        let record = query!(
-            r#"
-            INSERT INTO tyields
-            (term, date)
-            VALUES ($1, $2)
-            ON CONFLICT (term, date) DO NOTHING
-            RETURNING term, date
-            "#,
-            &self.term,
-            &self.date,
+            self.yield_return as Option<f32>,
         )
         .fetch_one(pool)
         .await?;
@@ -209,4 +177,36 @@ impl TYield {
         // .unwrap_or_else(|_| Vec::new());
         Ok(yields)
     }
+}
+
+pub async fn test_t_yields(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
+    // Create
+    let t_yield = TYield::default();
+    t_yield.create(pool).await?;
+
+    let t_yield = TYield::new((2001, 1, 1));
+    let (term, date) = t_yield.create(pool).await?;
+
+    // Read
+    let mut t_yield = TYield::read_by_id(pool, (&term, &date)).await?;
+    println!("Reading from postgres: {:?}", t_yield);
+    println!(
+        "There are {} element(s) in the DB",
+        TYield::count_t_yields(pool).await?
+    );
+
+    t_yield.set_yield(None);
+    t_yield.update(pool).await?;
+    println!("Reading the updated t_yield from postgres: {:?}", t_yield);
+
+    let t_yields = TYield::read_by_query(pool, TYieldQuery::new()).await?;
+    println!("There queried t_yields are: {:?}", t_yields);
+
+    // Delete
+    TYield::delete_by_id(pool, &term, &date).await?;
+    println!(
+        "There are now {} element(s) in the DB",
+        TYield::count_t_yields(pool).await?
+    );
+    Ok(())
 }
