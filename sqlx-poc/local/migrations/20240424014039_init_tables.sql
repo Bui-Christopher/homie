@@ -1,5 +1,6 @@
 CREATE TABLE tyields (
-    id UUID PRIMARY KEY,
+    term VARCHAR(20) NOT NULL,
     date DATE NOT NULL,
-    yield_return FLOAT4
+    yield_return FLOAT4,
+    PRIMARY KEY (date, term)
 );

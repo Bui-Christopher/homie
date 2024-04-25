@@ -4,11 +4,10 @@ use chrono::{Local, NaiveDate};
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use sqlx::{query, query_as, Pool, Postgres};
-use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
 pub struct TYield {
-    id: Uuid,
+    term: String,
     date: NaiveDate,
     yield_return: Option<f32>,
 }
@@ -21,7 +20,10 @@ pub struct TYieldQuery {
 }
 
 impl TYieldQuery {
-    pub fn new(start_date: NaiveDate, end_date: NaiveDate, interval_date: String) -> Self {
+    pub fn new() -> Self {
+        let start_date = NaiveDate::from_ymd_opt(2000, 1, 1).unwrap();
+        let end_date = NaiveDate::from_ymd_opt(2024, 12, 31).unwrap();
+        let interval_date = "Month".to_string();
         Self {
             start_date,
             end_date,
@@ -31,12 +33,23 @@ impl TYieldQuery {
 }
 
 impl TYield {
-    pub fn new() -> Self {
-        let id = Uuid::new_v4();
+    pub fn new(date: (i32, u32, u32)) -> Self {
+        let term = "TenYear".to_string();
+        let date = NaiveDate::from_ymd_opt(date.0, date.1, date.2).unwrap();
+        let yield_return = Some(f32::default());
+        Self {
+            term,
+            date,
+            yield_return,
+        }
+    }
+
+    pub fn default() -> Self {
+        let term = "TenYear".to_string();
         let date = Local::now().date_naive();
         let yield_return = Some(f32::default());
         Self {
-            id,
+            term,
             date,
             yield_return,
         }
@@ -46,59 +59,72 @@ impl TYield {
         self.yield_return = new_yield
     }
 
-    pub fn set_to_uncalling_year(&mut self) {
-        self.date = NaiveDate::from_ymd_opt(1999, 1, 12).unwrap()
-    }
-
-    pub async fn create(&self, pool: &Pool<Postgres>) -> Result<Uuid, Box<dyn Error>> {
+    pub async fn create(
+        &self,
+        pool: &Pool<Postgres>,
+    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
         // TODO: Find a cleaner way to insert yield_return: Option<f32>
-        let uuid = match self.yield_return {
+        let (term, date) = match self.yield_return {
             Some(_) => self.create_some_t_yield(pool).await?,
             None => self.create_empty_t_yield(pool).await?,
         };
-        Ok(uuid)
+        Ok((term, date))
     }
 
-    async fn create_some_t_yield(&self, pool: &Pool<Postgres>) -> Result<Uuid, Box<dyn Error>> {
+    async fn create_some_t_yield(
+        &self,
+        pool: &Pool<Postgres>,
+    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
         let record = query!(
             r#"
             INSERT INTO tyields
-            (id, date, yield_return)
+            (term, date, yield_return)
             VALUES ($1, $2, $3)
-            ON CONFLICT (id) DO NOTHING
-            RETURNING id
+            ON CONFLICT (term, date) DO NOTHING
+            RETURNING term, date;
             "#,
-            &self.id,
+            &self.term,
             &self.date,
             &self.yield_return as _
         )
         .fetch_one(pool)
         .await?;
-        Ok(record.id)
+        Ok((record.term, record.date))
     }
 
-    async fn create_empty_t_yield(&self, pool: &Pool<Postgres>) -> Result<Uuid, Box<dyn Error>> {
+    async fn create_empty_t_yield(
+        &self,
+        pool: &Pool<Postgres>,
+    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
         let record = query!(
             r#"
             INSERT INTO tyields
-            (id, date)
+            (term, date)
             VALUES ($1, $2)
-            ON CONFLICT (id) DO NOTHING
-            RETURNING id
+            ON CONFLICT (term, date) DO NOTHING
+            RETURNING term, date
             "#,
-            &self.id,
+            &self.term,
             &self.date,
         )
         .fetch_one(pool)
         .await?;
-        Ok(record.id)
+        Ok((record.term, record.date))
     }
 
-    pub async fn read_by_id(pool: &Pool<Postgres>, uuid: &Uuid) -> Result<TYield, Box<dyn Error>> {
-        let t_yield = query_as!(TYield, r#"SELECT * FROM tyields where id = ($1)"#, uuid)
-            .fetch_one(pool)
-            .await?;
-        Ok(t_yield)
+    pub async fn read_by_id(
+        pool: &Pool<Postgres>,
+        id: (&str, &NaiveDate),
+    ) -> Result<TYield, Box<dyn Error>> {
+        let record = query_as!(
+            TYield,
+            r#"SELECT * FROM tyields WHERE term = $1 AND date = $2"#,
+            id.0,
+            id.1,
+        )
+        .fetch_one(pool)
+        .await?;
+        Ok(record)
     }
 
     pub async fn count_t_yields(pool: &Pool<Postgres>) -> Result<usize, Box<dyn Error>> {
@@ -113,96 +139,74 @@ impl TYield {
         Ok(record.count.unwrap_or_default() as usize)
     }
 
-    pub async fn update(&self, pool: &Pool<Postgres>) -> Result<Uuid, Box<dyn Error>> {
-        let uuid = match self.yield_return {
-            Some(_) => self.update_with_yield_return(pool).await?,
-            None => self.update_without_yield_return(pool).await?,
-        };
-        Ok(uuid)
-    }
-
-    async fn update_with_yield_return(
+    pub async fn update(
         &self,
         pool: &Pool<Postgres>,
-    ) -> Result<Uuid, Box<dyn Error>> {
+    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
         let record = query!(
             r#"
             UPDATE tyields
-            SET date = $2, yield_return = $3
-            WHERE id = $1
-            RETURNING id
+            SET yield_return = $3
+            WHERE term = $1 AND date = $2
+            RETURNING term, date
             "#,
-            &self.id,
+            &self.term,
             &self.date,
             &self.yield_return as _,
         )
         .fetch_one(pool)
         .await?;
-        Ok(record.id)
+        Ok((record.term, record.date))
     }
 
-    async fn update_without_yield_return(
-        &self,
+    pub async fn delete_by_id(
         pool: &Pool<Postgres>,
-    ) -> Result<Uuid, Box<dyn Error>> {
-        let record = query!(
-            r#"
-            UPDATE tyields
-            SET date = $2
-            WHERE id = $1
-            RETURNING id
-            "#,
-            &self.id,
-            &self.date,
-        )
-        .fetch_one(pool)
-        .await?;
-        Ok(record.id)
-    }
-
-    pub async fn delete_by_id(pool: &Pool<Postgres>, uuid: &Uuid) -> Result<Uuid, Box<dyn Error>> {
+        term: &str,
+        date: &NaiveDate,
+    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
         let record = query!(
             r#"
                 DELETE FROM tyields
-                WHERE id = $1
-                RETURNING id;
+                WHERE term = $1 AND date = $2
+                RETURNING term, date;
             "#,
-            &uuid,
+            &term,
+            &date,
         )
         .fetch_one(pool)
         .await?;
-        Ok(record.id)
+        Ok((record.term, record.date))
     }
 
     pub async fn read_by_query(
         pool: &sqlx::PgPool,
         t_yield_query: TYieldQuery,
     ) -> Result<Vec<TYield>, sqlx::Error> {
-        let query_str = match t_yield_query.interval_date.as_str() {
+        let query = match t_yield_query.interval_date.as_str() {
             "Day" => {
-                "SELECT id, CAST(date AS DATE) AS date, CAST(AVG(yield_return) AS FLOAT4) AS \
-                 yield_return FROM tyields WHERE date BETWEEN $1 AND $2 GROUP BY id, date ORDER BY \
-                 date"
+                "SELECT term, CAST(date AS DATE) AS date, CAST(AVG(yield_return) AS FLOAT4) AS \
+                 yield_return FROM tyields WHERE date BETWEEN $1 AND $2 GROUP BY term, date ORDER \
+                 BY date"
             }
             "Month" => {
-                "SELECT id, CAST(DATE_TRUNC('month', date) AS DATE) AS date, \
+                "SELECT term, CAST(DATE_TRUNC('month', date) AS DATE) AS date, \
                  CAST(AVG(yield_return) AS FLOAT4) AS yield_return FROM tyields WHERE date BETWEEN \
-                 $1 AND $2 GROUP BY id, DATE_TRUNC('month', date) ORDER BY date"
+                 $1 AND $2 GROUP BY term, DATE_TRUNC('month', date) ORDER BY date"
             }
             "Year" => {
-                "SELECT id, CAST(DATE_TRUNC('year', date) AS DATE) AS date, CAST(AVG(yield_return) \
-                 AS FLOAT4) AS yield_return FROM tyields WHERE date BETWEEN $1 AND $2 GROUP BY id, \
-                 DATE_TRUNC('year', date) ORDER BY date"
+                "SELECT term, CAST(DATE_TRUNC('year', date) AS DATE) AS date, \
+                 CAST(AVG(yield_return) AS FLOAT4) AS yield_return FROM tyields WHERE date BETWEEN \
+                 $1 AND $2 GROUP BY term, DATE_TRUNC('year', date) ORDER BY date"
             }
             _ => return Err(sqlx::Error::Protocol("Invalid interval_date".into())),
         };
 
-        let yields: Vec<TYield> = sqlx::query_as(query_str)
+        let yields: Vec<TYield> = query_as(query)
             .bind(t_yield_query.start_date)
             .bind(t_yield_query.end_date)
             .fetch_all(pool)
             .await?;
-
+        // .unwrap_or_else(|_| Vec::new());
         Ok(yields)
     }
 }
