@@ -7,9 +7,9 @@ use sqlx::{query, query_as, Pool, Postgres};
 
 #[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
 pub struct TYield {
-    term: String,
-    date: NaiveDate,
-    yield_return: Option<f32>,
+    pub term: String,
+    pub date: NaiveDate,
+    pub yield_return: Option<f32>,
 }
 
 #[derive(Debug)]

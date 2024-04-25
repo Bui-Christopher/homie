@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use async_trait::async_trait;
+use chrono::NaiveDate;
 
 use crate::adapter::repository::Persist;
 use crate::domain::hpi::{Hpi, HpiData, HpiPersist, HpiQuery, Hpis};
@@ -52,27 +53,30 @@ impl HpiPersist for HttpClient {
 
 #[async_trait]
 impl TYieldPersist for HttpClient {
-    async fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>> {
+    async fn create_t_yield(
+        &self,
+        t_yield: &TYield,
+    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
         println!("Calling t_yield create for: {:?} from HttpClient.", t_yield);
-        Ok(true)
+        Ok((String::default(), NaiveDate::default()))
     }
 
-    fn read_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Calling t_yield read with id: {id} from HttpClient.");
-        Ok(true)
+    async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Box<dyn Error>> {
+        println!("Calling t_yield read with id: {:?} from HttpClient.", id);
+        Ok(TYield::default())
     }
 
-    fn update_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>> {
+    async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), Box<dyn Error>> {
         println!("Calling t_yield update for: {:?} from HttpClient.", t_yield);
-        Ok(true)
+        Ok(())
     }
 
-    fn delete_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Calling t_yield delete with id: {id} from HttpClient.");
-        Ok(true)
+    async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), Box<dyn Error>> {
+        println!("Calling t_yield delete with id: {:?} from HttpClient.", id);
+        Ok(())
     }
 
-    fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYields, Box<dyn Error>> {
+    async fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYields, Box<dyn Error>> {
         println!("Calling t_yield read by: {:?} from HttpClient.", query);
         Ok(TYield::generate_dummy_data())
     }

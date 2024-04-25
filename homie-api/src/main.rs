@@ -63,7 +63,9 @@ async fn read_yields(
     param: Option<Query<TYieldParam>>,
 ) -> impl IntoResponse {
     let Query(_param) = param.unwrap_or_default();
-    let res = TYield::read_by_query(state.repo.session(), &TYieldQuery::default()).unwrap();
+    let res = TYield::read_by_query(state.repo.session(), &TYieldQuery::default())
+        .await
+        .unwrap();
     (StatusCode::OK, Json(res))
 }
 
