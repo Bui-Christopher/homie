@@ -1,5 +1,7 @@
 use std::error::Error;
 
+use async_trait::async_trait;
+
 use crate::adapter::repository::Persist;
 use crate::domain::hpi::{Hpi, HpiData, HpiPersist, HpiQuery, Hpis};
 use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
@@ -48,8 +50,9 @@ impl HpiPersist for HttpClient {
     }
 }
 
+#[async_trait]
 impl TYieldPersist for HttpClient {
-    fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>> {
+    async fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>> {
         println!("Calling t_yield create for: {:?} from HttpClient.", t_yield);
         Ok(true)
     }

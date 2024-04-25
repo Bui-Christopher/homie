@@ -3,11 +3,11 @@ use std::error::Error;
 use homie_core::adapter::importer::Importer;
 use homie_core::adapter::repository::Repository;
 
-pub(crate) fn read_and_write_datasets(
+pub(crate) async fn read_and_write_datasets(
     importer: &Importer,
     repo: &Repository,
 ) -> Result<(), Box<dyn Error>> {
-    read_and_write_t_yields(importer, repo)?;
+    read_and_write_t_yields(importer, repo).await?;
     read_and_write_hpi(importer, repo)?;
     read_and_write_region(importer, repo)?;
     read_and_write_zhvi(importer, repo)?;
@@ -15,10 +15,13 @@ pub(crate) fn read_and_write_datasets(
     Ok(())
 }
 
-fn read_and_write_t_yields(importer: &Importer, repo: &Repository) -> Result<(), Box<dyn Error>> {
+async fn read_and_write_t_yields(
+    importer: &Importer,
+    repo: &Repository,
+) -> Result<(), Box<dyn Error>> {
     let t_yield_data = importer.read_fed_yields()?;
     for t_yield in t_yield_data.ten_year_yields() {
-        t_yield.create(repo.session())?;
+        t_yield.create(repo.session()).await?;
     }
     Ok(())
 }

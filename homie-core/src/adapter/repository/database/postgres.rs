@@ -1,6 +1,7 @@
 use std::env;
 use std::error::Error;
 
+use async_trait::async_trait;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 
@@ -53,12 +54,18 @@ impl HpiPersist for PostgresClient {
     }
 }
 
+#[async_trait]
 impl TYieldPersist for PostgresClient {
-    fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>> {
-        println!(
-            "Calling t_yield create for: {:?} from PostgresClient.",
-            t_yield
-        );
+    async fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>> {
+        let req = sqlx::query!(
+            r#"
+        INSERT INTO tyields ( t_yield )
+        VALUES ( $1 )
+        "#,
+            Json(t_yield) as _
+        )
+        .fetch_one(self.pool)
+        .await?;
         Ok(true)
     }
 

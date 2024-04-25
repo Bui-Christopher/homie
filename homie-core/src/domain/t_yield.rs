@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use async_trait::async_trait;
 use chrono::NaiveDate;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
@@ -30,8 +31,9 @@ pub type TYields = Vec<TYield>;
 #[derive(Debug, Default)]
 pub struct TYieldQuery {}
 
+#[async_trait]
 pub trait TYieldPersist: Send + Sync {
-    fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
+    async fn create_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
     fn read_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
     fn update_t_yield(&self, t_yield: &TYield) -> Result<bool, Box<dyn Error>>;
     fn delete_t_yield_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
@@ -39,8 +41,8 @@ pub trait TYieldPersist: Send + Sync {
 }
 
 impl TYield {
-    pub fn create(&self, client: &dyn Persist) -> Result<bool, Box<dyn Error>> {
-        client.create_t_yield(self)
+    pub async fn create(&self, client: &dyn Persist) -> Result<bool, Box<dyn Error>> {
+        client.create_t_yield(self).await
     }
 
     pub fn read(client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {

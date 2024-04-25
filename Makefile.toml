@@ -18,6 +18,12 @@ args = [
     "fmt",
 ]
 
+[tasks.clippy]
+command = "cargo"
+args = [
+    "clippy",
+]
+
 [tasks.test]
 dependencies = ["format"]
 command = "cargo"
@@ -38,6 +44,9 @@ alias = "build"
 
 [tasks.t]
 alias = "test"
+
+[tasks.c]
+alias = "clippy"
 
 [tasks.f]
 alias = "format"

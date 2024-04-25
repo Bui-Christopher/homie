@@ -20,7 +20,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Check if importer is created");
     let repository = Repository::new(config).await;
 
-    read_and_write_datasets(&importer, &repository)?;
+    read_and_write_datasets(&importer, &repository).await?;
 
     Ok(())
 }
