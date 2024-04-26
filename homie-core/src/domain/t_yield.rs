@@ -54,6 +54,7 @@ pub type TYields = Vec<TYield>;
 pub struct TYieldQuery {
     start_date: NaiveDate,
     end_date: NaiveDate,
+    // TODO: Maybe rename to date_interval
     interval_date: String, // Day, Month, Year
 }
 

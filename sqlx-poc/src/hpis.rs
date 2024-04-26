@@ -10,29 +10,41 @@ pub struct Hpi {
     year: i32,
     hpi: Option<f32>,
     annual_change: Option<f32>,
-    hpi_1990_base: Option<f32>,
+    hpi_1990_base: Option<f32>, // TODO: Remove, idc 1990
     hpi_2000_base: Option<f32>,
 }
 
-// #[derive(Debug)]
-// pub struct HpiQuery {
-//     region_type: String, // ThreeZip, FiveZip, County
-//     start_date: NaiveDate,
-//     end_date: NaiveDate,
-// }
+#[derive(Debug)]
+pub struct HpiQuery {
+    region: String, // ThreeZip, FiveZip, County
+    start_date: i32,
+    end_date: i32,
+}
 
-// impl HpiQuery {
-//     pub fn new() -> Self {
-//         let region = "FiveZip".to_string();
-//         let start_date = NaiveDate::from_ymd_opt(2000, 1, 1).unwrap();
-//         let end_date = NaiveDate::from_ymd_opt(2024, 12, 31).unwrap();
-//         Self {
-//             region_type,
-//             start_date,
-//             end_date,
-//         }
-//     }
-// }
+impl HpiQuery {
+    pub fn new() -> Self {
+        let region = "Orange".to_string();
+        let start_date = 2000;
+        let end_date = 2024;
+        Self {
+            region,
+            start_date,
+            end_date,
+        }
+    }
+
+    pub fn region(&self) -> &str {
+        &self.region
+    }
+
+    pub fn start_date(&self) -> i32 {
+        self.start_date
+    }
+
+    pub fn end_date(&self) -> i32 {
+        self.end_date
+    }
+}
 
 impl Hpi {
     pub fn new(year: i32) -> Self {
@@ -51,9 +63,9 @@ impl Hpi {
         }
     }
 
-    pub fn default() -> Self {
-        Self::new(2024)
-    }
+    // pub fn default() -> Self {
+    //     Self::new(2024)
+    // }
 
     pub fn set_hpi(&mut self, hpi: Option<f32>) {
         self.hpi = hpi
@@ -128,17 +140,40 @@ impl Hpi {
         .await?;
         Ok(())
     }
+
+    pub async fn read_by_query(
+        pool: &sqlx::PgPool,
+        hpi_query: HpiQuery,
+    ) -> Result<Vec<Hpi>, sqlx::Error> {
+        let query = r#"
+            SELECT * FROM hpis
+            WHERE region = $1
+            AND year >= $2
+            AND year <= $3
+        "#;
+        let hpis: Vec<Hpi> = query_as(query)
+            .bind(hpi_query.region)
+            .bind(hpi_query.start_date)
+            .bind(hpi_query.end_date)
+            .fetch_all(pool)
+            .await?;
+        // .unwrap_or_else(|_| Vec::new());
+        Ok(hpis)
+    }
 }
 pub async fn test_hpis(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
-    let hpi = Hpi::new(2001);
+    let hpi = Hpi::new(2015);
     hpi.create(pool).await?;
-    let mut hpi = Hpi::read_by_id(pool, ("Orange", 2001)).await?;
+    let mut hpi = Hpi::read_by_id(pool, ("Orange", 2015)).await?;
     println!("{:?}", hpi);
     hpi.set_hpi(Some(10.0));
     hpi.update(pool).await?;
-    let hpi = Hpi::read_by_id(pool, ("Orange", 2001)).await?;
+    let hpi = Hpi::read_by_id(pool, ("Orange", 2015)).await?;
     println!("{:?}", hpi);
-    Hpi::delete_by_id(pool, "Orange", 2001).await?;
+    let hpi_query = HpiQuery::new();
+    let hpis = Hpi::read_by_query(pool, hpi_query).await?;
+    println!("{:?}", hpis);
+    Hpi::delete_by_id(pool, "Orange", 2015).await?;
 
     Ok(())
 }

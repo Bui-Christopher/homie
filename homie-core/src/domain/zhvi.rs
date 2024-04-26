@@ -40,6 +40,12 @@ pub enum Zhvi {
     },
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Price {
+    date: NaiveDate,
+    price: f64,
+}
+
 // TODO: Refactor ZHVI
 // Use a single enum variant:
 // pub enum Zhvi {
@@ -50,12 +56,6 @@ pub enum Zhvi {
 //         index_type: ZhviIndexType,
 //     },
 // }
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Price {
-    date: NaiveDate,
-    price: f64,
-}
 
 pub type Prices = Vec<Price>;
 pub type Zhvis = Vec<Zhvi>;
@@ -189,10 +189,10 @@ impl ZhviConfig {
 pub fn read_zillow_zhvis(zhvi_config: &ZhviConfig) -> Result<ZhviData, Box<dyn Error>> {
     let zhvi_data = ZhviData {
         all_homes_zhvis: read_all_homes_zhvis(zhvi_config)?,
+        // condo_coops_zhvis = read_condo_coops_zhvis(zhvi_config)?;
+        // single_family_homes_zhvis = read_single_family_homes_zhvis(zhvi_config)?;
         ..Default::default()
     };
-    // let condo_coops_zhvis = read_condo_coops_zhvis()?;
-    // let single_family_homes_zhvis = read_single_family_homes_zhvis()?;
 
     Ok(zhvi_data)
 }

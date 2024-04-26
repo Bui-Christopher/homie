@@ -37,7 +37,7 @@ TODO: Local scrpts to run and test
 ### Current Bugs 🐜
 - [ ] Parsing CSV
     - [ ] Zillow Regions
-    - [ ] Fed H15 (daily) has some null values
+    - [x] Fed H15 (daily) has some null values
 
 
 #### Additional Notes

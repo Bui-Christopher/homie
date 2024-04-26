@@ -7,7 +7,7 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::{query, query_as, Pool, Postgres};
 
 use crate::adapter::repository::{Config, Persist};
-use crate::domain::hpi::{Hpi, HpiData, HpiPersist, HpiQuery, Hpis};
+use crate::domain::hpi::{Hpi, HpiPersist, HpiQuery, Hpis};
 use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
 use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviQuery, Zhvis};
 
@@ -35,34 +35,90 @@ impl Persist for PostgresClient {}
 #[async_trait]
 impl HpiPersist for PostgresClient {
     async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), Box<dyn Error>> {
-        println!("Calling hpi create for: {:?} from PostgresClient.", hpi);
-        Ok((String::default(), i32::default()))
+        let record = query!(
+            r#"
+            INSERT INTO hpis
+            (region, year, hpi, annual_change, hpi_1990_base, hpi_2000_base)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            ON CONFLICT (region, year) DO NOTHING
+            RETURNING region, year;
+            "#,
+            &hpi.region(),
+            &hpi.year(),
+            hpi.hpi() as Option<f32>,
+            hpi.annual_change() as Option<f32>,
+            hpi.hpi_1990_base() as Option<f32>,
+            hpi.hpi_2000_base() as Option<f32>,
+        )
+        .fetch_one(self.pool())
+        .await?;
+        Ok((record.region, record.year))
     }
 
     async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Box<dyn Error>> {
-        println!("Calling hpi read with id: {:?} from PostgresClient.", id);
-        Ok(Hpi::default())
+        let record = query_as!(
+            Hpi,
+            r#"SELECT * FROM hpis WHERE region = $1 AND year = $2"#,
+            id.0,
+            id.1,
+        )
+        .fetch_one(self.pool())
+        .await?;
+        Ok(record)
     }
 
     async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Box<dyn Error>> {
-        println!("Calling hpi update for: {:?} from PostgresClient.", hpi);
+        query!(
+            r#"
+            UPDATE hpis 
+            SET hpi = $3
+            WHERE region = $1 AND year = $2
+            RETURNING region, year
+            "#,
+            hpi.region(),
+            hpi.year(),
+            hpi.hpi() as Option<f32>,
+        )
+        .fetch_one(self.pool())
+        .await?;
         Ok(())
     }
 
     async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Box<dyn Error>> {
-        println!("Calling hpi delete with id: {:?} from PostgresClient.", id);
+        query!(
+            r#"
+                DELETE FROM hpis 
+                WHERE region = $1 AND year = $2
+                RETURNING region, year;
+            "#,
+            id.0,
+            id.1,
+        )
+        .fetch_one(self.pool())
+        .await?;
         Ok(())
     }
 
-    fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Box<dyn Error>> {
-        println!("Calling hpi read by: {:?} from PostgresClient.", query);
-        Ok(HpiData::generate_dummy_data())
+    async fn read_hpi_by_query(&self, hpi_query: &HpiQuery) -> Result<Hpis, Box<dyn Error>> {
+        let query = r#"
+            SELECT * FROM hpis
+            WHERE region = $1
+            AND year >= $2
+            AND year <= $3
+        "#;
+        let hpis: Vec<Hpi> = query_as(query)
+            .bind(hpi_query.region())
+            .bind(hpi_query.start_date())
+            .bind(hpi_query.end_date())
+            .fetch_all(self.pool())
+            .await?;
+        // .unwrap_or_else(|_| Vec::new());
+        Ok(hpis)
     }
 }
 
 #[async_trait]
 impl TYieldPersist for PostgresClient {
-    // TODO: Modify this fn's return to (String, NaiveDate)
     async fn create_t_yield(
         &self,
         t_yield: &TYield,

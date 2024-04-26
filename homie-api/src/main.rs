@@ -54,7 +54,9 @@ async fn read_hpis(
     param: Option<Query<HpiParam>>,
 ) -> impl IntoResponse {
     let Query(_param) = param.unwrap_or_default();
-    let res = Hpi::read_by_query(state.repo.session(), &HpiQuery::default()).unwrap();
+    let res = Hpi::read_by_query(state.repo.session(), &HpiQuery::default())
+        .await
+        .unwrap();
     (StatusCode::OK, Json(res))
 }
 

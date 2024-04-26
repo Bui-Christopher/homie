@@ -5,6 +5,7 @@ use sqlx::postgres::PgPoolOptions;
 
 mod hpis;
 mod tyields;
+mod zhvis;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {

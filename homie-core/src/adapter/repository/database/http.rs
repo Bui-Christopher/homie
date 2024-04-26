@@ -46,7 +46,7 @@ impl HpiPersist for HttpClient {
         Ok(())
     }
 
-    fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Box<dyn Error>> {
+    async fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Box<dyn Error>> {
         println!("Calling hpi read by: {:?} from HttpClient.", query);
         Ok(HpiData::generate_dummy_data())
     }
