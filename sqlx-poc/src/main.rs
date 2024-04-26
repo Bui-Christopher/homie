@@ -16,5 +16,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     tyields::test_t_yields(&pool).await?;
     hpis::test_hpis(&pool).await?;
+    zhvis::test_zhvis(&pool).await?;
     Ok(())
 }

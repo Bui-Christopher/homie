@@ -152,9 +152,9 @@ impl Hpi {
             AND year <= $3
         "#;
         let hpis: Vec<Hpi> = query_as(query)
-            .bind(hpi_query.region)
-            .bind(hpi_query.start_date)
-            .bind(hpi_query.end_date)
+            .bind(hpi_query.region())
+            .bind(hpi_query.start_date())
+            .bind(hpi_query.end_date())
             .fetch_all(pool)
             .await?;
         // .unwrap_or_else(|_| Vec::new());
