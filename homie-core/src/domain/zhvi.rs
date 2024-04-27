@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::adapter::repository::Persist;
 use crate::domain::common::{to_ymd_date, CsvRecord};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Zhvi {
     pub home_type: String,   // AllHomes/CondoCoOps/SingleFamilyHomes
     pub region_type: String, // Zipcode, City, County
@@ -48,16 +48,54 @@ impl ZhviData {
 }
 
 #[derive(Debug, Default)]
-pub struct ZhviQuery {}
+pub struct ZhviQuery {
+    start_date: NaiveDate,
+    end_date: NaiveDate,
+    interval_date: String, // Monthly or Yearly
+    home_type: String,
+    region_type: String,
+    region_name: String,
+    percentile: String,
+}
+
+impl ZhviQuery {
+    pub fn start_date(&self) -> &NaiveDate {
+        &self.start_date
+    }
+
+    pub fn end_date(&self) -> &NaiveDate {
+        &self.end_date
+    }
+
+    pub fn interval_date(&self) -> &str {
+        &self.interval_date
+    }
+
+    pub fn home_type(&self) -> &str {
+        &self.home_type
+    }
+
+    pub fn region_type(&self) -> &str {
+        &self.region_type
+    }
+
+    pub fn region_name(&self) -> &str {
+        &self.region_name
+    }
+
+    pub fn percentile(&self) -> &str {
+        &self.percentile
+    }
+}
 
 #[async_trait]
 pub trait ZhviPersist: Send + Sync {
     // TODO: Return Keys instead of unit type
     async fn create_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>>;
-    fn read_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    async fn read_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<Zhvi, Box<dyn Error>>;
     async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>>;
-    async fn delete_zhvi_by_id(&self, id: &str) -> Result<(), Box<dyn Error>>;
-    fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>>;
+    async fn delete_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<(), Box<dyn Error>>;
+    async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>>;
 }
 
 impl Zhvi {
@@ -85,20 +123,29 @@ impl Zhvi {
         client.create_zhvi(self).await
     }
 
-    pub fn read(client: &dyn Persist, id: &str) -> Result<bool, Box<dyn Error>> {
-        client.read_zhvi_by_id(id)
+    pub async fn read(
+        client: &dyn Persist,
+        id: (&str, &str, &str, &str),
+    ) -> Result<Zhvi, Box<dyn Error>> {
+        client.read_zhvi_by_id(id).await
     }
 
     pub async fn update(&self, client: &dyn Persist) -> Result<(), Box<dyn Error>> {
         client.update_zhvi(self).await
     }
 
-    pub async fn delete(client: &dyn Persist, id: &str) -> Result<(), Box<dyn Error>> {
+    pub async fn delete(
+        client: &dyn Persist,
+        id: (&str, &str, &str, &str),
+    ) -> Result<(), Box<dyn Error>> {
         client.delete_zhvi_by_id(id).await
     }
 
-    pub fn read_by_query(client: &dyn Persist, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {
-        client.read_zhvi_by_query(query)
+    pub async fn read_by_query(
+        client: &dyn Persist,
+        query: &ZhviQuery,
+    ) -> Result<Zhvis, Box<dyn Error>> {
+        client.read_zhvi_by_query(query).await
     }
 
     // TODO: Delete

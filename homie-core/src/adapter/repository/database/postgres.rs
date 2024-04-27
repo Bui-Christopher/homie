@@ -9,7 +9,7 @@ use sqlx::{query, query_as, FromRow, Pool, Postgres};
 use crate::adapter::repository::{Config, Persist};
 use crate::domain::hpi::{Hpi, HpiPersist, HpiQuery, Hpis};
 use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
-use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviPrice, ZhviQuery, Zhvis};
+use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviPrice, ZhviPrices, ZhviQuery, Zhvis};
 
 pub struct PostgresClient {
     pool: Pool<Postgres>,
@@ -230,8 +230,8 @@ struct ZhviMetadataPgRow {
     region_name: String,
     percentile: String,
 }
-
-#[derive(Debug, FromRow)]
+#[allow(dead_code)]
+#[derive(FromRow)]
 struct ZhviPricePgRow {
     date: Option<NaiveDate>,
     value: f64,
@@ -291,23 +291,210 @@ impl ZhviPersist for PostgresClient {
         Ok(())
     }
 
-    fn read_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Calling zhvi read with id: {id} from PostgresClient.");
-        Ok(true)
+    async fn read_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<Zhvi, Box<dyn Error>> {
+        let mut tx = self.pool().begin().await?;
+
+        // Query zhvi metadata
+        let metadata = query_as!(
+            ZhviMetadataPgRow,
+            "SELECT home_type, region_type, region_name, percentile 
+            FROM zhvi_metadata 
+            WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4",
+            id.0,
+            id.1,
+            id.2,
+            id.3,
+        )
+        .fetch_one(&mut *tx)
+        .await?;
+
+        let prices = query_as!(
+            ZhviPricePgRow,
+            "SELECT home_type, region_type, region_name, percentile, date, value
+            FROM zhvi_prices 
+            WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4",
+            id.0,
+            id.1,
+            id.2,
+            id.3,
+        )
+        .fetch_all(&mut *tx)
+        .await?
+        .into_iter()
+        .map(ZhviPrice::try_from)
+        .collect::<Result<ZhviPrices, sqlx::Error>>()?;
+
+        // Commit the transaction
+        tx.commit().await?;
+
+        // Combine metadata and prices to construct Zhvi
+        let zhvi = Zhvi {
+            home_type: metadata.home_type,
+            region_type: metadata.region_type,
+            region_name: metadata.region_name,
+            percentile: metadata.percentile,
+            prices,
+        };
+
+        Ok(zhvi)
     }
 
     async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>> {
-        println!("Calling zhvi update for: {:?} from PostgresClient.", zhvi);
+        let mut tx = self.pool().begin().await?;
+        let home_type = zhvi.home_type();
+        let region_type = zhvi.region_type();
+        let region_name = zhvi.region_name();
+        let percentile = zhvi.percentile();
+
+        // Update metadata
+        query!(
+            "UPDATE zhvi_metadata SET percentile = $1 WHERE home_type = $2 AND region_type = $3 \
+             AND region_name = $4",
+            home_type,
+            region_type,
+            region_name,
+            percentile
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        // Delete existing prices
+        query!(
+            "DELETE FROM zhvi_prices WHERE home_type = $1 AND region_type = $2 AND region_name = \
+             $3 AND percentile = $4",
+            home_type,
+            region_type,
+            region_name,
+            percentile
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        // Insert updated prices
+        for price in zhvi.prices() {
+            query!(
+                "INSERT INTO zhvi_prices (home_type, region_type, region_name, percentile, date, \
+                 value) 
+                 VALUES ($1, $2, $3, $4, $5, $6)",
+                home_type,
+                region_type,
+                region_name,
+                percentile,
+                &price.date as _,
+                &price.value as _
+            )
+            .execute(&mut *tx)
+            .await?;
+        }
+
+        tx.commit().await?;
+
         Ok(())
     }
 
-    async fn delete_zhvi_by_id(&self, id: &str) -> Result<(), Box<dyn Error>> {
-        println!("Calling zhvi delete with id: {id} from PostgresClient.");
+    async fn delete_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<(), Box<dyn Error>> {
+        let mut tx = self.pool().begin().await?;
+
+        query!(
+            "DELETE FROM zhvi_prices WHERE home_type = $1 AND region_type = $2 AND region_name = \
+             $3 AND percentile = $4",
+            id.0,
+            id.1,
+            id.2,
+            id.3,
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        query!(
+            "DELETE FROM zhvi_metadata WHERE home_type = $1 AND region_type = $2 AND region_name \
+             = $3 AND percentile = $4",
+            id.0,
+            id.1,
+            id.2,
+            id.3,
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
         Ok(())
     }
 
-    fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {
-        println!("Calling zhvi read by: {:?} from PostgresClient.", query);
-        Ok(Zhvi::generate_dummy_data())
+    async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {
+        let mut tx = self.pool().begin().await?;
+
+        let metadata = query_as!(
+            ZhviMetadataPgRow,
+            "SELECT home_type, region_type, region_name, percentile 
+            FROM zhvi_metadata 
+            WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4",
+            query.home_type(),
+            query.region_type(),
+            query.region_name(),
+            query.percentile(),
+        )
+        .fetch_all(&mut *tx)
+        .await?;
+
+        let mut zhvis = vec![];
+        for metadata in metadata {
+            let prices = if query.interval_date() == "Monthly" {
+                sqlx::query_as!(
+                    ZhviPricePgRow,
+                    "SELECT home_type, region_type, region_name, percentile, date, value
+                     FROM zhvi_prices 
+                     WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile \
+                     = $4
+                     AND date >= $5 AND date <= $6",
+                    query.home_type(),
+                    query.region_type(),
+                    query.region_name(),
+                    query.percentile(),
+                    query.start_date(),
+                    query.end_date(),
+                )
+                .fetch_all(&mut *tx)
+                .await?
+                .into_iter()
+                .map(ZhviPrice::try_from)
+                .collect::<Result<ZhviPrices, sqlx::Error>>()?
+            } else if query.interval_date() == "Yearly" {
+                query_as!(
+                    ZhviPricePgRow,
+                    "SELECT home_type, region_type, region_name, percentile, date, value
+                    FROM zhvi_prices WHERE home_type = $1 AND region_type = $2
+                    AND region_name = $3 AND percentile = $4 AND EXTRACT(MONTH FROM date) = 1
+                    AND date >= $5 AND date <= $6",
+                    query.home_type(),
+                    query.region_type(),
+                    query.region_name(),
+                    query.percentile(),
+                    query.start_date(),
+                    query.end_date(),
+                )
+                .fetch_all(&mut *tx)
+                .await?
+                .into_iter()
+                .map(ZhviPrice::try_from)
+                .collect::<Result<ZhviPrices, sqlx::Error>>()?
+            } else {
+                return Err(Box::new(sqlx::Error::RowNotFound));
+            };
+
+            let zhvi = Zhvi {
+                home_type: metadata.home_type,
+                region_type: metadata.region_type,
+                region_name: metadata.region_name,
+                percentile: metadata.percentile,
+                prices,
+            };
+            zhvis.push(zhvi);
+        }
+
+        tx.commit().await?;
+
+        Ok(zhvis)
     }
 }

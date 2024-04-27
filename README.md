@@ -8,7 +8,7 @@ It answers two vital questions:
 - What value of a home is fair? 💰
 - What value of a mortgage interest rate is fair? 📈
 
-Current datasets include Zillow, FHFA, Fed Treasury, and Huduser.
+Current datasets include [Zillow](https://www.zillow.com/research/data/), [FHFA](https://www.fhfa.gov/DataTools/Downloads/Pages/House-Price-Index-Datasets.aspx), [Fed Treasury](https://www.federalreserve.gov/releases/h15/), and Huduser.
 <!-- TODO: Link each dataset -->
 
 ## Quick Start ⚡
@@ -25,81 +25,26 @@ TODO: Local scrpts to run and test
     - [x] Read Dataset
     - [x] Convert to Application Domain
     - [ ] Store into repository (Postgres)
+        - [ ] Regions (cities/counties/zipcodes)
+    - [ ] Optimize ZHVI (batch insert prices)
 - [ ] homie-api
     - [x] Handle Request
     - [ ] Retrieve Data
+        - [ ] Postgres
+        - [ ] Zillow API
     - [ ] Return Response
+        - [ ] Error handling
+            - [ ] Custom
+            - [ ] ThisError and Anyhow
 - [ ] homie-webapp
     - [ ] Get Query Params
     - [ ] Submit Request
     - [ ] Display Data in Graph
 - [ ] Unit tests :sob:
-### Current Bugs 🐜
-- [ ] Parsing CSV
-    - [ ] Zillow Regions
-    - [x] Fed H15 (daily) has some null values
-
 
 #### Additional Notes
-- [ ] homie-api
-    - [x] Mock data
-    - [ ] Read from DB (Actual Dataset)
-- [ ] homie-webapp
-    - [ ] Leptos
-    - [ ] Plotly
-    - [ ] Use Axum
-```
-NOTE: Will only write zillow-mid/city to local db (downloaded from zillow/datasets)
-```
-
-- [x] Read remaining datasets
-    - [x] AllHomes
-        - [x] Bottom-tier
-            - [x] City
-            - [x] County
-        - [ ] Mid-tier
-            - [ ] City
-        - [x] Top-tier
-            - [x] City
-            - [x] County
-    - [x] CondoCoops
-        - [x] City
-        - [x] County
-        - [x] Zip
-    - [x] SingleFamilyHomes
-        - [x] City
-        - [x] County
-        - [x] Zip
-- [ ] Write datasets to DB (postgreSQL)
-    - [ ] fed_h15
-    - [ ] fhfa-hpi
-    - [ ] cities/counties/zipcodes
-    - [ ] zillow-zhvi
-    - [x] ~Split between postgres and in memory~
-
-- [ ] homie-core
-    - [x] Refactor common code to `homie-core` (Previously logic was in each binary)
-    - [ ] Double check what structs/mods are exposed may limit it to the crate
-    - [ ] Read Software Architecture
-        - [x] Dependency Inversion Principle
-        - [x] Singleton vs Dependency Injection
-        - [x] Test some patterns
-            - [x] Factory
-            - [ ] Builder
-            - [x] Singleton
-            - [x] Mediator
-            - [x] Facade
-        - [x] CQRS
-        - [x] High Level Patterns (Not application level?)
-            - [x] Model-View-Controller (MVC)
-            - [x] Service-Oriented Architecture (SOA)
-            - [x] Event-Driven Architecture (EDA)
+- [ ] Reduce public struct/fn exposure
+- [ ] Read Bulder Pattern
 - [ ] Deployment
     - [ ] Local Deployment
     - [ ] CI
-
-## Additional Features 🌕
-```
-NOTE: Not necessary for minimum viable product, there's more listed on the excalidraw.
-```
-- [ ] Expand dataset scope outside of Orange County

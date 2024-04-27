@@ -90,9 +90,9 @@ impl ZhviPersist for HttpClient {
         Ok(())
     }
 
-    fn read_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
-        println!("Calling zhvi read with id: {id} from HttpClient.");
-        Ok(true)
+    async fn read_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<Zhvi, Box<dyn Error>> {
+        println!("Calling zhvi read with id: {id:?} from HttpClient.");
+        Ok(Zhvi::default())
     }
 
     async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>> {
@@ -100,12 +100,12 @@ impl ZhviPersist for HttpClient {
         Ok(())
     }
 
-    async fn delete_zhvi_by_id(&self, id: &str) -> Result<(), Box<dyn Error>> {
-        println!("Calling zhvi delete with id: {id} from HttpClient.");
+    async fn delete_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<(), Box<dyn Error>> {
+        println!("Calling zhvi delete with id: {id:?} from HttpClient.");
         Ok(())
     }
 
-    fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {
+    async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {
         println!("Calling zhvi read by: {:?} from HttpClient.", query);
         Ok(Zhvi::generate_dummy_data())
     }

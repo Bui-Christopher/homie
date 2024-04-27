@@ -76,7 +76,9 @@ async fn read_zhvis(
     param: Option<Query<ZhviParam>>,
 ) -> impl IntoResponse {
     let Query(_param) = param.unwrap_or_default();
-    let res = Zhvi::read_by_query(state.repo.session(), &ZhviQuery::default()).unwrap();
+    let res = Zhvi::read_by_query(state.repo.session(), &ZhviQuery::default())
+        .await
+        .unwrap();
     (StatusCode::OK, Json(res))
 }
 
