@@ -1,19 +1,28 @@
+use std::convert::TryFrom;
 use std::error::Error;
 
 use chrono::NaiveDate;
 use sqlx::{query, query_as, FromRow, Pool, Postgres};
 
-#[derive(Debug, FromRow)]
+#[derive(Debug)]
 pub struct Zhvi {
     pub home_type: String,   // AllHomes/CondoCoOps/SingleFamilyHomes
     pub region_type: String, // Zipcode, City, County
     pub region_name: String,
     pub percentile: String, // Bottom, Middle, Top
-    pub prices: Prices,
+    pub prices: ZhviPrices,
 }
 
+#[derive(Debug)]
+pub struct ZhviPrice {
+    date: NaiveDate,
+    value: f64,
+}
+
+pub type ZhviPrices = Vec<ZhviPrice>;
+
 #[derive(Debug, FromRow)]
-pub struct ZhviMetadata {
+pub struct ZhviMetadataPgRow {
     pub home_type: String,
     pub region_type: String,
     pub region_name: String,
@@ -21,7 +30,7 @@ pub struct ZhviMetadata {
 }
 
 #[derive(Debug, FromRow)]
-pub struct ZhviPrice {
+pub struct ZhviPricePgRow {
     pub date: Option<NaiveDate>,
     pub value: f64,
     // Fields map to a Zhvi
@@ -31,7 +40,15 @@ pub struct ZhviPrice {
     pub percentile: String,
 }
 
-pub type Prices = Vec<ZhviPrice>;
+impl TryFrom<ZhviPricePgRow> for ZhviPrice {
+    type Error = sqlx::Error;
+
+    fn try_from(row: ZhviPricePgRow) -> Result<Self, Self::Error> {
+        let date = row.date.ok_or(sqlx::Error::RowNotFound)?;
+        let value = row.value;
+        Ok(Self { date, value })
+    }
+}
 
 #[derive(Debug)]
 pub struct ZhviQuery {
@@ -52,14 +69,7 @@ impl Zhvi {
         let region_type = "City".to_string();
         let region_name = "Irvine".to_string();
         let percentile = "Middle".to_string();
-        let price = ZhviPrice {
-            date: Some(date),
-            value: 100.0,
-            home_type: home_type.clone(),
-            region_type: region_type.clone(),
-            region_name: region_name.clone(),
-            percentile: percentile.clone(),
-        };
+        let price = ZhviPrice { date, value: 100.0 };
         Self {
             home_type,
             region_type,
@@ -75,14 +85,17 @@ impl Zhvi {
 
     pub async fn create(&self, pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
         let mut tx = pool.begin().await?;
-
+        let home_type = &self.home_type;
+        let region_type = &self.region_type;
+        let region_name = &self.region_name;
+        let percentile = &self.percentile;
         query!(
             "INSERT INTO zhvi_metadata (home_type, region_type, region_name, percentile) 
             VALUES ($1, $2, $3, $4)",
-            self.home_type,
-            self.region_type,
-            self.region_name,
-            self.percentile
+            home_type,
+            region_type,
+            region_name,
+            percentile,
         )
         .execute(&mut *tx)
         .await?;
@@ -92,10 +105,10 @@ impl Zhvi {
                 "INSERT INTO zhvi_prices (home_type, region_type, region_name, percentile, date, \
                  value) 
                 VALUES ($1, $2, $3, $4, $5, $6)",
-                &price.home_type,
-                &price.region_type,
-                &price.region_name,
-                &price.percentile,
+                &home_type,
+                &region_type,
+                &region_name,
+                &percentile,
                 &price.date as _,
                 &price.value as _
             )
@@ -118,7 +131,7 @@ impl Zhvi {
 
         // Query zhvi metadata
         let metadata = query_as!(
-            ZhviMetadata,
+            ZhviMetadataPgRow,
             "SELECT home_type, region_type, region_name, percentile 
             FROM zhvi_metadata 
             WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4",
@@ -131,7 +144,7 @@ impl Zhvi {
         .await?;
 
         let prices = query_as!(
-            ZhviPrice,
+            ZhviPricePgRow,
             "SELECT home_type, region_type, region_name, percentile, date, value
             FROM zhvi_prices 
             WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4",
@@ -141,7 +154,10 @@ impl Zhvi {
             percentile
         )
         .fetch_all(&mut *tx)
-        .await?;
+        .await?
+        .into_iter()
+        .map(ZhviPrice::try_from)
+        .collect::<Result<ZhviPrices, sqlx::Error>>()?;
 
         // Commit the transaction
         tx.commit().await?;
@@ -160,15 +176,19 @@ impl Zhvi {
 
     pub async fn update(&self, pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
         let mut tx = pool.begin().await?;
+        let home_type = &self.home_type;
+        let region_type = &self.region_type;
+        let region_name = &self.region_name;
+        let percentile = &self.percentile;
 
         // Update metadata
         query!(
             "UPDATE zhvi_metadata SET percentile = $1 WHERE home_type = $2 AND region_type = $3 \
              AND region_name = $4",
-            &self.percentile,
-            &self.home_type,
-            &self.region_type,
-            &self.region_name
+            home_type,
+            region_type,
+            region_name,
+            percentile
         )
         .execute(&mut *tx)
         .await?;
@@ -177,10 +197,10 @@ impl Zhvi {
         query!(
             "DELETE FROM zhvi_prices WHERE home_type = $1 AND region_type = $2 AND region_name = \
              $3 AND percentile = $4",
-            &self.home_type,
-            &self.region_type,
-            &self.region_name,
-            &self.percentile
+            home_type,
+            region_type,
+            region_name,
+            percentile
         )
         .execute(&mut *tx)
         .await?;
@@ -191,10 +211,10 @@ impl Zhvi {
                 "INSERT INTO zhvi_prices (home_type, region_type, region_name, percentile, date, \
                  value) 
                  VALUES ($1, $2, $3, $4, $5, $6)",
-                &price.home_type,
-                &price.region_type,
-                &price.region_name,
-                &price.percentile,
+                home_type,
+                region_type,
+                region_name,
+                percentile,
                 &price.date as _,
                 &price.value as _
             )
@@ -217,8 +237,8 @@ impl Zhvi {
         let mut tx = pool.begin().await?;
 
         query!(
-            "DELETE FROM zhvi_metadata WHERE home_type = $1 AND region_type = $2 AND region_name \
-             = $3 AND percentile = $4",
+            "DELETE FROM zhvi_prices WHERE home_type = $1 AND region_type = $2 AND region_name = \
+             $3 AND percentile = $4",
             home_type,
             region_type,
             region_name,
@@ -228,8 +248,8 @@ impl Zhvi {
         .await?;
 
         query!(
-            "DELETE FROM zhvi_prices WHERE home_type = $1 AND region_type = $2 AND region_name = \
-             $3 AND percentile = $4",
+            "DELETE FROM zhvi_metadata WHERE home_type = $1 AND region_type = $2 AND region_name \
+             = $3 AND percentile = $4",
             home_type,
             region_type,
             region_name,
@@ -250,7 +270,7 @@ impl Zhvi {
         let mut tx = pool.begin().await?;
 
         let metadata = query_as!(
-            ZhviMetadata,
+            ZhviMetadataPgRow,
             "SELECT home_type, region_type, region_name, percentile 
             FROM zhvi_metadata 
             WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4",
@@ -266,7 +286,7 @@ impl Zhvi {
         for metadata in metadata {
             let prices = if query.interval_date == "Monthly" {
                 sqlx::query_as!(
-                    ZhviPrice,
+                    ZhviPricePgRow,
                     "SELECT home_type, region_type, region_name, percentile, date, value
                      FROM zhvi_prices 
                      WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile \
@@ -281,9 +301,12 @@ impl Zhvi {
                 )
                 .fetch_all(&mut *tx)
                 .await?
+                .into_iter()
+                .map(ZhviPrice::try_from)
+                .collect::<Result<ZhviPrices, sqlx::Error>>()?
             } else if query.interval_date == "Yearly" {
                 query_as!(
-                    ZhviPrice,
+                    ZhviPricePgRow,
                     "SELECT home_type, region_type, region_name, percentile, date, value
                     FROM zhvi_prices WHERE home_type = $1 AND region_type = $2
                     AND region_name = $3 AND percentile = $4 AND EXTRACT(MONTH FROM date) = 1
@@ -297,6 +320,9 @@ impl Zhvi {
                 )
                 .fetch_all(&mut *tx)
                 .await?
+                .into_iter()
+                .map(ZhviPrice::try_from)
+                .collect::<Result<ZhviPrices, sqlx::Error>>()?
             } else {
                 return Err(sqlx::Error::RowNotFound);
             };
