@@ -83,10 +83,11 @@ impl TYieldPersist for HttpClient {
     }
 }
 
+#[async_trait]
 impl ZhviPersist for HttpClient {
-    fn create_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>> {
+    async fn create_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>> {
         println!("Calling zhvi create for: {:?} from HttpClient.", zhvi);
-        Ok(true)
+        Ok(())
     }
 
     fn read_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
@@ -94,14 +95,14 @@ impl ZhviPersist for HttpClient {
         Ok(true)
     }
 
-    fn update_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>> {
+    async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>> {
         println!("Calling zhvi update for: {:?} from HttpClient.", zhvi);
-        Ok(true)
+        Ok(())
     }
 
-    fn delete_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
+    async fn delete_zhvi_by_id(&self, id: &str) -> Result<(), Box<dyn Error>> {
         println!("Calling zhvi delete with id: {id} from HttpClient.");
-        Ok(true)
+        Ok(())
     }
 
     fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {

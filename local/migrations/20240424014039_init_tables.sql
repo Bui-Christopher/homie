@@ -14,3 +14,24 @@ CREATE TABLE hpis (
     hpi_2000_base FLOAT4,
     PRIMARY KEY (region, year)
 );
+
+CREATE TABLE zhvi_metadata (
+    home_type VARCHAR(20) NOT NULL,
+    region_type VARCHAR(20) NOT NULL,
+    region_name TEXT NOT NULL,
+    percentile VARCHAR(20) NOT NULL,
+    PRIMARY KEY (home_type, region_type, region_name, percentile)
+);
+
+CREATE TABLE zhvi_prices (
+    home_type VARCHAR(20) NOT NULL,
+    region_type VARCHAR(20) NOT NULL,
+    region_name TEXT NOT NULL,
+    percentile VARCHAR(20) NOT NULL,
+    date DATE NOT NULL,
+    value FLOAT8 NOT NULL,
+    PRIMARY KEY (home_type, region_type, region_name, percentile, date),
+    FOREIGN KEY (home_type, region_type, region_name, percentile) 
+        REFERENCES zhvi_metadata(home_type, region_type, region_name, percentile)
+);
+

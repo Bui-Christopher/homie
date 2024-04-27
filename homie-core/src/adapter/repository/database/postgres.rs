@@ -4,12 +4,12 @@ use std::error::Error;
 use async_trait::async_trait;
 use chrono::NaiveDate;
 use sqlx::postgres::PgPoolOptions;
-use sqlx::{query, query_as, Pool, Postgres};
+use sqlx::{query, query_as, FromRow, Pool, Postgres};
 
 use crate::adapter::repository::{Config, Persist};
 use crate::domain::hpi::{Hpi, HpiPersist, HpiQuery, Hpis};
 use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
-use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviQuery, Zhvis};
+use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviPrice, ZhviQuery, Zhvis};
 
 pub struct PostgresClient {
     pool: Pool<Postgres>,
@@ -223,10 +223,72 @@ impl TYieldPersist for PostgresClient {
     }
 }
 
+#[derive(Debug, FromRow)]
+struct ZhviMetadataPgRow {
+    home_type: String,
+    region_type: String,
+    region_name: String,
+    percentile: String,
+}
+
+#[derive(Debug, FromRow)]
+struct ZhviPricePgRow {
+    date: Option<NaiveDate>,
+    value: f64,
+    // Foreign Key that map to a Zhvi
+    home_type: String,
+    region_type: String,
+    region_name: String,
+    percentile: String,
+}
+
+impl TryFrom<ZhviPricePgRow> for ZhviPrice {
+    type Error = sqlx::Error;
+
+    fn try_from(row: ZhviPricePgRow) -> Result<Self, Self::Error> {
+        let date = row.date.ok_or(sqlx::Error::RowNotFound)?;
+        let value = row.value;
+        Ok(Self { date, value })
+    }
+}
+
+#[async_trait]
 impl ZhviPersist for PostgresClient {
-    fn create_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>> {
-        println!("Calling zhvi create for: {:?} from PostgresClient.", zhvi);
-        Ok(true)
+    async fn create_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>> {
+        let mut tx = self.pool().begin().await?;
+        let home_type = zhvi.home_type();
+        let region_type = zhvi.region_type();
+        let region_name = zhvi.region_name();
+        let percentile = zhvi.percentile();
+        query!(
+            "INSERT INTO zhvi_metadata (home_type, region_type, region_name, percentile) 
+            VALUES ($1, $2, $3, $4)",
+            home_type,
+            region_type,
+            region_name,
+            percentile,
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        for price in zhvi.prices() {
+            query!(
+                "INSERT INTO zhvi_prices (home_type, region_type, region_name, percentile, date, \
+                 value) 
+                VALUES ($1, $2, $3, $4, $5, $6)",
+                home_type,
+                region_type,
+                region_name,
+                percentile,
+                price.date as _,
+                price.value as _
+            )
+            .execute(&mut *tx)
+            .await?;
+        }
+        tx.commit().await?;
+
+        Ok(())
     }
 
     fn read_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
@@ -234,14 +296,14 @@ impl ZhviPersist for PostgresClient {
         Ok(true)
     }
 
-    fn update_zhvi(&self, zhvi: &Zhvi) -> Result<bool, Box<dyn Error>> {
+    async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>> {
         println!("Calling zhvi update for: {:?} from PostgresClient.", zhvi);
-        Ok(true)
+        Ok(())
     }
 
-    fn delete_zhvi_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>> {
+    async fn delete_zhvi_by_id(&self, id: &str) -> Result<(), Box<dyn Error>> {
         println!("Calling zhvi delete with id: {id} from PostgresClient.");
-        Ok(true)
+        Ok(())
     }
 
     fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {

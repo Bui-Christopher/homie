@@ -10,7 +10,7 @@ pub(crate) async fn read_and_write_datasets(
     read_and_write_t_yields(importer, repo).await?;
     read_and_write_hpi(importer, repo).await?;
     read_and_write_region(importer, repo)?;
-    read_and_write_zhvi(importer, repo)?;
+    read_and_write_zhvi(importer, repo).await?;
 
     Ok(())
 }
@@ -20,7 +20,7 @@ async fn read_and_write_t_yields(
     repo: &Repository,
 ) -> Result<(), Box<dyn Error>> {
     let mut t_yield_data = importer.read_fed_yields()?;
-    // TODO: Remove. Does not have to be mut here
+    // TODO: Does not have to be mut here
     for t_yield in t_yield_data.ten_year_yields_mut() {
         t_yield.create(repo.session()).await?;
 
@@ -77,19 +77,19 @@ fn read_and_write_region(_importer: &Importer, _repo: &Repository) -> Result<(),
     Ok(())
 }
 
-fn read_and_write_zhvi(importer: &Importer, repo: &Repository) -> Result<(), Box<dyn Error>> {
+async fn read_and_write_zhvi(importer: &Importer, repo: &Repository) -> Result<(), Box<dyn Error>> {
     let zhvi_data = importer.read_zillow_zhvis()?;
 
     for zhvi in zhvi_data.all_homes_zhvis() {
-        zhvi.create(repo.session())?;
+        zhvi.create(repo.session()).await?;
     }
 
     for zhvi in zhvi_data.condo_coops_zhvis() {
-        zhvi.create(repo.session())?;
+        zhvi.create(repo.session()).await?;
     }
 
     for zhvi in zhvi_data.single_family_homes_zhvis() {
-        zhvi.create(repo.session())?;
+        zhvi.create(repo.session()).await?;
     }
     Ok(())
 }
