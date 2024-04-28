@@ -1,4 +1,9 @@
 #!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd "$DIR" 
+
+# jq is a dependency
+rm -rf tmp.txt
 
 echo "Testing /health"
 curl -s -X GET 'http://127.0.0.1:8080/health'
@@ -6,16 +11,18 @@ echo
 echo
 
 echo "Testing /hpis"
-curl -s -X GET 'http://127.0.0.1:8080/hpis?region_type=type1&region_id=id1&state_date=date1&end_date=date2&interval=year&annual_change=true&base_2000=false' | jq .
+curl -s -X GET 'http://127.0.0.1:8080/hpis?region_name=92841&start_date=2023-1-1&end_date=2024-12-31' | jq . >> tmp.txt
 echo
 echo
 
-echo "Testing /yields"
-curl -s -X GET 'http://127.0.0.1:8080/yields?state_date=date1&end_date=date2&interval=month' | jq .
+echo "Testing /tyields"
+curl -s -X GET 'http://127.0.0.1:8080/tyields?start_date=2023-1-1&end_date=2024-12-31&interval_date=Year' | jq . >> tmp.txt
 echo
 echo
 
 echo "Testing /zhvis"
-curl -s -X GET 'http://127.0.0.1:8080/zhvis?state_date=date1&end_date=date2&interval=day&region_type=type1&region_id=id1&percentile=percentile1&home_type=type2' | jq .
+curl -s -X GET 'http://127.0.0.1:8080/zhvis?start_date=2023-1-1&end_date=2024-12-31&interval_date=Year&home_type=AllHomes&region_type=City&region_name=Irvine&percentile=Middle' | jq . >> tmp.txt
 echo
 echo
+
+cat tmp.txt

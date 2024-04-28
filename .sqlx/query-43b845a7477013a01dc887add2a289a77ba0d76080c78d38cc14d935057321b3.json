@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT * FROM hpis WHERE region = $1 AND year = $2\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "region",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "hpi",
+        "type_info": "Float4"
+      },
+      {
+        "ordinal": 3,
+        "name": "annual_change",
+        "type_info": "Float4"
+      },
+      {
+        "ordinal": 4,
+        "name": "hpi_1990_base",
+        "type_info": "Float4"
+      },
+      {
+        "ordinal": 5,
+        "name": "hpi_2000_base",
+        "type_info": "Float4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "43b845a7477013a01dc887add2a289a77ba0d76080c78d38cc14d935057321b3"
+}

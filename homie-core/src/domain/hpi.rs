@@ -96,7 +96,8 @@ pub type Hpis = Vec<Hpi>;
 
 #[derive(Debug, Default)]
 pub struct HpiQuery {
-    region: String, // ThreeZip, FiveZip, County
+    // region_type
+    region_name: String, // ThreeZip, FiveZip, County
     start_date: i32,
     end_date: i32,
     // annual_change: Option<bool>,
@@ -104,16 +105,16 @@ pub struct HpiQuery {
 }
 
 impl HpiQuery {
-    pub fn new(region: String, start_date: i32, end_date: i32) -> Self {
+    pub fn new(region_name: String, start_date: i32, end_date: i32) -> Self {
         Self {
-            region,
+            region_name,
             start_date,
             end_date,
         }
     }
 
-    pub fn region(&self) -> &str {
-        &self.region
+    pub fn region_name(&self) -> &str {
+        &self.region_name
     }
 
     pub fn start_date(&self) -> i32 {

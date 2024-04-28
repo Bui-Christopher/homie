@@ -1,0 +1,55 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT home_type, region_type, region_name, percentile, date, value\n                FROM zhvi_prices \n                WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "home_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "region_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "region_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "percentile",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 5,
+        "name": "value",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b3d8d93ccb45c847818f5ea7f618878ae4be1405aaca4a30f1de0aabfb14d11f"
+}
