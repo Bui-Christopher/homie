@@ -6,7 +6,7 @@ cd "$DIR"
 source .env
 
 # Clean up
-# docker-compose down --volumes
+docker-compose down --volumes
 
 # Set up the Postgres Database
 docker-compose up -d
@@ -27,6 +27,8 @@ sqlx migrate run
 cd ..
 pwd
 cargo run --bin homie-data
+
+./local/check.sh
 
 unset TEN_YEAR_YIELD_PATH
 unset THREE_ZIP_HPIS_PATH

@@ -9,6 +9,5 @@ target/
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
-datasets/
 *tmp.txt
 *.env
