@@ -27,7 +27,7 @@ impl From<csv::Error> for Error {
 
 impl From<sqlx::Error> for Error {
     fn from(value: sqlx::Error) -> Self {
-        Error::Database(format!("Failed a DB request: {}", value))
+        Error::Database(format!("Failed DB request: {}", value))
     }
 }
 

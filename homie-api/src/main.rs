@@ -55,8 +55,8 @@ async fn read_hpis(
     Query(param): Query<HpiParam>,
 ) -> Result<Json<Hpis>, AppError> {
     let query = param.try_into()?;
-    let res = Hpi::read_by_query(state.repo.session(), &query).await?;
-    Ok(Json(res))
+    let hpis = Hpi::read_by_query(state.repo.session(), &query).await?;
+    Ok(Json(hpis))
 }
 
 async fn read_tyields(
@@ -64,8 +64,8 @@ async fn read_tyields(
     Query(param): Query<TYieldParam>,
 ) -> Result<Json<TYields>, AppError> {
     let query = param.try_into()?;
-    let res = TYield::read_by_query(state.repo.session(), &query).await?;
-    Ok(Json(res))
+    let t_yields = TYield::read_by_query(state.repo.session(), &query).await?;
+    Ok(Json(t_yields))
 }
 
 async fn read_zhvis(
@@ -73,8 +73,8 @@ async fn read_zhvis(
     Query(param): Query<ZhviParam>,
 ) -> Result<Json<Zhvis>, AppError> {
     let query = param.try_into()?;
-    let res = Zhvi::read_by_query(state.repo.session(), &query).await?;
-    Ok(Json(res))
+    let zhvis = Zhvi::read_by_query(state.repo.session(), &query).await?;
+    Ok(Json(zhvis))
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -91,10 +91,10 @@ struct HpiParam {
 impl TryFrom<HpiParam> for HpiQuery {
     type Error = AppError;
 
-    fn try_from(value: HpiParam) -> Result<Self, Self::Error> {
-        let region_name = value.region_name.clone();
-        let start_date = parse_naive_date(&value.start_date)?;
-        let end_date = parse_naive_date(&value.end_date)?;
+    fn try_from(param: HpiParam) -> Result<Self, Self::Error> {
+        let region_name = param.region_name.clone();
+        let start_date = parse_naive_date(&param.start_date)?;
+        let end_date = parse_naive_date(&param.end_date)?;
         Ok(HpiQuery::new(
             region_name,
             start_date.year(),
@@ -113,10 +113,10 @@ struct TYieldParam {
 impl TryFrom<TYieldParam> for TYieldQuery {
     type Error = AppError;
 
-    fn try_from(value: TYieldParam) -> Result<Self, Self::Error> {
-        let start_date = parse_naive_date(&value.start_date)?;
-        let end_date = parse_naive_date(&value.end_date)?;
-        let interval_date = value.interval_date.clone(); // Day, Month, Year
+    fn try_from(param: TYieldParam) -> Result<Self, Self::Error> {
+        let start_date = parse_naive_date(&param.start_date)?;
+        let end_date = parse_naive_date(&param.end_date)?;
+        let interval_date = param.interval_date.clone(); // Day, Month, Year
         Ok(TYieldQuery::new(start_date, end_date, interval_date))
     }
 }
@@ -135,14 +135,14 @@ struct ZhviParam {
 impl TryFrom<ZhviParam> for ZhviQuery {
     type Error = AppError;
 
-    fn try_from(value: ZhviParam) -> Result<Self, Self::Error> {
-        let start_date = parse_naive_date(&value.start_date)?;
-        let end_date = parse_naive_date(&value.end_date)?;
-        let interval_date = value.interval_date.clone(); // Day, Month, Year
-        let home_type = value.home_type.clone();
-        let region_type = value.region_type.clone();
-        let region_name = value.region_name.clone();
-        let percentile = value.percentile.clone();
+    fn try_from(param: ZhviParam) -> Result<Self, Self::Error> {
+        let start_date = parse_naive_date(&param.start_date)?;
+        let end_date = parse_naive_date(&param.end_date)?;
+        let interval_date = param.interval_date.clone(); // Day, Month, Year
+        let home_type = param.home_type.clone();
+        let region_type = param.region_type.clone();
+        let region_name = param.region_name.clone();
+        let percentile = param.percentile.clone();
         Ok(Self::new(
             start_date,
             end_date,
