@@ -16,12 +16,12 @@ Before getting started, make sure you have Docker installed on your system.
 
 ### Running
 ```
-./local_dev.sh
+./scripts/local_dev.sh
 ```
-This script will pull and run the required images. It will locally deploy , with a database, backend, and frontend.
+This script will pull and run the required images. It will locally deploy with a database, backend, and frontend.
 Please check http://localhost:3000.
 
-## TODOs 📋
+## MVP TODOs 📋
 - [x] homie-core
     - [x] Define Domain
     - [x] Define Adapters
@@ -30,30 +30,34 @@ Please check http://localhost:3000.
     - [x] Convert to Application Domain
     - [ ] Store into repository (Postgres)
         - [ ] Regions (cities/counties/zipcodes)
-    - [ ] Optimize ZHVI (batch insert prices)
 - [ ] homie-api
     - [x] Handle Request
-    - [ ] Retrieve Data
-        - [x] Postgres
-        - [ ] Zillow API
-    - [ ] Return Response
-        - [ ] Error handling
-            - [ ] Custom
-            - [ ] ThisError and Anyhow
+    - [x] Retrieve Data
+    - [x] Return Response
 - [ ] homie-webapp
     - [ ] Get User's Query Params
     - [ ] Submit Request
     - [ ] Display Data in Graph
-- [ ] Local Development
+
+## Improvements
+- [x] Local Development
     - [x] Automate creating database
         - [x] Can also initialize with `docker exec`
-    - [ ] Reduce local datasets size
-        - [ ] HPI
-        - [ ] Region
-    - [ ] Unit tests :sob:
-
-## Additional TODOs
-- [x] Reduce public struct/fn exposure
-- [ ] Read Bulder Pattern
+    - [x] Reduce local datasets size
+        - [x] HPI
+        - [x] Region
+- [ ] Refactor
+    - [x] Reduce public struct/fn exposure
+    - [ ] Read Bulder Pattern
+    - [ ] Enums instead of Strings [Example](https://github.com/launchbadge/sqlx/discussions/3041)
+    - [ ] Repo/Import calls into Config
+- [ ] Error Handling
+    - [ ] Optimize ZHVI (batch insert prices)
+    - [ ] ThisError and Anyhow
 - [ ] Deployment
-    - [ ] CI
+    - [ ] Dockerize
+    - [ ] Push to dockerhub
+    - [ ] Read from Zhvi from Zillow API
+- [ ] Testing 
+    - [ ] Unit tests :sob:
+    - [ ] E2E tests :sob:
