@@ -185,28 +185,16 @@ impl ZhviConfig {
         }
     }
 
-    fn has_mid_zip_all_homes_path(&self) -> bool {
-        self.mid_zip_all_homes_path.is_some()
+    fn mid_zip_all_homes_path(&self) -> Option<&str> {
+        self.mid_zip_all_homes_path.as_deref()
     }
 
-    fn has_mid_city_all_homes_path(&self) -> bool {
-        self.mid_city_all_homes_path.is_some()
+    fn mid_city_all_homes_path(&self) -> Option<&str> {
+        self.mid_city_all_homes_path.as_deref()
     }
 
-    fn has_mid_county_all_homes_path(&self) -> bool {
-        self.mid_county_all_homes_path.is_some()
-    }
-
-    fn mid_zip_all_homes_path(&self) -> &str {
-        self.mid_zip_all_homes_path.as_deref().unwrap_or("")
-    }
-
-    fn mid_city_all_homes_path(&self) -> &str {
-        self.mid_city_all_homes_path.as_deref().unwrap_or("")
-    }
-
-    fn mid_county_all_homes_path(&self) -> &str {
-        self.mid_county_all_homes_path.as_deref().unwrap_or("")
+    fn mid_county_all_homes_path(&self) -> Option<&str> {
+        self.mid_county_all_homes_path.as_deref()
     }
 }
 
@@ -223,20 +211,16 @@ pub(crate) fn read_zillow_zhvis(zhvi_config: &ZhviConfig) -> Result<ZhviData, Er
 
 fn read_all_homes_zhvis(zhvi_config: &ZhviConfig) -> Result<Zhvis, Error> {
     let mut all_homes = Zhvis::default();
-    if zhvi_config.has_mid_zip_all_homes_path() {
-        all_homes.append(&mut read_mid_zip_all_homes(
-            zhvi_config.mid_zip_all_homes_path(),
-        )?);
+    if let Some(mid_zip_all_homes_path) = zhvi_config.mid_zip_all_homes_path() {
+        all_homes.append(&mut read_mid_zip_all_homes(mid_zip_all_homes_path)?);
     }
-    if zhvi_config.has_mid_city_all_homes_path() {
-        all_homes.append(&mut read_mid_city_all_homes(
-            zhvi_config.mid_city_all_homes_path(),
-        )?);
+
+    if let Some(mid_city_all_homes_path) = zhvi_config.mid_city_all_homes_path() {
+        all_homes.append(&mut read_mid_city_all_homes(mid_city_all_homes_path)?);
     }
-    if zhvi_config.has_mid_county_all_homes_path() {
-        all_homes.append(&mut read_mid_county_all_homes(
-            zhvi_config.mid_county_all_homes_path(),
-        )?);
+
+    if let Some(mid_county_all_homes_path) = zhvi_config.mid_county_all_homes_path() {
+        all_homes.append(&mut read_mid_county_all_homes(mid_county_all_homes_path)?);
     }
     Ok(all_homes)
 }
@@ -256,13 +240,13 @@ fn read_mid_city_all_homes(mid_city_all_homes_path: &str) -> Result<Zhvis, Error
             let parts: Vec<&str> = headers
                 .iter()
                 .nth(i)
-                .unwrap_or_default()
+                .ok_or(Error::Parse("Failed to parse string to date".to_string()))?
                 .split('-')
                 .collect();
             let year = parts[0].parse()?;
             let month = parts[1].parse()?;
             let day = parts[2].parse()?;
-            let date = to_ymd_date(year, month, Some(day))?;
+            let date = to_ymd_date(year, month, day)?;
             let value = entry.0[i].parse().unwrap_or_default();
             prices.push(ZhviPrice { date, value });
         }
@@ -297,13 +281,13 @@ fn read_mid_county_all_homes(mid_county_all_homes_path: &str) -> Result<Zhvis, E
             let parts: Vec<&str> = headers
                 .iter()
                 .nth(i)
-                .unwrap_or_default()
+                .ok_or(Error::Parse("Failed to parse string to date".to_string()))?
                 .split('-')
                 .collect();
             let year = parts[0].parse()?;
             let month = parts[1].parse()?;
             let day = parts[2].parse()?;
-            let date = to_ymd_date(year, month, Some(day))?;
+            let date = to_ymd_date(year, month, day)?;
             let value = entry.0[i].parse().unwrap_or_default();
             prices.push(ZhviPrice { date, value });
         }
@@ -338,13 +322,13 @@ fn read_mid_zip_all_homes(mid_zip_all_homes_path: &str) -> Result<Zhvis, Error> 
             let parts: Vec<&str> = headers
                 .iter()
                 .nth(i)
-                .unwrap_or_default()
+                .ok_or(Error::Parse("Failed to parse string to date".to_string()))?
                 .split('-')
                 .collect();
             let year = parts[0].parse()?;
             let month = parts[1].parse()?;
             let day = parts[2].parse()?;
-            let date = to_ymd_date(year, month, Some(day))?;
+            let date = to_ymd_date(year, month, day)?;
             let value = entry.0[i].parse().unwrap_or_default();
             prices.push(ZhviPrice { date, value });
         }

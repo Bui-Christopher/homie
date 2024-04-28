@@ -32,7 +32,7 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
 async fn main() -> Result<(), Box<dyn Error>> {
     let config = CONFIG.get_or_init(Config::load_config);
 
-    let repo: Repository = Repository::new(config).await;
+    let repo = Repository::new(config).await?;
     let state = Arc::new(AppState::new(repo));
 
     let app = Router::new()

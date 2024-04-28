@@ -124,12 +124,8 @@ impl TYieldConfig {
         }
     }
 
-    fn has_ten_year_yield_path(&self) -> bool {
-        self.ten_year_yield_path.is_some()
-    }
-
-    fn ten_year_yield_path(&self) -> &str {
-        self.ten_year_yield_path.as_deref().unwrap_or("")
+    fn ten_year_yield_path(&self) -> Option<&str> {
+        self.ten_year_yield_path.as_deref()
     }
 }
 
@@ -139,8 +135,8 @@ impl TYieldConfig {
 
 pub(crate) fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldData, Error> {
     let mut t_yield_data = TYieldData::default();
-    if t_yield_config.has_ten_year_yield_path() {
-        t_yield_data.ten_year_yields = read_fed_ten_yields(t_yield_config.ten_year_yield_path())?;
+    if let Some(ten_year_yield_path) = t_yield_config.ten_year_yield_path() {
+        t_yield_data.ten_year_yields = read_fed_ten_yields(ten_year_yield_path)?;
     }
     Ok(t_yield_data)
 }
@@ -158,7 +154,7 @@ fn read_fed_ten_yields(fed_h15: &str) -> Result<TYields, Error> {
         let year = parts[0].parse()?;
         let month = parts[1].parse()?;
         let term = "TenYear".to_string();
-        let date = to_ymd_date(year, month, None)?;
+        let date = to_ymd_date(year, month, 1)?; // TODO: Random day here... Why?
         let yield_return = entry.0[1].parse().ok();
         ten_year_yields.push(TYield {
             term,

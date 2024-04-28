@@ -93,27 +93,35 @@ fn test_persistence() {
 
     println!("\nTesting TestStorage");
     let test_storage = TestStorage {};
-    let create = my_object.create(&test_storage).unwrap();
+    let create = my_object.create(&test_storage).expect("Failed to create");
     assert!(create);
-    let read = my_object.read(&test_storage, "Some Unique Key").unwrap();
+    let read = my_object
+        .read(&test_storage, "Some Unique Key")
+        .expect("Failed to read");
     assert!(read);
-    let update = my_object.update(&test_storage).unwrap();
+    let update = my_object.update(&test_storage).expect("Failed to update");
     assert!(update);
-    let delete = my_object.delete(&test_storage, "Some Unique Key").unwrap();
+    let delete = my_object
+        .delete(&test_storage, "Some Unique Key")
+        .expect("Failed to delete");
     assert!(delete);
 
     println!("\nTesting OtherTestStorage");
     let other_test_storage = OtherTestStorage {};
-    let create = my_object.create(&other_test_storage).unwrap();
+    let create = my_object
+        .create(&other_test_storage)
+        .expect("Failed to create");
     assert!(create);
     let read = my_object
         .read(&other_test_storage, "Some Unique Key")
-        .unwrap();
+        .expect("Failed to read");
     assert!(read);
-    let update = my_object.update(&other_test_storage).unwrap();
+    let update = my_object
+        .update(&other_test_storage)
+        .expect("Failed to update");
     assert!(update);
     let delete = my_object
         .delete(&other_test_storage, "Some Unique Key")
-        .unwrap();
+        .expect("Failed to delete");
     assert!(delete);
 }

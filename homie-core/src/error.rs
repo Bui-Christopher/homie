@@ -27,7 +27,7 @@ impl From<csv::Error> for Error {
 
 impl From<sqlx::Error> for Error {
     fn from(value: sqlx::Error) -> Self {
-        Error::Database(format!("Failed DB request: {}", value))
+        Error::Database(format!("Failed a DB request: {}", value))
     }
 }
 
@@ -40,6 +40,12 @@ impl From<std::num::ParseIntError> for Error {
 impl From<std::num::ParseFloatError> for Error {
     fn from(value: std::num::ParseFloatError) -> Self {
         Error::Parse(format!("Failed to parse float: {}", value))
+    }
+}
+
+impl From<std::env::VarError> for Error {
+    fn from(value: std::env::VarError) -> Self {
+        Error::Parse(format!("Failed to read from env: {}", value))
     }
 }
 

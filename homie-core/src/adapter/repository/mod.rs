@@ -3,6 +3,7 @@ use crate::adapter::repository::database::http::HttpClient;
 use crate::domain::hpi::HpiPersist;
 use crate::domain::t_yield::TYieldPersist;
 use crate::domain::zhvi::ZhviPersist;
+use crate::error::Error;
 
 pub mod database;
 
@@ -14,19 +15,19 @@ pub struct Repository {
 
 impl Repository {
     // Define a new function taking Config as a parameter
-    pub async fn new(config: &Config) -> Self {
-        let client = Repository::establish_session(config).await;
-        Repository { client }
+    pub async fn new(config: &Config) -> Result<Self, Error> {
+        let client = Repository::establish_session(config).await?;
+        Ok(Repository { client })
     }
 
     // Method to establish session using the provided config
-    async fn establish_session(config: &Config) -> Box<dyn Persist> {
+    async fn establish_session(config: &Config) -> Result<Box<dyn Persist>, Error> {
         if config.use_db {
             println!("Using PostgreSQL client.");
-            Box::new(PostgresClient::new(config).await)
+            Ok(Box::new(PostgresClient::new(config).await?))
         } else {
             println!("Using HTTP client.");
-            Box::new(HttpClient)
+            Ok(Box::new(HttpClient))
         }
     }
 

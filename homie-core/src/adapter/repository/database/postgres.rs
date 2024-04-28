@@ -16,13 +16,12 @@ pub struct PostgresClient {
 }
 
 impl PostgresClient {
-    pub async fn new(_config: &Config) -> Self {
+    pub async fn new(_config: &Config) -> Result<Self, Error> {
         let pool = PgPoolOptions::new()
             .max_connections(5)
-            .connect(&env::var("DATABASE_URL").unwrap())
-            .await
-            .unwrap();
-        PostgresClient { pool }
+            .connect(&env::var("DATABASE_URL")?)
+            .await?;
+        Ok(PostgresClient { pool })
     }
 
     fn pool(&self) -> &Pool<Postgres> {

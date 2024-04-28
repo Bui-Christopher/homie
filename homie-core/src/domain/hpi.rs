@@ -151,41 +151,30 @@ impl HpiConfig {
         }
     }
 
-    fn has_three_zip_hpi_path(&self) -> bool {
-        self.three_zip_hpis_path.is_some()
+    fn three_zip_hpi_path(&self) -> Option<&str> {
+        self.three_zip_hpis_path.as_deref()
     }
 
-    fn has_five_zip_hpi_path(&self) -> bool {
-        self.five_zip_hpis_path.is_some()
+    fn five_zip_hpi_path(&self) -> Option<&str> {
+        self.five_zip_hpis_path.as_deref()
     }
 
-    fn has_county_hpi_path(&self) -> bool {
-        self.county_hpis_path.is_some()
-    }
-
-    fn three_zip_hpi_path(&self) -> &str {
-        self.three_zip_hpis_path.as_deref().unwrap_or("")
-    }
-
-    fn five_zip_hpi_path(&self) -> &str {
-        self.five_zip_hpis_path.as_deref().unwrap_or("")
-    }
-
-    fn county_hpi_path(&self) -> &str {
-        self.county_hpis_path.as_deref().unwrap_or("")
+    fn county_hpi_path(&self) -> Option<&str> {
+        self.county_hpis_path.as_deref()
     }
 }
 
 pub(crate) fn read_fhfa_hpis(hpi_config: &HpiConfig) -> Result<HpiData, Error> {
     let mut hpi_data = HpiData::default();
-    if hpi_config.has_three_zip_hpi_path() {
-        hpi_data.three_zip_hpis = read_three_zip_fhfa_hpis(hpi_config.three_zip_hpi_path())?;
+
+    if let Some(three_zpi_hpi_path) = hpi_config.three_zip_hpi_path() {
+        hpi_data.three_zip_hpis = read_three_zip_fhfa_hpis(three_zpi_hpi_path)?;
     }
-    if hpi_config.has_five_zip_hpi_path() {
-        hpi_data.five_zip_hpis = read_five_zip_fhfa_hpis(hpi_config.five_zip_hpi_path())?;
+    if let Some(five_zpi_hpi_path) = hpi_config.five_zip_hpi_path() {
+        hpi_data.five_zip_hpis = read_five_zip_fhfa_hpis(five_zpi_hpi_path)?;
     }
-    if hpi_config.has_county_hpi_path() {
-        hpi_data.county_hpis = read_county_fhfa_hpis(hpi_config.county_hpi_path())?;
+    if let Some(county_hpi_path) = hpi_config.county_hpi_path() {
+        hpi_data.county_hpis = read_county_fhfa_hpis(county_hpi_path)?;
     }
     Ok(hpi_data)
 }
@@ -194,7 +183,6 @@ fn read_three_zip_fhfa_hpis(three_zip_path: &str) -> Result<Hpis, Error> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(three_zip_path)?;
-
     let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     Ok(entries
         .into_iter()
