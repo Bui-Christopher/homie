@@ -1,5 +1,4 @@
 use std::env;
-use std::error::Error;
 
 use async_trait::async_trait;
 use chrono::NaiveDate;
@@ -10,6 +9,7 @@ use crate::adapter::repository::{Config, Persist};
 use crate::domain::hpi::{Hpi, HpiPersist, HpiQuery, Hpis};
 use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
 use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviPrice, ZhviPrices, ZhviQuery, Zhvis};
+use crate::error::Error;
 
 pub struct PostgresClient {
     pool: Pool<Postgres>,
@@ -34,7 +34,7 @@ impl Persist for PostgresClient {}
 
 #[async_trait]
 impl HpiPersist for PostgresClient {
-    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), Box<dyn Error>> {
+    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), Error> {
         let record = query!(
             r#"
                 INSERT INTO hpis
@@ -51,11 +51,12 @@ impl HpiPersist for PostgresClient {
             hpi.hpi_2000_base() as Option<f32>,
         )
         .fetch_one(self.pool())
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
         Ok((record.region, record.year))
     }
 
-    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Box<dyn Error>> {
+    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Error> {
         let record = query_as!(
             Hpi,
             r#"
@@ -65,11 +66,12 @@ impl HpiPersist for PostgresClient {
             id.1,
         )
         .fetch_one(self.pool())
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
         Ok(record)
     }
 
-    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Box<dyn Error>> {
+    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Error> {
         query!(
             r#"
                 UPDATE hpis 
@@ -82,11 +84,12 @@ impl HpiPersist for PostgresClient {
             hpi.hpi() as Option<f32>,
         )
         .fetch_one(self.pool())
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
         Ok(())
     }
 
-    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Box<dyn Error>> {
+    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Error> {
         query!(
             r#"
                 DELETE FROM hpis 
@@ -97,11 +100,12 @@ impl HpiPersist for PostgresClient {
             id.1,
         )
         .fetch_one(self.pool())
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
         Ok(())
     }
 
-    async fn read_hpi_by_query(&self, hpi_query: &HpiQuery) -> Result<Hpis, Box<dyn Error>> {
+    async fn read_hpi_by_query(&self, hpi_query: &HpiQuery) -> Result<Hpis, Error> {
         let query = r#"
             SELECT * FROM hpis
             WHERE region = $1
@@ -113,7 +117,8 @@ impl HpiPersist for PostgresClient {
             .bind(hpi_query.start_date())
             .bind(hpi_query.end_date())
             .fetch_all(self.pool())
-            .await?;
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
         // .unwrap_or_else(|_| Vec::new());
         Ok(hpis)
     }
@@ -121,10 +126,7 @@ impl HpiPersist for PostgresClient {
 
 #[async_trait]
 impl TYieldPersist for PostgresClient {
-    async fn create_t_yield(
-        &self,
-        t_yield: &TYield,
-    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
+    async fn create_t_yield(&self, t_yield: &TYield) -> Result<(String, NaiveDate), Error> {
         let record = query!(
             r#"
                 INSERT INTO tyields
@@ -138,11 +140,12 @@ impl TYieldPersist for PostgresClient {
             *t_yield.yield_return() as Option<f32>
         )
         .fetch_one(self.pool())
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
         Ok((record.term, record.date))
     }
 
-    async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Box<dyn Error>> {
+    async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Error> {
         let record = query_as!(
             TYield,
             r#"
@@ -153,11 +156,12 @@ impl TYieldPersist for PostgresClient {
             id.1,
         )
         .fetch_one(self.pool())
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
         Ok(record)
     }
 
-    async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), Box<dyn Error>> {
+    async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), Error> {
         // TODO: Debug. Not sure why but we need RETURNING * here
         query!(
             r#"
@@ -171,11 +175,12 @@ impl TYieldPersist for PostgresClient {
             t_yield.yield_return() as _,
         )
         .fetch_one(self.pool())
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
         Ok(())
     }
 
-    async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), Box<dyn Error>> {
+    async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), Error> {
         query!(
             r#"
                 DELETE FROM tyields
@@ -185,14 +190,12 @@ impl TYieldPersist for PostgresClient {
             id.1,
         )
         .fetch_one(self.pool())
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
         Ok(())
     }
 
-    async fn read_t_yield_by_query(
-        &self,
-        t_yield_query: &TYieldQuery,
-    ) -> Result<TYields, Box<dyn Error>> {
+    async fn read_t_yield_by_query(&self, t_yield_query: &TYieldQuery) -> Result<TYields, Error> {
         let query = match t_yield_query.interval_date() {
             "Day" => {
                 "SELECT term, CAST(date AS DATE) AS date, CAST(AVG(yield_return) AS FLOAT4) AS \
@@ -209,18 +212,15 @@ impl TYieldPersist for PostgresClient {
                  CAST(AVG(yield_return) AS FLOAT4) AS yield_return FROM tyields WHERE date BETWEEN \
                  $1 AND $2 GROUP BY term, DATE_TRUNC('year', date) ORDER BY date"
             }
-            _ => {
-                return Err(Box::new(sqlx::Error::Protocol(
-                    "Invalid interval_date".into(),
-                )))
-            }
+            _ => return Err(Error::Parse("Failed to parse interval_date".to_string())),
         };
 
         let yields: Vec<TYield> = query_as(query)
             .bind(t_yield_query.start_date())
             .bind(t_yield_query.end_date())
             .fetch_all(self.pool())
-            .await?;
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
         // .unwrap_or_else(|_| Vec::new());
         Ok(yields)
     }
@@ -257,8 +257,13 @@ impl TryFrom<ZhviPricePgRow> for ZhviPrice {
 
 #[async_trait]
 impl ZhviPersist for PostgresClient {
-    async fn create_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>> {
-        let mut tx = self.pool().begin().await?;
+    async fn create_zhvi(&self, zhvi: &Zhvi) -> Result<(), Error> {
+        let mut tx = self
+            .pool()
+            .begin()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
+
         let home_type = zhvi.home_type();
         let region_type = zhvi.region_type();
         let region_name = zhvi.region_name();
@@ -275,7 +280,8 @@ impl ZhviPersist for PostgresClient {
             percentile,
         )
         .execute(&mut *tx)
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
 
         for price in zhvi.prices() {
             query!(
@@ -292,15 +298,22 @@ impl ZhviPersist for PostgresClient {
                 price.value as _
             )
             .execute(&mut *tx)
-            .await?;
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
         }
-        tx.commit().await?;
+        tx.commit()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
 
         Ok(())
     }
 
-    async fn read_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<Zhvi, Box<dyn Error>> {
-        let mut tx = self.pool().begin().await?;
+    async fn read_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<Zhvi, Error> {
+        let mut tx = self
+            .pool()
+            .begin()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
 
         // Query zhvi metadata
         let metadata = query_as!(
@@ -316,7 +329,8 @@ impl ZhviPersist for PostgresClient {
             id.3,
         )
         .fetch_one(&mut *tx)
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
 
         let prices = query_as!(
             ZhviPricePgRow,
@@ -331,13 +345,17 @@ impl ZhviPersist for PostgresClient {
             id.3,
         )
         .fetch_all(&mut *tx)
-        .await?
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?
         .into_iter()
         .map(ZhviPrice::try_from)
-        .collect::<Result<ZhviPrices, sqlx::Error>>()?;
+        .collect::<Result<ZhviPrices, sqlx::Error>>()
+        .map_err(|e| Error::Database(e.to_string()))?;
 
         // Commit the transaction
-        tx.commit().await?;
+        tx.commit()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
 
         // Combine metadata and prices to construct Zhvi
         let zhvi = Zhvi {
@@ -351,8 +369,12 @@ impl ZhviPersist for PostgresClient {
         Ok(zhvi)
     }
 
-    async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), Box<dyn Error>> {
-        let mut tx = self.pool().begin().await?;
+    async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), Error> {
+        let mut tx = self
+            .pool()
+            .begin()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
         let home_type = zhvi.home_type();
         let region_type = zhvi.region_type();
         let region_name = zhvi.region_name();
@@ -370,7 +392,8 @@ impl ZhviPersist for PostgresClient {
             percentile
         )
         .execute(&mut *tx)
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
 
         // Delete existing prices
         query!(
@@ -384,7 +407,8 @@ impl ZhviPersist for PostgresClient {
             percentile
         )
         .execute(&mut *tx)
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
 
         // Insert updated prices
         for price in zhvi.prices() {
@@ -401,16 +425,23 @@ impl ZhviPersist for PostgresClient {
                 &price.value as _
             )
             .execute(&mut *tx)
-            .await?;
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
         }
 
-        tx.commit().await?;
+        tx.commit()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
 
         Ok(())
     }
 
-    async fn delete_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<(), Box<dyn Error>> {
-        let mut tx = self.pool().begin().await?;
+    async fn delete_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<(), Error> {
+        let mut tx = self
+            .pool()
+            .begin()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
 
         query!(
             r#"
@@ -423,7 +454,8 @@ impl ZhviPersist for PostgresClient {
             id.3,
         )
         .execute(&mut *tx)
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
 
         query!(
             r#"
@@ -436,15 +468,22 @@ impl ZhviPersist for PostgresClient {
             id.3,
         )
         .execute(&mut *tx)
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
 
-        tx.commit().await?;
+        tx.commit()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
 
         Ok(())
     }
 
-    async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Box<dyn Error>> {
-        let mut tx = self.pool().begin().await?;
+    async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Error> {
+        let mut tx = self
+            .pool()
+            .begin()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
 
         let metadata = query_as!(
             ZhviMetadataPgRow,
@@ -459,7 +498,8 @@ impl ZhviPersist for PostgresClient {
             query.percentile(),
         )
         .fetch_all(&mut *tx)
-        .await?;
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
 
         let mut zhvis = vec![];
         for metadata in metadata {
@@ -480,10 +520,12 @@ impl ZhviPersist for PostgresClient {
                     query.end_date(),
                 )
                 .fetch_all(&mut *tx)
-                .await?
+                .await
+                .map_err(|e| Error::Database(e.to_string()))?
                 .into_iter()
                 .map(ZhviPrice::try_from)
-                .collect::<Result<ZhviPrices, sqlx::Error>>()?
+                .collect::<Result<ZhviPrices, sqlx::Error>>()
+                .map_err(|e| Error::Database(e.to_string()))?
             } else if query.interval_date() == "Year" {
                 query_as!(
                     ZhviPricePgRow,
@@ -501,12 +543,14 @@ impl ZhviPersist for PostgresClient {
                     query.end_date(),
                 )
                 .fetch_all(&mut *tx)
-                .await?
+                .await
+                .map_err(|e| Error::Database(e.to_string()))?
                 .into_iter()
                 .map(ZhviPrice::try_from)
-                .collect::<Result<ZhviPrices, sqlx::Error>>()?
+                .collect::<Result<ZhviPrices, sqlx::Error>>()
+                .map_err(|e| Error::Parse(e.to_string()))?
             } else {
-                return Err(Box::new(sqlx::Error::RowNotFound));
+                return Err(Error::Parse("Prices not found".to_string()));
             };
 
             let zhvi = Zhvi {
@@ -519,7 +563,9 @@ impl ZhviPersist for PostgresClient {
             zhvis.push(zhvi);
         }
 
-        tx.commit().await?;
+        tx.commit()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
 
         Ok(zhvis)
     }

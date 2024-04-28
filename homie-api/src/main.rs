@@ -4,15 +4,14 @@ use std::fmt::Debug;
 use std::sync::{Arc, OnceLock};
 
 use axum::extract::{Query, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
 use chrono::{Datelike, NaiveDate};
+use error::AppError;
 use homie_core::adapter::repository::{Config, Repository};
-use homie_core::domain::hpi::{Hpi, HpiQuery};
-use homie_core::domain::t_yield::{TYield, TYieldQuery};
-use homie_core::domain::zhvi::{Zhvi, ZhviQuery};
+use homie_core::domain::hpi::{Hpi, HpiQuery, Hpis};
+use homie_core::domain::t_yield::{TYield, TYieldQuery, TYields};
+use homie_core::domain::zhvi::{Zhvi, ZhviQuery, Zhvis};
 use serde::Deserialize;
 
 mod error;
@@ -54,93 +53,103 @@ async fn health() -> &'static str {
 async fn read_hpis(
     State(state): State<Arc<AppState>>,
     Query(param): Query<HpiParam>,
-) -> impl IntoResponse {
-    let query = param.into();
+) -> Result<Json<Hpis>, AppError> {
+    let query = param.try_into()?;
     let res = Hpi::read_by_query(state.repo.session(), &query)
         .await
         .unwrap();
-    (StatusCode::OK, Json(res))
+    Ok(Json(res))
 }
 
 async fn read_tyields(
     State(state): State<Arc<AppState>>,
     Query(param): Query<TYieldParam>,
-) -> impl IntoResponse {
-    let query = param.into();
+) -> Result<Json<TYields>, AppError> {
+    let query = param.try_into()?;
     let res = TYield::read_by_query(state.repo.session(), &query)
         .await
         .unwrap();
-    (StatusCode::OK, Json(res))
+    Ok(Json(res))
 }
 
 async fn read_zhvis(
     State(state): State<Arc<AppState>>,
     Query(param): Query<ZhviParam>,
-) -> impl IntoResponse {
-    let query = param.into();
+) -> Result<Json<Zhvis>, AppError> {
+    let query = param.try_into()?;
     let res = Zhvi::read_by_query(state.repo.session(), &query)
         .await
         .unwrap();
-    (StatusCode::OK, Json(res))
+    Ok(Json(res))
 }
 
 #[derive(Debug, Default, Deserialize)]
-pub struct HpiParam {
-    pub start_date: String,
-    pub end_date: String,
-    pub interval_date: Option<String>,
-    pub region_type: Option<String>,
-    pub region_name: String,
-    pub annual_change: Option<bool>,
-    pub base_2000: Option<bool>,
+struct HpiParam {
+    region_name: String,
+    start_date: String,
+    end_date: String,
+    // interval_date: String,
+    // region_type: String,
+    // annual_change: bool,
+    // base_2000: bool,
 }
 
-impl From<HpiParam> for HpiQuery {
-    fn from(value: HpiParam) -> Self {
-        let start_date = NaiveDate::parse_from_str(&value.start_date, "%Y-%m-%d").unwrap();
-        let end_date = NaiveDate::parse_from_str(&value.end_date, "%Y-%m-%d").unwrap();
+impl TryFrom<HpiParam> for HpiQuery {
+    type Error = AppError;
+
+    fn try_from(value: HpiParam) -> Result<Self, Self::Error> {
         let region_name = value.region_name.clone();
-        HpiQuery::new(region_name, start_date.year(), end_date.year())
+        let start_date = parse_naive_date(&value.start_date)?;
+        let end_date = parse_naive_date(&value.end_date)?;
+        Ok(HpiQuery::new(
+            region_name,
+            start_date.year(),
+            end_date.year(),
+        ))
     }
 }
 
 #[derive(Debug, Default, Deserialize)]
-pub struct TYieldParam {
-    pub start_date: String,
-    pub end_date: String,
-    pub interval_date: String, // Day, Month, Year
+struct TYieldParam {
+    start_date: String,
+    end_date: String,
+    interval_date: String, // Day, Month, Year
 }
 
-impl From<TYieldParam> for TYieldQuery {
-    fn from(value: TYieldParam) -> Self {
-        let start_date = NaiveDate::parse_from_str(&value.start_date, "%Y-%m-%d").unwrap();
-        let end_date = NaiveDate::parse_from_str(&value.end_date, "%Y-%m-%d").unwrap();
+impl TryFrom<TYieldParam> for TYieldQuery {
+    type Error = AppError;
+
+    fn try_from(value: TYieldParam) -> Result<Self, Self::Error> {
+        let start_date = parse_naive_date(&value.start_date)?;
+        let end_date = parse_naive_date(&value.end_date)?;
         let interval_date = value.interval_date.clone(); // Day, Month, Year
-        TYieldQuery::new(start_date, end_date, interval_date)
+        Ok(TYieldQuery::new(start_date, end_date, interval_date))
     }
 }
 
 #[derive(Debug, Default, Deserialize)]
-pub struct ZhviParam {
-    pub start_date: String,
-    pub end_date: String,
-    pub interval_date: String,
-    pub home_type: String,
-    pub region_type: String,
-    pub region_name: String,
-    pub percentile: String,
+struct ZhviParam {
+    start_date: String,
+    end_date: String,
+    interval_date: String,
+    home_type: String,
+    region_type: String,
+    region_name: String,
+    percentile: String,
 }
 
-impl From<ZhviParam> for ZhviQuery {
-    fn from(value: ZhviParam) -> Self {
-        let start_date = NaiveDate::parse_from_str(&value.start_date, "%Y-%m-%d").unwrap();
-        let end_date = NaiveDate::parse_from_str(&value.end_date, "%Y-%m-%d").unwrap();
+impl TryFrom<ZhviParam> for ZhviQuery {
+    type Error = AppError;
+
+    fn try_from(value: ZhviParam) -> Result<Self, Self::Error> {
+        let start_date = parse_naive_date(&value.start_date)?;
+        let end_date = parse_naive_date(&value.end_date)?;
         let interval_date = value.interval_date.clone(); // Day, Month, Year
         let home_type = value.home_type.clone();
         let region_type = value.region_type.clone();
         let region_name = value.region_name.clone();
         let percentile = value.percentile.clone();
-        Self::new(
+        Ok(Self::new(
             start_date,
             end_date,
             interval_date,
@@ -148,6 +157,11 @@ impl From<ZhviParam> for ZhviQuery {
             region_type,
             region_name,
             percentile,
-        )
+        ))
     }
+}
+
+fn parse_naive_date(input: &str) -> Result<NaiveDate, AppError> {
+    NaiveDate::parse_from_str(input, "%Y-%m-%d")
+        .map_err(|_| AppError::QueryParamParse("Failed to retrieve Date".to_string()))
 }

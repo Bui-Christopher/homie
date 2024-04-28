@@ -34,7 +34,7 @@ Please check http://localhost:3000.
 - [ ] homie-api
     - [x] Handle Request
     - [ ] Retrieve Data
-        - [ ] Postgres
+        - [x] Postgres
         - [ ] Zillow API
     - [ ] Return Response
         - [ ] Error handling
@@ -45,16 +45,15 @@ Please check http://localhost:3000.
     - [ ] Submit Request
     - [ ] Display Data in Graph
 - [ ] Local Development
-    - [ ] Automate creating database
-        - [ ] Create docker container to run `sqlx migrate run`
-        - [ ] Can also initialize with `docker exec`
+    - [x] Automate creating database
+        - [x] Can also initialize with `docker exec`
     - [ ] Reduce local datasets size
         - [ ] HPI
         - [ ] Region
     - [ ] Unit tests :sob:
 
 ## Additional TODOs
-- [ ] Reduce public struct/fn exposure
+- [x] Reduce public struct/fn exposure
 - [ ] Read Bulder Pattern
 - [ ] Deployment
     - [ ] CI

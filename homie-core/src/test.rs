@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fmt::Debug;
 
 use serde::{Deserialize, Serialize};
@@ -9,10 +8,10 @@ struct TestObject {}
 
 /// Database Persist Traits per Domain
 trait TestPersist: Send + Sync {
-    fn create_test(&self, test: &TestObject) -> Result<bool, Box<dyn Error>>;
-    fn read_test_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
-    fn update_test(&self, test: &TestObject) -> Result<bool, Box<dyn Error>>;
-    fn delete_test_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    fn create_test(&self, test: &TestObject) -> Result<bool, String>;
+    fn read_test_by_id(&self, id: &str) -> Result<bool, String>;
+    fn update_test(&self, test: &TestObject) -> Result<bool, String>;
+    fn delete_test_by_id(&self, id: &str) -> Result<bool, String>;
 }
 
 /// A persistence that the test object mocks storing
@@ -20,22 +19,22 @@ trait TestPersist: Send + Sync {
 struct TestStorage {}
 
 impl TestPersist for TestStorage {
-    fn create_test(&self, test: &TestObject) -> Result<bool, Box<dyn std::error::Error>> {
+    fn create_test(&self, test: &TestObject) -> Result<bool, String> {
         println!("Calling test create for: {:?} from TestStorage.", test);
         Ok(true)
     }
 
-    fn read_test_by_id(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
+    fn read_test_by_id(&self, id: &str) -> Result<bool, String> {
         println!("Calling test read with id: {id} from TestStorage.");
         Ok(true)
     }
 
-    fn update_test(&self, test: &TestObject) -> Result<bool, Box<dyn std::error::Error>> {
+    fn update_test(&self, test: &TestObject) -> Result<bool, String> {
         println!("Calling test update for: {:?} from TestStorage.", test);
         Ok(true)
     }
 
-    fn delete_test_by_id(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
+    fn delete_test_by_id(&self, id: &str) -> Result<bool, String> {
         println!("Calling test delete with id: {id} from TestStorage.");
         Ok(true)
     }
@@ -46,22 +45,22 @@ impl TestPersist for TestStorage {
 struct OtherTestStorage {}
 
 impl TestPersist for OtherTestStorage {
-    fn create_test(&self, test: &TestObject) -> Result<bool, Box<dyn std::error::Error>> {
+    fn create_test(&self, test: &TestObject) -> Result<bool, String> {
         println!("Calling test create for: {:?} from OtherTestStorage.", test);
         Ok(true)
     }
 
-    fn read_test_by_id(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
+    fn read_test_by_id(&self, id: &str) -> Result<bool, String> {
         println!("Calling test read with id: {id} from OtherTestStorage.");
         Ok(true)
     }
 
-    fn update_test(&self, test: &TestObject) -> Result<bool, Box<dyn std::error::Error>> {
+    fn update_test(&self, test: &TestObject) -> Result<bool, String> {
         println!("Calling test update for: {:?} from OtherTestStorage.", test);
         Ok(true)
     }
 
-    fn delete_test_by_id(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
+    fn delete_test_by_id(&self, id: &str) -> Result<bool, String> {
         println!("Calling test delete with id: {id} from OtherTestStorage.");
         Ok(true)
     }
@@ -75,19 +74,19 @@ fn test_persistence() {
 
     /// Calls to the Persist Traits
     impl TestObject {
-        pub fn create(&self, client: &dyn TestPersist) -> Result<bool, Box<dyn Error>> {
+        pub fn create(&self, client: &dyn TestPersist) -> Result<bool, String> {
             client.create_test(self)
         }
 
-        pub fn read(&self, client: &dyn TestPersist, id: &str) -> Result<bool, Box<dyn Error>> {
+        pub fn read(&self, client: &dyn TestPersist, id: &str) -> Result<bool, String> {
             client.read_test_by_id(id)
         }
 
-        pub fn update(&self, client: &dyn TestPersist) -> Result<bool, Box<dyn Error>> {
+        pub fn update(&self, client: &dyn TestPersist) -> Result<bool, String> {
             client.update_test(self)
         }
 
-        pub fn delete(&self, client: &dyn TestPersist, id: &str) -> Result<bool, Box<dyn Error>> {
+        pub fn delete(&self, client: &dyn TestPersist, id: &str) -> Result<bool, String> {
             client.delete_test_by_id(id)
         }
     }

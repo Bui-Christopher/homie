@@ -1,13 +1,11 @@
-use std::error::Error;
-
 use async_trait::async_trait;
 use chrono::NaiveDate;
-use rand::Rng;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 
 use crate::adapter::repository::Persist;
 use crate::domain::common::{to_ymd_date, CsvRecord};
+use crate::error::Error;
 
 #[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
 pub struct TYield {
@@ -17,20 +15,16 @@ pub struct TYield {
 }
 
 impl TYield {
-    pub fn term(&self) -> &str {
+    pub(crate) fn term(&self) -> &str {
         &self.term
     }
 
-    pub fn date(&self) -> &NaiveDate {
+    pub(crate) fn date(&self) -> &NaiveDate {
         &self.date
     }
 
-    pub fn yield_return(&self) -> &Option<f32> {
+    pub(crate) fn yield_return(&self) -> &Option<f32> {
         &self.yield_return
-    }
-
-    pub fn set_yield_return(&mut self, yield_return: Option<f32>) {
-        self.yield_return = yield_return
     }
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -62,86 +56,50 @@ impl TYieldQuery {
         }
     }
 
-    pub fn start_date(&self) -> &NaiveDate {
+    pub(crate) fn start_date(&self) -> &NaiveDate {
         &self.start_date
     }
 
-    pub fn end_date(&self) -> &NaiveDate {
+    pub(crate) fn end_date(&self) -> &NaiveDate {
         &self.end_date
     }
 
-    pub fn interval_date(&self) -> &str {
+    pub(crate) fn interval_date(&self) -> &str {
         &self.interval_date
     }
 }
 
 #[async_trait]
 pub trait TYieldPersist: Send + Sync {
-    async fn create_t_yield(&self, t_yield: &TYield)
-        -> Result<(String, NaiveDate), Box<dyn Error>>;
-    async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Box<dyn Error>>;
-    async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), Box<dyn Error>>;
-    async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), Box<dyn Error>>;
-    async fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYields, Box<dyn Error>>;
+    async fn create_t_yield(&self, t_yield: &TYield) -> Result<(String, NaiveDate), Error>;
+    async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Error>;
+    async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), Error>;
+    async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), Error>;
+    async fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYields, Error>;
 }
 
 impl TYield {
-    pub async fn create(
-        &self,
-        client: &dyn Persist,
-    ) -> Result<(String, NaiveDate), Box<dyn Error>> {
+    pub async fn create(&self, client: &dyn Persist) -> Result<(String, NaiveDate), Error> {
         client.create_t_yield(self).await
     }
 
-    pub async fn read(
-        client: &dyn Persist,
-        id: (&str, &NaiveDate),
-    ) -> Result<TYield, Box<dyn Error>> {
+    pub async fn read(client: &dyn Persist, id: (&str, &NaiveDate)) -> Result<TYield, Error> {
         client.read_t_yield_by_id(id).await
     }
 
-    pub async fn update(&self, client: &dyn Persist) -> Result<(), Box<dyn Error>> {
+    pub async fn update(&self, client: &dyn Persist) -> Result<(), Error> {
         client.update_t_yield(self).await
     }
 
-    pub async fn delete(
-        client: &dyn Persist,
-        id: (&str, &NaiveDate),
-    ) -> Result<(), Box<dyn Error>> {
+    pub async fn delete(client: &dyn Persist, id: (&str, &NaiveDate)) -> Result<(), Error> {
         client.delete_t_yield_by_id(id).await
     }
 
     pub async fn read_by_query(
         client: &dyn Persist,
         query: &TYieldQuery,
-    ) -> Result<TYields, Box<dyn Error>> {
+    ) -> Result<TYields, Error> {
         client.read_t_yield_by_query(query).await
-    }
-
-    // TODO: Delete
-    pub fn generate_dummy_data() -> Vec<TYield> {
-        let mut rng = rand::thread_rng();
-        let mut dummy_data = Vec::new();
-
-        // Generate dummy data for TenYearYield variant
-        for _ in 0..1 {
-            let date = NaiveDate::from_ymd_opt(
-                rng.gen_range(2020..=2020),
-                rng.gen_range(1..=12),
-                rng.gen_range(1..=28),
-            )
-            .unwrap();
-            let term = "TenYear".to_string();
-            let yield_return = Some(rng.gen::<f32>());
-            let ten_year_yield = TYield {
-                term,
-                date,
-                yield_return,
-            };
-            dummy_data.push(ten_year_yield);
-        }
-
-        dummy_data
     }
 }
 
@@ -155,12 +113,12 @@ impl Default for TYield {
     }
 }
 
-pub struct TYieldConfig {
+pub(crate) struct TYieldConfig {
     ten_year_yield_path: Option<String>,
 }
 
 impl TYieldConfig {
-    pub fn new(ten_year_yield_path: Option<String>) -> Self {
+    pub(crate) fn new(ten_year_yield_path: Option<String>) -> Self {
         TYieldConfig {
             ten_year_yield_path,
         }
@@ -179,7 +137,7 @@ impl TYieldConfig {
 // impl From<Entry> for TenTreasuryYield
 // Unit tests
 
-pub fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldData, Box<dyn Error>> {
+pub(crate) fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldData, Error> {
     let mut t_yield_data = TYieldData::default();
     if t_yield_config.has_ten_year_yield_path() {
         t_yield_data.ten_year_yields = read_fed_ten_yields(t_yield_config.ten_year_yield_path())?;
@@ -187,7 +145,7 @@ pub fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldData, Box<
     Ok(t_yield_data)
 }
 
-fn read_fed_ten_yields(fed_h15: &str) -> Result<TYields, Box<dyn Error>> {
+fn read_fed_ten_yields(fed_h15: &str) -> Result<TYields, Error> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(fed_h15)?;

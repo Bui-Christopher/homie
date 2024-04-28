@@ -1,10 +1,10 @@
 use std::env;
-use std::error::Error;
 
 use crate::adapter::repository::Config;
 use crate::domain::hpi::{read_fhfa_hpis, HpiConfig, HpiData};
 use crate::domain::t_yield::{read_fed_yields, TYieldConfig, TYieldData};
 use crate::domain::zhvi::{read_zillow_zhvis, ZhviConfig, ZhviData};
+use crate::error::Error;
 
 pub struct Importer {
     t_yield_config: TYieldConfig,
@@ -46,15 +46,15 @@ impl Importer {
 }
 
 impl Importer {
-    pub fn read_fed_yields(&self) -> Result<TYieldData, Box<dyn Error>> {
+    pub fn read_fed_yields(&self) -> Result<TYieldData, Error> {
         read_fed_yields(self.t_yield_config())
     }
 
-    pub fn read_fhfa_hpis(&self) -> Result<HpiData, Box<dyn Error>> {
+    pub fn read_fhfa_hpis(&self) -> Result<HpiData, Error> {
         read_fhfa_hpis(self.hpi_config())
     }
 
-    pub fn read_zillow_zhvis(&self) -> Result<ZhviData, Box<dyn Error>> {
+    pub fn read_zillow_zhvis(&self) -> Result<ZhviData, Error> {
         read_zillow_zhvis(self.zhvi_config())
     }
 

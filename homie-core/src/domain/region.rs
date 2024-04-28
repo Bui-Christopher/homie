@@ -1,8 +1,7 @@
-use std::error::Error;
-
 use serde::{Deserialize, Serialize};
 
 use crate::domain::common::CsvRecord;
+use crate::error::Error;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Region {
@@ -39,20 +38,22 @@ pub type Regions = Vec<Region>;
 // Unit tests
 
 pub trait RegionPersist: Send + Sync {
-    // fn create_region(&self, region: &Region) -> Result<bool, Box<dyn Error>>;
-    fn read_region_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
-    // fn update_region(&self, region: &Region) -> Result<bool, Box<dyn Error>>;
-    // fn delete_by_id(&self, id: &str) -> Result<bool, Box<dyn Error>>;
+    // fn create_region(&self, region: &Region) -> Result<bool,
+    // Error>;
+    fn read_region_by_id(&self, id: &str) -> Result<bool, Error>;
+    // fn update_region(&self, region: &Region) -> Result<bool,
+    // Error>; fn delete_by_id(&self, id: &str) -> Result<bool,
+    // Error>;
 }
 
-pub fn read_huduser_regions() -> Result<RegionData, Box<dyn Error>> {
+pub fn read_huduser_regions() -> Result<RegionData, Error> {
     let counties = read_county_zipcodes()?;
     let zipcodes = read_zip_counties()?;
 
     Ok(RegionData { counties, zipcodes })
 }
 
-fn read_county_zipcodes() -> Result<Regions, Box<dyn Error>> {
+fn read_county_zipcodes() -> Result<Regions, Error> {
     let huduser_crosswalk = "datasets/huduser-crosswalk/COUNTY_ZIP_122023.csv";
 
     let mut rdr = csv::ReaderBuilder::new()
@@ -79,7 +80,7 @@ fn read_county_zipcodes() -> Result<Regions, Box<dyn Error>> {
     Ok(counties)
 }
 
-fn read_zip_counties() -> Result<Regions, Box<dyn Error>> {
+fn read_zip_counties() -> Result<Regions, Error> {
     let huduser_crosswalk = "datasets/huduser-crosswalk/ZIP_COUNTY_122023.csv";
 
     let mut rdr = csv::ReaderBuilder::new()

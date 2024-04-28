@@ -1,12 +1,10 @@
-use std::error::Error;
-
 use async_trait::async_trait;
-use rand::Rng;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
 use crate::adapter::repository::Persist;
 use crate::domain::common::CsvRecord;
+use crate::error::Error;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, FromRow)]
 pub struct Hpi {
@@ -19,27 +17,27 @@ pub struct Hpi {
 }
 
 impl Hpi {
-    pub fn region(&self) -> &str {
+    pub(crate) fn region(&self) -> &str {
         &self.region
     }
 
-    pub fn year(&self) -> i32 {
+    pub(crate) fn year(&self) -> i32 {
         self.year
     }
 
-    pub fn hpi(&self) -> Option<f32> {
+    pub(crate) fn hpi(&self) -> Option<f32> {
         self.hpi
     }
 
-    pub fn annual_change(&self) -> Option<f32> {
+    pub(crate) fn annual_change(&self) -> Option<f32> {
         self.annual_change
     }
 
-    pub fn hpi_1990_base(&self) -> Option<f32> {
+    pub(crate) fn hpi_1990_base(&self) -> Option<f32> {
         self.hpi_1990_base
     }
 
-    pub fn hpi_2000_base(&self) -> Option<f32> {
+    pub(crate) fn hpi_2000_base(&self) -> Option<f32> {
         self.hpi_2000_base
     }
 }
@@ -62,33 +60,6 @@ impl HpiData {
 
     pub fn county_hpis(&self) -> &Hpis {
         &self.county_hpis
-    }
-
-    // TODO: Delete
-    pub fn generate_dummy_data() -> Vec<Hpi> {
-        let mut rng = rand::thread_rng();
-        let mut dummy_data = Vec::new();
-
-        // Generate dummy data for County variant
-        for _ in 0..2 {
-            let region = "Orange".to_string();
-            let year = rng.gen_range(2000..=2022);
-            let hpi = Some(rng.gen::<f32>());
-            let annual_change = Some(rng.gen::<f32>());
-            let hpi_1990_base = None;
-            let hpi_2000_base = None;
-            let county_hpi = Hpi {
-                region,
-                year,
-                hpi,
-                annual_change,
-                hpi_1990_base,
-                hpi_2000_base,
-            };
-            dummy_data.push(county_hpi);
-        }
-
-        dummy_data
     }
 }
 
@@ -113,49 +84,46 @@ impl HpiQuery {
         }
     }
 
-    pub fn region_name(&self) -> &str {
+    pub(crate) fn region_name(&self) -> &str {
         &self.region_name
     }
 
-    pub fn start_date(&self) -> i32 {
+    pub(crate) fn start_date(&self) -> i32 {
         self.start_date
     }
 
-    pub fn end_date(&self) -> i32 {
+    pub(crate) fn end_date(&self) -> i32 {
         self.end_date
     }
 }
 
 #[async_trait]
 pub trait HpiPersist: Send + Sync {
-    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), Box<dyn Error>>;
-    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Box<dyn Error>>;
-    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Box<dyn Error>>;
-    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Box<dyn Error>>;
-    async fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Box<dyn Error>>; // TODO
+    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), Error>;
+    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Error>;
+    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Error>;
+    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Error>;
+    async fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Error>;
 }
 
 impl Hpi {
-    pub async fn create(&self, client: &dyn Persist) -> Result<(String, i32), Box<dyn Error>> {
+    pub async fn create(&self, client: &dyn Persist) -> Result<(String, i32), Error> {
         client.create_hpi(self).await
     }
 
-    pub async fn read(client: &dyn Persist, id: (&str, i32)) -> Result<Hpi, Box<dyn Error>> {
+    pub async fn read(client: &dyn Persist, id: (&str, i32)) -> Result<Hpi, Error> {
         client.read_hpi_by_id(id).await
     }
 
-    pub async fn update(&self, client: &dyn Persist) -> Result<(), Box<dyn Error>> {
+    pub async fn update(&self, client: &dyn Persist) -> Result<(), Error> {
         client.update_hpi(self).await
     }
 
-    pub async fn delete(client: &dyn Persist, id: (&str, i32)) -> Result<(), Box<dyn Error>> {
+    pub async fn delete(client: &dyn Persist, id: (&str, i32)) -> Result<(), Error> {
         client.delete_hpi_by_id(id).await
     }
 
-    pub async fn read_by_query(
-        client: &dyn Persist,
-        query: &HpiQuery,
-    ) -> Result<Hpis, Box<dyn Error>> {
+    pub async fn read_by_query(client: &dyn Persist, query: &HpiQuery) -> Result<Hpis, Error> {
         client.read_hpi_by_query(query).await
     }
 }
@@ -208,7 +176,7 @@ impl HpiConfig {
     }
 }
 
-pub fn read_fhfa_hpis(hpi_config: &HpiConfig) -> Result<HpiData, Box<dyn Error>> {
+pub(crate) fn read_fhfa_hpis(hpi_config: &HpiConfig) -> Result<HpiData, Error> {
     let mut hpi_data = HpiData::default();
     if hpi_config.has_three_zip_hpi_path() {
         hpi_data.three_zip_hpis = read_three_zip_fhfa_hpis(hpi_config.three_zip_hpi_path())?;
@@ -222,7 +190,7 @@ pub fn read_fhfa_hpis(hpi_config: &HpiConfig) -> Result<HpiData, Box<dyn Error>>
     Ok(hpi_data)
 }
 
-fn read_three_zip_fhfa_hpis(three_zip_path: &str) -> Result<Hpis, Box<dyn Error>> {
+fn read_three_zip_fhfa_hpis(three_zip_path: &str) -> Result<Hpis, Error> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(three_zip_path)?;
@@ -249,7 +217,7 @@ fn read_three_zip_fhfa_hpis(three_zip_path: &str) -> Result<Hpis, Box<dyn Error>
         .collect())
 }
 
-fn read_five_zip_fhfa_hpis(five_zip_path: &str) -> Result<Hpis, Box<dyn Error>> {
+fn read_five_zip_fhfa_hpis(five_zip_path: &str) -> Result<Hpis, Error> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(five_zip_path)?;
@@ -276,7 +244,7 @@ fn read_five_zip_fhfa_hpis(five_zip_path: &str) -> Result<Hpis, Box<dyn Error>> 
         .collect())
 }
 
-fn read_county_fhfa_hpis(county_path: &str) -> Result<Hpis, Box<dyn Error>> {
+fn read_county_fhfa_hpis(county_path: &str) -> Result<Hpis, Error> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(county_path)?;
