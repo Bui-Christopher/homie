@@ -1,8 +1,0 @@
-# export TEN_YEAR_YIELD_PATH="homie-data/datasets/fed-h15/FRB_H15.csv"
-# export THREE_ZIP_HPIS_PATH="homie-data/datasets/fhfa-hpi/HPI_AT_BDL_ZIP3.csv"
-# export FIVE_ZIP_HPIS_PATH="homie-data/datasets/fhfa-hpi/HPI_AT_BDL_ZIP5.csv"
-# export COUNTY_HPIS_PATH="homie-data/datasets/fhfa-hpi/HPI_AT_BDL_county.csv"
-# export MID_ZIP_ALL_HOMES_PATH="homie-data/datasets/zillow-zhvi/all-homes/mid-tier/Zip_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv"
-# export MID_CITY_ALL_HOMES_PATH="homie-data/datasets/zillow-zhvi/all-homes/mid-tier/City_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv"
-# export MID_COUNTY_ALL_HOMES_PATH="homie-data/datasets/zillow-zhvi/all-homes/mid-tier/County_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv"
-# export DATABASE_URL="postgres://postgres:password@localhost:5433/homie"

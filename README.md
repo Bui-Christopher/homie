@@ -18,7 +18,8 @@ Before getting started, make sure you have Docker installed on your system.
 ```
 ./local_dev.sh
 ```
-This script will pull and run the required images. It will deploy locally, with a database, backend, and frontend. Please check http://localhost:3000.
+This script will pull and run the required images. It will locally deploy , with a database, backend, and frontend.
+Please check http://localhost:3000.
 
 ## TODOs 📋
 - [x] homie-core

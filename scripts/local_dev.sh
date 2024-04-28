@@ -20,15 +20,17 @@ until docker exec postgres_db pg_isready -U postgres &>/dev/null; do
 done
 tput rc; tput el; echo "(done)"; tput cud1
 
+DB_NAME=homie
+
 # Initialize Tables Migration
-sqlx migrate run
+pwd
+docker exec -i postgres_db psql -U postgres -d "$DB_NAME" < migrations/20240424014039_init_tables.sql
 
 # Write datasets to Postgres
 cd ..
-pwd
+# TODO: Run a container instead
 cargo run --bin homie-data
 
-DB_NAME=homie
 NAME=$(docker exec postgres_db psql -U postgres -d "$DB_NAME" -tAc "SELECT current_database();")
 echo "Checking database stats for: $NAME"
 
