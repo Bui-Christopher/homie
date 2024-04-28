@@ -59,6 +59,26 @@ pub struct ZhviQuery {
 }
 
 impl ZhviQuery {
+    pub fn new(
+        start_date: NaiveDate,
+        end_date: NaiveDate,
+        interval_date: String,
+        home_type: String,
+        region_type: String,
+        region_name: String,
+        percentile: String,
+    ) -> Self {
+        ZhviQuery {
+            start_date,
+            end_date,
+            interval_date,
+            home_type,
+            region_type,
+            region_name,
+            percentile,
+        }
+    }
+
     pub fn start_date(&self) -> &NaiveDate {
         &self.start_date
     }

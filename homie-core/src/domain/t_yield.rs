@@ -42,10 +42,6 @@ impl TYieldData {
     pub fn ten_year_yields(&self) -> &TYields {
         &self.ten_year_yields
     }
-
-    pub fn ten_year_yields_mut(&mut self) -> &mut TYields {
-        &mut self.ten_year_yields
-    }
 }
 
 pub type TYields = Vec<TYield>;
