@@ -198,15 +198,15 @@ impl ZhviConfig {
     }
 
     fn mid_zip_all_homes_path(&self) -> &str {
-        self.mid_zip_all_homes_path.as_ref().unwrap()
+        self.mid_zip_all_homes_path.as_deref().unwrap_or("")
     }
 
     fn mid_city_all_homes_path(&self) -> &str {
-        self.mid_city_all_homes_path.as_ref().unwrap()
+        self.mid_city_all_homes_path.as_deref().unwrap_or("")
     }
 
     fn mid_county_all_homes_path(&self) -> &str {
-        self.mid_county_all_homes_path.as_ref().unwrap()
+        self.mid_county_all_homes_path.as_deref().unwrap_or("")
     }
 }
 
@@ -253,11 +253,16 @@ fn read_mid_city_all_homes(mid_city_all_homes_path: &str) -> Result<Zhvis, Error
         // start at 8
         let mut prices = vec![];
         for i in 8..entry.0.len() {
-            let parts: Vec<&str> = headers.iter().nth(i).unwrap().split('-').collect();
-            let year = parts[0].parse().unwrap();
-            let month = parts[1].parse().unwrap();
-            let day = parts[2].parse().unwrap();
-            let date = to_ymd_date(year, month, Some(day)).unwrap();
+            let parts: Vec<&str> = headers
+                .iter()
+                .nth(i)
+                .unwrap_or_default()
+                .split('-')
+                .collect();
+            let year = parts[0].parse()?;
+            let month = parts[1].parse()?;
+            let day = parts[2].parse()?;
+            let date = to_ymd_date(year, month, Some(day))?;
             let value = entry.0[i].parse().unwrap_or_default();
             prices.push(ZhviPrice { date, value });
         }
@@ -289,11 +294,16 @@ fn read_mid_county_all_homes(mid_county_all_homes_path: &str) -> Result<Zhvis, E
         // start at 8
         let mut prices = vec![];
         for i in 9..entry.0.len() {
-            let parts: Vec<&str> = headers.iter().nth(i).unwrap().split('-').collect();
-            let year = parts[0].parse().unwrap();
-            let month = parts[1].parse().unwrap();
-            let day = parts[2].parse().unwrap();
-            let date = to_ymd_date(year, month, Some(day)).unwrap();
+            let parts: Vec<&str> = headers
+                .iter()
+                .nth(i)
+                .unwrap_or_default()
+                .split('-')
+                .collect();
+            let year = parts[0].parse()?;
+            let month = parts[1].parse()?;
+            let day = parts[2].parse()?;
+            let date = to_ymd_date(year, month, Some(day))?;
             let value = entry.0[i].parse().unwrap_or_default();
             prices.push(ZhviPrice { date, value });
         }
@@ -325,11 +335,16 @@ fn read_mid_zip_all_homes(mid_zip_all_homes_path: &str) -> Result<Zhvis, Error> 
         let mut prices = vec![];
         // start at 8
         for i in 9..entry.0.len() {
-            let parts: Vec<&str> = headers.iter().nth(i).unwrap().split('-').collect();
-            let year = parts[0].parse().unwrap();
-            let month = parts[1].parse().unwrap();
-            let day = parts[2].parse().unwrap();
-            let date = to_ymd_date(year, month, Some(day)).unwrap();
+            let parts: Vec<&str> = headers
+                .iter()
+                .nth(i)
+                .unwrap_or_default()
+                .split('-')
+                .collect();
+            let year = parts[0].parse()?;
+            let month = parts[1].parse()?;
+            let day = parts[2].parse()?;
+            let date = to_ymd_date(year, month, Some(day))?;
             let value = entry.0[i].parse().unwrap_or_default();
             prices.push(ZhviPrice { date, value });
         }

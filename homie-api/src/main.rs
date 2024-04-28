@@ -55,9 +55,7 @@ async fn read_hpis(
     Query(param): Query<HpiParam>,
 ) -> Result<Json<Hpis>, AppError> {
     let query = param.try_into()?;
-    let res = Hpi::read_by_query(state.repo.session(), &query)
-        .await
-        .unwrap();
+    let res = Hpi::read_by_query(state.repo.session(), &query).await?;
     Ok(Json(res))
 }
 
@@ -66,9 +64,7 @@ async fn read_tyields(
     Query(param): Query<TYieldParam>,
 ) -> Result<Json<TYields>, AppError> {
     let query = param.try_into()?;
-    let res = TYield::read_by_query(state.repo.session(), &query)
-        .await
-        .unwrap();
+    let res = TYield::read_by_query(state.repo.session(), &query).await?;
     Ok(Json(res))
 }
 
@@ -77,9 +73,7 @@ async fn read_zhvis(
     Query(param): Query<ZhviParam>,
 ) -> Result<Json<Zhvis>, AppError> {
     let query = param.try_into()?;
-    let res = Zhvi::read_by_query(state.repo.session(), &query)
-        .await
-        .unwrap();
+    let res = Zhvi::read_by_query(state.repo.session(), &query).await?;
     Ok(Json(res))
 }
 
@@ -127,7 +121,7 @@ impl TryFrom<TYieldParam> for TYieldQuery {
     }
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Deserialize)]
 struct ZhviParam {
     start_date: String,
     end_date: String,
@@ -162,6 +156,5 @@ impl TryFrom<ZhviParam> for ZhviQuery {
 }
 
 fn parse_naive_date(input: &str) -> Result<NaiveDate, AppError> {
-    NaiveDate::parse_from_str(input, "%Y-%m-%d")
-        .map_err(|_| AppError::QueryParamParse("Failed to retrieve Date".to_string()))
+    Ok(NaiveDate::parse_from_str(input, "%Y-%m-%d")?)
 }

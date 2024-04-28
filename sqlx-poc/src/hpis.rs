@@ -156,7 +156,6 @@ impl Hpi {
             .bind(hpi_query.end_date())
             .fetch_all(pool)
             .await?;
-        // .unwrap_or_else(|_| Vec::new());
         Ok(hpis)
     }
 }

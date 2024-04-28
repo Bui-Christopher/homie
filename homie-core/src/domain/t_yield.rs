@@ -129,7 +129,7 @@ impl TYieldConfig {
     }
 
     fn ten_year_yield_path(&self) -> &str {
-        self.ten_year_yield_path.as_ref().unwrap()
+        self.ten_year_yield_path.as_deref().unwrap_or("")
     }
 }
 
@@ -155,10 +155,10 @@ fn read_fed_ten_yields(fed_h15: &str) -> Result<TYields, Error> {
 
     for entry in entries.into_iter() {
         let parts: Vec<&str> = entry.0[0].split('-').collect();
-        let year = parts[0].parse().unwrap();
-        let month = parts[1].parse().unwrap();
+        let year = parts[0].parse()?;
+        let month = parts[1].parse()?;
         let term = "TenYear".to_string();
-        let date = to_ymd_date(year, month, None).unwrap();
+        let date = to_ymd_date(year, month, None)?;
         let yield_return = entry.0[1].parse().ok();
         ten_year_yields.push(TYield {
             term,

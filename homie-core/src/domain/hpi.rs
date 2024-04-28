@@ -164,15 +164,15 @@ impl HpiConfig {
     }
 
     fn three_zip_hpi_path(&self) -> &str {
-        self.three_zip_hpis_path.as_ref().unwrap()
+        self.three_zip_hpis_path.as_deref().unwrap_or("")
     }
 
     fn five_zip_hpi_path(&self) -> &str {
-        self.five_zip_hpis_path.as_ref().unwrap()
+        self.five_zip_hpis_path.as_deref().unwrap_or("")
     }
 
     fn county_hpi_path(&self) -> &str {
-        self.county_hpis_path.as_ref().unwrap()
+        self.county_hpis_path.as_deref().unwrap_or("")
     }
 }
 

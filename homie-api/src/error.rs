@@ -5,7 +5,7 @@ use serde::Serialize;
 
 pub enum AppError {
     QueryParamParse(String),
-    Database(),
+    Database(String),
 }
 
 impl IntoResponse for AppError {
@@ -17,31 +17,21 @@ impl IntoResponse for AppError {
 
         let (status, message) = match self {
             AppError::QueryParamParse(err) => (StatusCode::BAD_REQUEST, err),
-            AppError::Database() => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Something went wrong".to_owned(),
-            ),
+            AppError::Database(err) => (StatusCode::INTERNAL_SERVER_ERROR, err),
         };
 
         (status, Json(ErrorResponse { message })).into_response()
     }
 }
 
-// #[derive(Debug)]
-// pub enum ApiError {
-//     Auth { status_code: u16, message: String },
-//     Db { status_code: u16, message: String },
-//     Request { status_code: u16, message: String },
-// }
+impl From<chrono::ParseError> for AppError {
+    fn from(_value: chrono::ParseError) -> Self {
+        AppError::QueryParamParse("Failed to parse from time input".to_string())
+    }
+}
 
-// TokenError(#[from] TokenError),
-// UserError(#[from] UserError),
-// DbError(#[from] DbError),
-
-// #[derive(Debug, Error)]
-// pub enum RequestError {
-//     #[error(transparent)]
-//     ValidationError(#[from] validator::ValidationErrors),
-//     #[error(transparent)]
-//     JsonRejection(#[from] JsonRejection),
-// }
+impl From<homie_core::error::Error> for AppError {
+    fn from(_value: homie_core::error::Error) -> Self {
+        AppError::Database("Something unexpected happened when reading data".to_string())
+    }
+}

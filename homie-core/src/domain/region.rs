@@ -66,8 +66,8 @@ fn read_county_zipcodes() -> Result<Regions, Error> {
         let county = entry.0[0].clone();
         let zip = entry.0[1].clone();
         let city = entry.0[2].clone();
-        let res_ratio = entry.0[4].parse().unwrap();
-        let bus_ratio = entry.0[5].parse().unwrap();
+        let res_ratio = entry.0[4].parse()?;
+        let bus_ratio = entry.0[5].parse()?;
         counties.push(Region::County {
             zipcode: zip,
             county,
@@ -93,8 +93,8 @@ fn read_zip_counties() -> Result<Regions, Error> {
         let zip = entry.0[0].clone();
         let county = entry.0[1].clone();
         let city = entry.0[2].clone();
-        let res_ratio = entry.0[4].parse().unwrap();
-        let bus_ratio = entry.0[5].parse().unwrap();
+        let res_ratio = entry.0[4].parse()?;
+        let bus_ratio = entry.0[5].parse()?;
         zipcodes.push(Region::Zipcode {
             county,
             zipcode: zip,

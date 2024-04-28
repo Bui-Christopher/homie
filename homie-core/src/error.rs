@@ -1,5 +1,4 @@
-use std::error::Error as StdError;
-use std::fmt::{self, Debug, Display, Formatter};
+use std::fmt::{Debug, Display};
 
 #[derive(Debug)]
 pub enum Error {
@@ -10,7 +9,7 @@ pub enum Error {
 }
 
 impl Display for Error {
-    fn fmt(&self, f: &mut self::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
             Error::Config(ref message) => write!(f, "Config error: {}", message),
             Error::ConvertDomain(ref message) => write!(f, "Parse error: {}", message),
@@ -21,33 +20,31 @@ impl Display for Error {
 }
 
 impl From<csv::Error> for Error {
-    fn from(_value: csv::Error) -> Self {
-        todo!()
+    fn from(value: csv::Error) -> Self {
+        Error::Parse(format!("Failed to read from csv: {}", value))
     }
 }
 
-impl StdError for Error {
-    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+impl From<sqlx::Error> for Error {
+    fn from(value: sqlx::Error) -> Self {
+        Error::Database(format!("Failed DB request: {}", value))
+    }
+}
+
+impl From<std::num::ParseIntError> for Error {
+    fn from(value: std::num::ParseIntError) -> Self {
+        Error::Parse(format!("Failed to parse integer: {}", value))
+    }
+}
+
+impl From<std::num::ParseFloatError> for Error {
+    fn from(value: std::num::ParseFloatError) -> Self {
+        Error::Parse(format!("Failed to parse float: {}", value))
+    }
+}
+
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }
 }
-// Ok(entries
-//     .into_iter()
-//     .map(|entry| {
-//         let region = entry.0[0].clone();
-//         let year = entry.0[1].parse().map_err(|e|
-// Error::Parse(e.to_string()))?;         let annual_change =
-// entry.0[2].parse().map_err(|e| Error::Parse(e.to_string()))?;         let hpi
-// = entry.0[3].parse().ok();         let hpi_1990_base =
-// entry.0[4].parse().map_err(|e| Error::Parse(e.to_string()))?;         let
-// hpi_2000_base = entry.0[5].parse().map_err(|e| Error::Parse(e.to_string()));
-//         Ok(Hpi {
-//             region,
-//             year,
-//             annual_change,
-//             hpi,
-//             hpi_1990_base,
-//             hpi_2000_base,
-//         })
-//     })
-//     .collect())
