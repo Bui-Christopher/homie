@@ -9,15 +9,18 @@ It answers two vital questions:
 - What value of a mortgage interest rate is fair? 📈
 
 Current datasets include [Zillow](https://www.zillow.com/research/data/), [FHFA](https://www.fhfa.gov/DataTools/Downloads/Pages/House-Price-Index-Datasets.aspx), [Fed Treasury](https://www.federalreserve.gov/releases/h15/), and Huduser.
-<!-- TODO: Link each dataset -->
 
 ## Quick Start ⚡
+### Requirements
+Before getting started, make sure you have Docker installed on your system.
+
+### Running
 ```
-TODO: Local scrpts to run and test
+./local_dev.sh
 ```
+This script will pull and run the required images. It will deploy locally, with a database, backend, and frontend. Please check http://localhost:3000.
 
 ## TODOs 📋
-### General Outline
 - [x] homie-core
     - [x] Define Domain
     - [x] Define Adapters
@@ -37,14 +40,20 @@ TODO: Local scrpts to run and test
             - [ ] Custom
             - [ ] ThisError and Anyhow
 - [ ] homie-webapp
-    - [ ] Get Query Params
+    - [ ] Get User's Query Params
     - [ ] Submit Request
     - [ ] Display Data in Graph
-- [ ] Unit tests :sob:
+- [ ] Local Development
+    - [ ] Automate creating database
+        - [ ] Create docker container to run `sqlx migrate run`
+        - [ ] Can also initialize with `docker exec`
+    - [ ] Reduce local datasets size
+        - [ ] HPI
+        - [ ] Region
+    - [ ] Unit tests :sob:
 
-#### Additional Notes
+## Additional TODOs
 - [ ] Reduce public struct/fn exposure
 - [ ] Read Bulder Pattern
 - [ ] Deployment
-    - [ ] Local Deployment
     - [ ] CI

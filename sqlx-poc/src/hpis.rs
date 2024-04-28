@@ -72,7 +72,6 @@ impl Hpi {
     }
 
     pub async fn create(&self, pool: &Pool<Postgres>) -> Result<(String, i32), Box<dyn Error>> {
-        // TODO: Find a cleaner way to insert yield_return: Option<f32>
         let record = query!(
             r#"
             INSERT INTO hpis

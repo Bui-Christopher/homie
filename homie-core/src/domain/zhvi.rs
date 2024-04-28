@@ -292,14 +292,8 @@ fn read_mid_city_all_homes(mid_city_all_homes_path: &str) -> Result<Zhvis, Box<d
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(mid_city_all_homes_path)?;
-    // TODO: rdr.deserialize().into_iter()?.into().collect();
-
-    let mut entries = vec![];
     let mut mid_all_homes = vec![];
-    for result in rdr.deserialize() {
-        let r: CsvRecord = result?;
-        entries.push(r);
-    }
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     let headers = rdr.headers()?;
 
     for entry in entries.into_iter() {
@@ -334,16 +328,10 @@ fn read_mid_county_all_homes(mid_county_all_homes_path: &str) -> Result<Zhvis, B
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(mid_county_all_homes_path)?;
-    // TODO: rdr.deserialize().into_iter()?.into().collect();
 
-    let mut entries = vec![];
     let mut mid_all_homes = vec![];
-    for result in rdr.deserialize() {
-        let r: CsvRecord = result?;
-        entries.push(r);
-    }
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     let headers = rdr.headers()?;
-
     for entry in entries.into_iter() {
         // start at 8
         let mut prices = vec![];
@@ -376,16 +364,10 @@ fn read_mid_zip_all_homes(mid_zip_all_homes_path: &str) -> Result<Zhvis, Box<dyn
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(mid_zip_all_homes_path)?;
-    // TODO: rdr.deserialize().into_iter()?.into().collect();
 
-    let mut entries = vec![];
     let mut mid_all_homes = vec![];
-    for result in rdr.deserialize() {
-        let r: CsvRecord = result?;
-        entries.push(r);
-    }
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     let headers = rdr.headers()?;
-
     for entry in entries.into_iter() {
         let mut prices = vec![];
         // start at 8

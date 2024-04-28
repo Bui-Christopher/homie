@@ -12,7 +12,7 @@ use homie_core::adapter::repository::{Config, Repository};
 use homie_core::domain::hpi::{Hpi, HpiQuery};
 use homie_core::domain::t_yield::{TYield, TYieldQuery};
 use homie_core::domain::zhvi::{Zhvi, ZhviQuery};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 mod error;
 
@@ -82,8 +82,7 @@ async fn read_zhvis(
     (StatusCode::OK, Json(res))
 }
 
-// TODO: Remove Serialize (testing)
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct HpiParam {
     pub region_type: String, // Prob some enum
     pub region_id: String,
@@ -94,14 +93,14 @@ pub struct HpiParam {
     pub base_2000: Option<bool>,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct TYieldParam {
     pub state_date: String,
     pub end_date: String,
     pub interval: String, // Per Year/Month/Day
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct ZhviParam {
     pub state_date: String,
     pub end_date: String,

@@ -226,12 +226,7 @@ fn read_three_zip_fhfa_hpis(three_zip_path: &str) -> Result<Hpis, Box<dyn Error>
         .has_headers(true)
         .from_path(three_zip_path)?;
 
-    // TODO: rdr.deserialize().into_iter()?.into().collect();
-    let mut entries = vec![];
-    for result in rdr.deserialize() {
-        let r: CsvRecord = result?;
-        entries.push(r);
-    }
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     Ok(entries
         .into_iter()
         .map(|entry| {
@@ -258,13 +253,7 @@ fn read_five_zip_fhfa_hpis(five_zip_path: &str) -> Result<Hpis, Box<dyn Error>> 
         .has_headers(true)
         .from_path(five_zip_path)?;
 
-    // TODO: rdr.deserialize().into_iter()?.into().collect();
-    let mut entries = vec![];
-    for result in rdr.deserialize() {
-        let r: CsvRecord = result?;
-        entries.push(r);
-    }
-
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     Ok(entries
         .into_iter()
         .map(|entry| {
@@ -291,13 +280,7 @@ fn read_county_fhfa_hpis(county_path: &str) -> Result<Hpis, Box<dyn Error>> {
         .has_headers(true)
         .from_path(county_path)?;
 
-    // TODO: rdr.deserialize().into_iter()?.into().collect();
-    let mut entries = vec![];
-    for result in rdr.deserialize() {
-        let r: CsvRecord = result?;
-        entries.push(r);
-    }
-
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     Ok(entries
         .into_iter()
         .map(|entry| {

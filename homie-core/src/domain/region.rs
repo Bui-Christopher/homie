@@ -59,14 +59,8 @@ fn read_county_zipcodes() -> Result<Regions, Box<dyn Error>> {
         .has_headers(true)
         .from_path(huduser_crosswalk)?;
 
-    // TODO: rdr.deserialize().into_iter()?.into().collect();
-    let mut entries = vec![];
     let mut counties = vec![];
-    for result in rdr.deserialize() {
-        let r: CsvRecord = result?;
-        entries.push(r);
-    }
-
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     for entry in entries.into_iter() {
         let county = entry.0[0].clone();
         let zip = entry.0[1].clone();
@@ -92,14 +86,8 @@ fn read_zip_counties() -> Result<Regions, Box<dyn Error>> {
         .has_headers(true)
         .from_path(huduser_crosswalk)?;
 
-    // TODO: rdr.deserialize().into_iter()?.into().collect();
-    let mut entries = vec![];
     let mut zipcodes = vec![];
-    for result in rdr.deserialize() {
-        let r: CsvRecord = result?;
-        entries.push(r);
-    }
-
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     for entry in entries.into_iter() {
         let zip = entry.0[0].clone();
         let county = entry.0[1].clone();

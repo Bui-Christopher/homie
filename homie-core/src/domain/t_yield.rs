@@ -50,7 +50,6 @@ pub type TYields = Vec<TYield>;
 pub struct TYieldQuery {
     start_date: NaiveDate,
     end_date: NaiveDate,
-    // TODO: Maybe rename to date_interval
     interval_date: String, // Day, Month, Year
 }
 
@@ -193,13 +192,8 @@ fn read_fed_ten_yields(fed_h15: &str) -> Result<TYields, Box<dyn Error>> {
         .has_headers(true)
         .from_path(fed_h15)?;
 
-    // TODO: rdr.deserialize().into_iter()?.into().collect();
-    let mut entries = vec![];
     let mut ten_year_yields = vec![];
-    for result in rdr.deserialize() {
-        let r: CsvRecord = result?;
-        entries.push(r);
-    }
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
 
     for entry in entries.into_iter() {
         let parts: Vec<&str> = entry.0[0].split('-').collect();
