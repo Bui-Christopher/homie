@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM zhvi_metadata WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5770164489900beab15fe617d8eab4530cd0193d744dab6191699fdf565e4d6f"
+}

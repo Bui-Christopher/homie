@@ -1,0 +1,33 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO hpis\n            (region, year, hpi, annual_change, hpi_1990_base, hpi_2000_base)\n            VALUES ($1, $2, $3, $4, $5, $6)\n            ON CONFLICT (region, year) DO NOTHING\n            RETURNING region, year;\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "region",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "year",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4",
+        "Float4",
+        "Float4",
+        "Float4",
+        "Float4"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "95ecc1bddb21c6ff49c760965e34fa0409562411bfeed1bb51aa3fe056717b10"
+}

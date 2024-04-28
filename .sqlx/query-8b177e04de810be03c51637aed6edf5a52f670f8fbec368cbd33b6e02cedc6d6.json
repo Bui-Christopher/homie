@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE zhvi_metadata SET percentile = $1 WHERE home_type = $2 AND region_type = $3 AND region_name = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8b177e04de810be03c51637aed6edf5a52f670f8fbec368cbd33b6e02cedc6d6"
+}

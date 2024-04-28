@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO zhvi_prices (home_type, region_type, region_name, percentile, date, value) \n                 VALUES ($1, $2, $3, $4, $5, $6)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Text",
+        "Varchar",
+        "Date",
+        "Float8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "856525f959563d37dba3b8218b87f8c51af0e542e65b54f9cdfb673116393533"
+}
