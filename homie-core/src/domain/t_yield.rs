@@ -2,20 +2,35 @@ use async_trait::async_trait;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
+use sqlx::Type;
 
 use crate::adapter::repository::Persist;
 use crate::domain::common::{to_ymd_date, CsvRecord};
 use crate::error::Error;
 
+#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+#[sqlx(type_name = "term", rename_all = "lowercase")]
+pub enum Term {
+    TenYear,
+}
+
+impl std::fmt::Display for Term {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Term::TenYear => write!(f, "ten_year"),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
 pub struct TYield {
-    pub(crate) term: String,
+    pub(crate) term: Term,
     pub(crate) date: NaiveDate,
     pub(crate) yield_return: Option<f32>,
 }
 
 impl TYield {
-    pub(crate) fn term(&self) -> &str {
+    pub(crate) fn term(&self) -> &Term {
         &self.term
     }
 
@@ -106,7 +121,7 @@ impl TYield {
 impl Default for TYield {
     fn default() -> Self {
         TYield {
-            term: "TenYear".to_string(),
+            term: Term::TenYear,
             date: NaiveDate::default(),
             yield_return: Some(0.0),
         }
@@ -153,7 +168,7 @@ fn read_fed_ten_yields(fed_h15: &str) -> Result<TYields, Error> {
         let parts: Vec<&str> = entry.0[0].split('-').collect();
         let year = parts[0].parse()?;
         let month = parts[1].parse()?;
-        let term = "TenYear".to_string();
+        let term = Term::TenYear;
         let date = to_ymd_date(year, month, 1)?; // TODO: Random day here... Why?
         let yield_return = entry.0[1].parse().ok();
         ten_year_yields.push(TYield {

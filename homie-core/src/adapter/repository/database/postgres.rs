@@ -7,7 +7,7 @@ use sqlx::{query, query_as, FromRow, Pool, Postgres};
 
 use crate::adapter::repository::{Config, Persist};
 use crate::domain::hpi::{Hpi, HpiPersist, HpiQuery, Hpis};
-use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
+use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields, Term};
 use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviPrice, ZhviPrices, ZhviQuery, Zhvis};
 use crate::error::Error;
 
@@ -126,25 +126,26 @@ impl TYieldPersist for PostgresClient {
                 (term, date, yield_return)
                 VALUES ($1, $2, $3)
                 ON CONFLICT (term, date) DO NOTHING
-                RETURNING term, date;
+                RETURNING term AS "term: Term", date;
             "#,
-            t_yield.term(),
+            t_yield.term() as _,
             t_yield.date(),
             *t_yield.yield_return() as Option<f32>
         )
         .fetch_one(self.pool())
         .await?;
-        Ok((record.term, record.date))
+        Ok((record.term.to_string(), record.date))
     }
 
     async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Error> {
         let record = query_as!(
             TYield,
             r#"
-                SELECT * FROM tyields
+                SELECT term AS "term: Term", date, yield_return
+                FROM tyields
                 WHERE term = $1 AND date = $2
             "#,
-            id.0,
+            id.0 as _,
             id.1,
         )
         .fetch_one(self.pool())
@@ -153,15 +154,13 @@ impl TYieldPersist for PostgresClient {
     }
 
     async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), Error> {
-        // TODO: Debug. Not sure why but we need RETURNING * here
         query!(
             r#"
                 UPDATE tyields
                 SET yield_return = $3
                 WHERE term = $1 AND date = $2
-                RETURNING *;
             "#,
-            t_yield.term(),
+            t_yield.term() as _,
             t_yield.date(),
             t_yield.yield_return() as _,
         )
@@ -176,7 +175,7 @@ impl TYieldPersist for PostgresClient {
                 DELETE FROM tyields
                 WHERE term = $1 AND date = $2
             "#,
-            id.0,
+            id.0 as _,
             id.1,
         )
         .fetch_one(self.pool())
