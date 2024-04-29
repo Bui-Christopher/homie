@@ -1,4 +1,5 @@
 CREATE TYPE term AS ENUM ('tenyear');
+CREATE TYPE home_type AS ENUM ('allhomes', 'condococops', 'singlefamilyhomes');
 
 CREATE TABLE tyields (
     term term NOT NULL,
@@ -18,7 +19,7 @@ CREATE TABLE hpis (
 );
 
 CREATE TABLE zhvi_metadata (
-    home_type VARCHAR(20) NOT NULL,
+    home_type home_type NOT NULL,
     region_type VARCHAR(20) NOT NULL,
     region_name TEXT NOT NULL,
     percentile VARCHAR(20) NOT NULL,
@@ -26,7 +27,7 @@ CREATE TABLE zhvi_metadata (
 );
 
 CREATE TABLE zhvi_prices (
-    home_type VARCHAR(20) NOT NULL,
+    home_type home_type NOT NULL,
     region_type VARCHAR(20) NOT NULL,
     region_name TEXT NOT NULL,
     percentile VARCHAR(20) NOT NULL,

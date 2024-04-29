@@ -1,21 +1,46 @@
 use async_trait::async_trait;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
+use sqlx::Type;
 
 use crate::adapter::repository::Persist;
 use crate::domain::common::{to_ymd_date, CsvRecord};
 use crate::error::Error;
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Zhvi {
-    pub(crate) home_type: String,   // AllHomes/CondoCoOps/SingleFamilyHomes
+    pub(crate) home_type: HomeType,
     pub(crate) region_type: String, // Zipcode, City, County
     pub(crate) region_name: String,
     pub(crate) percentile: String, // Bottom, Middle, Top
     pub(crate) prices: ZhviPrices,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+#[sqlx(type_name = "home_type", rename_all = "lowercase")]
+pub enum HomeType {
+    AllHomes,
+    CondoCoOps,
+    SingleFamilyHomes,
+}
+
+impl Default for HomeType {
+    fn default() -> Self {
+        Self::AllHomes
+    }
+}
+
+impl std::fmt::Display for HomeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            HomeType::AllHomes => write!(f, "allhomes"),
+            HomeType::CondoCoOps => write!(f, "condocoops"),
+            HomeType::SingleFamilyHomes => write!(f, "singlefamilyhomes"),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ZhviPrice {
     pub(crate) date: NaiveDate,
     pub(crate) value: f64,
@@ -24,7 +49,7 @@ pub struct ZhviPrice {
 pub type ZhviPrices = Vec<ZhviPrice>;
 pub type Zhvis = Vec<Zhvi>;
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ZhviData {
     all_homes_zhvis: Zhvis,
     condo_coops_zhvis: Zhvis,
@@ -45,12 +70,12 @@ impl ZhviData {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ZhviQuery {
     start_date: NaiveDate,
     end_date: NaiveDate,
     interval_date: String, // Monthly or Yearly
-    home_type: String,
+    home_type: HomeType,
     region_type: String,
     region_name: String,
     percentile: String,
@@ -61,7 +86,7 @@ impl ZhviQuery {
         start_date: NaiveDate,
         end_date: NaiveDate,
         interval_date: String,
-        home_type: String,
+        home_type: HomeType,
         region_type: String,
         region_name: String,
         percentile: String,
@@ -89,7 +114,7 @@ impl ZhviQuery {
         &self.interval_date
     }
 
-    pub(crate) fn home_type(&self) -> &str {
+    pub(crate) fn home_type(&self) -> &HomeType {
         &self.home_type
     }
 
@@ -117,7 +142,7 @@ pub trait ZhviPersist: Send + Sync {
 }
 
 impl Zhvi {
-    pub(crate) fn home_type(&self) -> &str {
+    pub(crate) fn home_type(&self) -> &HomeType {
         &self.home_type
     }
 
@@ -250,7 +275,7 @@ fn read_mid_city_all_homes(mid_city_all_homes_path: &str) -> Result<Zhvis, Error
             let value = entry.0[i].parse().unwrap_or_default();
             prices.push(ZhviPrice { date, value });
         }
-        let home_type = "AllHomes".to_string();
+        let home_type = HomeType::AllHomes;
         let region_type = "City".to_string();
         let region_name = entry.0[2].clone();
         let percentile = "Middle".to_string();
@@ -291,7 +316,7 @@ fn read_mid_county_all_homes(mid_county_all_homes_path: &str) -> Result<Zhvis, E
             let value = entry.0[i].parse().unwrap_or_default();
             prices.push(ZhviPrice { date, value });
         }
-        let home_type = "AllHomes".to_string();
+        let home_type = HomeType::AllHomes;
         let region_type = "County".to_string();
         let region_name = entry.0[2].clone();
         let percentile = "Middle".to_string();
@@ -332,7 +357,7 @@ fn read_mid_zip_all_homes(mid_zip_all_homes_path: &str) -> Result<Zhvis, Error> 
             let value = entry.0[i].parse().unwrap_or_default();
             prices.push(ZhviPrice { date, value });
         }
-        let home_type = "AllHomes".to_string();
+        let home_type = HomeType::AllHomes;
         let region_type = "Zipcode".to_string();
         let region_name = entry.0[2].clone();
         let percentile = "Middle".to_string();

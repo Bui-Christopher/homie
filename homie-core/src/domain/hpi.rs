@@ -8,6 +8,7 @@ use crate::error::Error;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, FromRow)]
 pub struct Hpi {
+    // TODO: Should region_name/region_type be used?
     pub(crate) region: String, // ZIP3, ZIP5, County
     pub(crate) year: i32,
     pub(crate) hpi: Option<f32>,

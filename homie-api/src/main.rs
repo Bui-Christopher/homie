@@ -139,7 +139,7 @@ impl TryFrom<ZhviParam> for ZhviQuery {
         let start_date = parse_naive_date(&param.start_date)?;
         let end_date = parse_naive_date(&param.end_date)?;
         let interval_date = param.interval_date.clone(); // Day, Month, Year
-        let home_type = param.home_type.clone();
+        let home_type = homie_core::domain::zhvi::HomeType::AllHomes;
         let region_type = param.region_type.clone();
         let region_name = param.region_name.clone();
         let percentile = param.percentile.clone();

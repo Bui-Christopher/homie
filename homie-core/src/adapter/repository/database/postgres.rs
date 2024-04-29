@@ -8,7 +8,7 @@ use sqlx::{query, query_as, FromRow, Pool, Postgres};
 use crate::adapter::repository::{Config, Persist};
 use crate::domain::hpi::{Hpi, HpiPersist, HpiQuery, Hpis};
 use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields, Term};
-use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviPrice, ZhviPrices, ZhviQuery, Zhvis};
+use crate::domain::zhvi::{HomeType, Zhvi, ZhviPersist, ZhviPrice, ZhviPrices, ZhviQuery, Zhvis};
 use crate::error::Error;
 
 pub struct PostgresClient {
@@ -214,7 +214,7 @@ impl TYieldPersist for PostgresClient {
 
 #[derive(Debug, FromRow)]
 struct ZhviMetadataPgRow {
-    home_type: String,
+    home_type: HomeType,
     region_type: String,
     region_name: String,
     percentile: String,
@@ -225,7 +225,7 @@ struct ZhviPricePgRow {
     date: Option<NaiveDate>,
     value: f64,
     // Foreign Key that map to a Zhvi
-    home_type: String,
+    home_type: HomeType,
     region_type: String,
     region_name: String,
     percentile: String,
@@ -258,10 +258,10 @@ impl ZhviPersist for PostgresClient {
                 (home_type, region_type, region_name, percentile)
                 VALUES ($1, $2, $3, $4)
             "#,
-            home_type,
+            home_type as _,
             region_type,
             region_name,
-            percentile,
+            percentile
         )
         .execute(&mut *tx)
         .await?;
@@ -273,7 +273,7 @@ impl ZhviPersist for PostgresClient {
                     (home_type, region_type, region_name, percentile, date, value)
                     VALUES ($1, $2, $3, $4, $5, $6)
                 "#,
-                home_type,
+                home_type as _,
                 region_type,
                 region_name,
                 percentile,
@@ -295,11 +295,11 @@ impl ZhviPersist for PostgresClient {
         let metadata = query_as!(
             ZhviMetadataPgRow,
             r#"
-                SELECT home_type, region_type, region_name, percentile 
+                SELECT home_type AS "home_type: HomeType", region_type, region_name, percentile
                 FROM zhvi_metadata 
                 WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4
             "#,
-            id.0,
+            id.0 as _,
             id.1,
             id.2,
             id.3,
@@ -310,11 +310,11 @@ impl ZhviPersist for PostgresClient {
         let prices = query_as!(
             ZhviPricePgRow,
             r#"
-                SELECT home_type, region_type, region_name, percentile, date, value
+                SELECT home_type AS "home_type: HomeType", region_type, region_name, percentile, date, value
                 FROM zhvi_prices 
                 WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4
             "#,
-            id.0,
+            id.0 as _,
             id.1,
             id.2,
             id.3,
@@ -353,10 +353,10 @@ impl ZhviPersist for PostgresClient {
                 UPDATE zhvi_metadata
                 SET percentile = $1 WHERE home_type = $2 AND region_type = $3 AND region_name = $4
             "#,
-            home_type,
+            percentile,
+            home_type as _,
             region_type,
-            region_name,
-            percentile
+            region_name
         )
         .execute(&mut *tx)
         .await?;
@@ -367,7 +367,7 @@ impl ZhviPersist for PostgresClient {
                 DELETE FROM zhvi_prices
                 WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4
             "#,
-            home_type,
+            home_type as _,
             region_type,
             region_name,
             percentile
@@ -382,7 +382,7 @@ impl ZhviPersist for PostgresClient {
                     INSERT INTO zhvi_prices (home_type, region_type, region_name, percentile, date, value) 
                     VALUES ($1, $2, $3, $4, $5, $6)
                 "#,
-                home_type,
+                home_type as _,
                 region_type,
                 region_name,
                 percentile,
@@ -407,7 +407,7 @@ impl ZhviPersist for PostgresClient {
                 DELETE FROM zhvi_prices
                 WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4
             "#,
-            id.0,
+            id.0 as _,
             id.1,
             id.2,
             id.3,
@@ -420,7 +420,7 @@ impl ZhviPersist for PostgresClient {
                 DELETE FROM zhvi_metadata
                 WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4
             "#,
-            id.0,
+            id.0 as _,
             id.1,
             id.2,
             id.3,
@@ -439,11 +439,11 @@ impl ZhviPersist for PostgresClient {
         let metadata = query_as!(
             ZhviMetadataPgRow,
             r#"
-                SELECT home_type, region_type, region_name, percentile 
+                SELECT home_type AS "home_type: HomeType", region_type, region_name, percentile 
                 FROM zhvi_metadata 
                 WHERE home_type = $1 AND region_type = $2 AND region_name = $3 AND percentile = $4
             "#,
-            query.home_type(),
+            query.home_type() as _,
             query.region_type(),
             query.region_name(),
             query.percentile(),
@@ -457,12 +457,12 @@ impl ZhviPersist for PostgresClient {
                 sqlx::query_as!(
                     ZhviPricePgRow,
                     r#"
-                        SELECT home_type, region_type, region_name, percentile, date, value
+                        SELECT home_type AS "home_type: HomeType", region_type, region_name, percentile, date, value
                         FROM zhvi_prices 
                         WHERE home_type = $1 AND region_type = $2 AND region_name = $3
                         AND percentile = $4 AND date >= $5 AND date <= $6
                     "#,
-                    query.home_type(),
+                    query.home_type() as _,
                     query.region_type(),
                     query.region_name(),
                     query.percentile(),
@@ -478,12 +478,12 @@ impl ZhviPersist for PostgresClient {
                 query_as!(
                     ZhviPricePgRow,
                     r#"
-                        SELECT home_type, region_type, region_name, percentile, date, value
+                        SELECT home_type AS "home_type: HomeType", region_type, region_name, percentile, date, value
                         FROM zhvi_prices WHERE home_type = $1 AND region_type = $2
                         AND region_name = $3 AND percentile = $4 AND EXTRACT(MONTH FROM date) = 1
                         AND date >= $5 AND date <= $6
                     "#,
-                    query.home_type(),
+                    query.home_type() as _,
                     query.region_type(),
                     query.region_name(),
                     query.percentile(),

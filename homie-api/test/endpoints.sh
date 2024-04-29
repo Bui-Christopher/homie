@@ -21,7 +21,7 @@ echo
 echo
 
 echo "Testing /zhvis"
-curl -s -X GET 'http://127.0.0.1:8080/zhvis?start_date=2023-1-1&end_date=2024-12-31&interval_date=Year&home_type=AllHomes&region_type=City&region_name=Irvine&percentile=Middle' | jq . >> tmp.txt
+curl -s -X GET 'http://127.0.0.1:8080/zhvis?start_date=2023-1-1&end_date=2024-12-31&interval_date=Year&home_type=allhomes&region_type=City&region_name=Irvine&percentile=Middle' | jq . >> tmp.txt
 echo
 echo
 

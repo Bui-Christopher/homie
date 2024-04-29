@@ -103,6 +103,6 @@ impl ZhviPersist for HttpClient {
 
     async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Error> {
         println!("Calling zhvi read by: {:?} from HttpClient.", query);
-        Ok(vec![Zhvi::default()])
+        Ok(vec![])
     }
 }
