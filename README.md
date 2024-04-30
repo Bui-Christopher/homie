@@ -56,7 +56,7 @@ Please check http://localhost:3000.
     - [ ] ThisError and Anyhow
     - [ ] Logging
 - [ ] Deployment
-    - [ ] Dockerize
+    - [ ] [Dockerize](https://itnext.io/a-practical-guide-to-containerize-your-rust-application-with-docker-77e8a391b4a8)
     - [ ] Push to dockerhub
     - [ ] Read Zhvi from Zillow API
 - [ ] Testing 
