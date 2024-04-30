@@ -23,8 +23,9 @@ COPY --from=builder ./target/x86_64-unknown-linux-musl/release/homie-api homie-a
 ENTRYPOINT ["./homie-api"]
 
 # FROM rust:1.77.2-alpine3.18 as runner
-# RUN apk add --no-cache bash
+# RUN apk add --no-cache bash curl
 # COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 # COPY --from=builder ./target/x86_64-unknown-linux-musl/release/homie-api homie-api
+# EXPOSE 8080
 # ENTRYPOINT ["./homie-api"]
-# CMD /bin/bsh
+#

@@ -10,4 +10,3 @@ TAG="homie/homie-api:$VERSION"
 docker build \
     -f "$DOCKERFILE" "$REPO_ROOT" \
     -t "$TAG" \
-    --no-cache

@@ -17,9 +17,7 @@ ENV SQLX_OFFLINE true
 RUN cargo build --release --bin homie-data --target x86_64-unknown-linux-musl 
 
 ## Runner
-FROM rust:1.77.2-alpine3.18 as runner
-RUN apk add --no-cache bash
+FROM scratch as runner
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder ./target/x86_64-unknown-linux-musl/release//homie-data homie-data
-# ENTRYPOINT ["./homie-data"]
-CMD /bin/bash
+COPY --from=builder ./target/x86_64-unknown-linux-musl/release/homie-data homie-data
+ENTRYPOINT ["./homie-data"]

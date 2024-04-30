@@ -47,9 +47,9 @@ Please check http://localhost:3000.
         - [x] HPI
         - [x] Region
 - [ ] Optimize ZHVI (batch insert prices)
-- [ ] Refactor
+- [x] Refactor
     - [x] Reduce public struct/fn exposure
-    - [ ] Read Bulder Pattern
+    - [x] ~Read Bulder Pattern~ Won't use it, but I understand it
     - [x] Enums instead of Strings [Example](https://github.com/launchbadge/sqlx/discussions/3041)
     - [x] Repo/Import calls into Config
 - [ ] Error Handling
@@ -57,7 +57,7 @@ Please check http://localhost:3000.
     - [ ] Logging
 - [ ] Deployment
     - [x] [Dockerize](https://itnext.io/a-practical-guide-to-containerize-your-rust-application-with-docker-77e8a391b4a8)
-    - [ ] Push to dockerhub
+    - [x] ~Push to dockerhub~ Going to use bash script to build and deploy
     - [ ] Read Zhvi from Zillow API
 - [ ] Testing 
     - [ ] Unit tests :sob:
