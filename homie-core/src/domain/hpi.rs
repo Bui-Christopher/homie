@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
 use crate::adapter::repository::Persist;
-use crate::domain::common::CsvRecord;
+use crate::domain::util::CsvRecord;
 use crate::error::Error;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, FromRow)]

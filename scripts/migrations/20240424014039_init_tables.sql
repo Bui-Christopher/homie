@@ -1,5 +1,7 @@
 CREATE TYPE term AS ENUM ('tenyear');
 CREATE TYPE home_type AS ENUM ('allhomes', 'condococops', 'singlefamilyhomes');
+CREATE TYPE region_type AS ENUM ('threezip', 'fivezip', 'city', 'county');
+CREATE TYPE percentile AS ENUM ('bottom', 'middle', 'top');
 
 CREATE TABLE tyields (
     term term NOT NULL,
@@ -20,17 +22,17 @@ CREATE TABLE hpis (
 
 CREATE TABLE zhvi_metadata (
     home_type home_type NOT NULL,
-    region_type VARCHAR(20) NOT NULL,
+    region_type region_type NOT NULL,
     region_name TEXT NOT NULL,
-    percentile VARCHAR(20) NOT NULL,
+    percentile percentile NOT NULL,
     PRIMARY KEY (home_type, region_type, region_name, percentile)
 );
 
 CREATE TABLE zhvi_prices (
     home_type home_type NOT NULL,
-    region_type VARCHAR(20) NOT NULL,
+    region_type region_type NOT NULL,
     region_name TEXT NOT NULL,
-    percentile VARCHAR(20) NOT NULL,
+    percentile percentile NOT NULL,
     date DATE NOT NULL,
     value FLOAT8 NOT NULL,
     PRIMARY KEY (home_type, region_type, region_name, percentile, date),

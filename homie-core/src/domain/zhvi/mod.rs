@@ -4,15 +4,16 @@ use serde::{Deserialize, Serialize};
 use sqlx::Type;
 
 use crate::adapter::repository::Persist;
-use crate::domain::common::{to_ymd_date, CsvRecord};
+use crate::domain::common::DateInterval;
+use crate::domain::util::{to_ymd_date, CsvRecord};
 use crate::error::Error;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Zhvi {
     pub(crate) home_type: HomeType,
-    pub(crate) region_type: String, // Zipcode, City, County
+    pub(crate) region_type: RegionType,
     pub(crate) region_name: String,
-    pub(crate) percentile: String, // Bottom, Middle, Top
+    pub(crate) percentile: Percentile,
     pub(crate) prices: ZhviPrices,
 }
 
@@ -30,12 +31,102 @@ impl Default for HomeType {
     }
 }
 
+impl TryFrom<&str> for HomeType {
+    type Error = crate::error::Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "allhomes" => Ok(HomeType::AllHomes),
+            "condocoops" => Ok(HomeType::CondoCoOps),
+            "singlefamilyhomes" => Ok(HomeType::SingleFamilyHomes),
+            _ => Err(Error::Parse("Failed to parse HomeType".to_string())),
+        }
+    }
+}
+
 impl std::fmt::Display for HomeType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             HomeType::AllHomes => write!(f, "allhomes"),
             HomeType::CondoCoOps => write!(f, "condocoops"),
             HomeType::SingleFamilyHomes => write!(f, "singlefamilyhomes"),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+#[sqlx(type_name = "region_type", rename_all = "lowercase")]
+pub enum RegionType {
+    ThreeZip,
+    FiveZip,
+    City,
+    County,
+}
+
+impl Default for RegionType {
+    fn default() -> Self {
+        Self::City
+    }
+}
+
+impl TryFrom<&str> for RegionType {
+    type Error = crate::error::Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "threezip" => Ok(RegionType::ThreeZip),
+            "fivezip" => Ok(RegionType::FiveZip),
+            "city" => Ok(RegionType::City),
+            "county" => Ok(RegionType::County),
+            _ => Err(Error::Parse("Failed to parse RegionType".to_string())),
+        }
+    }
+}
+
+impl std::fmt::Display for RegionType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RegionType::ThreeZip => write!(f, "threezip"),
+            RegionType::FiveZip => write!(f, "fivezip"),
+            RegionType::City => write!(f, "city"),
+            RegionType::County => write!(f, "county"),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+#[sqlx(type_name = "percentile", rename_all = "lowercase")]
+pub enum Percentile {
+    Bottom,
+    Middle,
+    Top,
+}
+
+impl Default for Percentile {
+    fn default() -> Self {
+        Self::Middle
+    }
+}
+
+impl TryFrom<&str> for Percentile {
+    type Error = crate::error::Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "bottom" => Ok(Percentile::Bottom),
+            "middle" => Ok(Percentile::Middle),
+            "top" => Ok(Percentile::Top),
+            _ => Err(Error::Parse("Failed to parse Percentile".to_string())),
+        }
+    }
+}
+
+impl std::fmt::Display for Percentile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Percentile::Bottom => write!(f, "bottom"),
+            Percentile::Middle => write!(f, "middle"),
+            Percentile::Top => write!(f, "top"),
         }
     }
 }
@@ -74,27 +165,27 @@ impl ZhviData {
 pub struct ZhviQuery {
     start_date: NaiveDate,
     end_date: NaiveDate,
-    interval_date: String, // Monthly or Yearly
+    date_interval: DateInterval,
     home_type: HomeType,
     region_type: String,
     region_name: String,
-    percentile: String,
+    percentile: Percentile,
 }
 
 impl ZhviQuery {
     pub fn new(
         start_date: NaiveDate,
         end_date: NaiveDate,
-        interval_date: String,
+        date_interval: DateInterval,
         home_type: HomeType,
         region_type: String,
         region_name: String,
-        percentile: String,
+        percentile: Percentile,
     ) -> Self {
         ZhviQuery {
             start_date,
             end_date,
-            interval_date,
+            date_interval,
             home_type,
             region_type,
             region_name,
@@ -110,8 +201,8 @@ impl ZhviQuery {
         &self.end_date
     }
 
-    pub(crate) fn interval_date(&self) -> &str {
-        &self.interval_date
+    pub(crate) fn date_interval(&self) -> &DateInterval {
+        &self.date_interval
     }
 
     pub(crate) fn home_type(&self) -> &HomeType {
@@ -126,7 +217,7 @@ impl ZhviQuery {
         &self.region_name
     }
 
-    pub(crate) fn percentile(&self) -> &str {
+    pub(crate) fn percentile(&self) -> &Percentile {
         &self.percentile
     }
 }
@@ -146,7 +237,7 @@ impl Zhvi {
         &self.home_type
     }
 
-    pub(crate) fn region_type(&self) -> &str {
+    pub(crate) fn region_type(&self) -> &RegionType {
         &self.region_type
     }
 
@@ -154,7 +245,7 @@ impl Zhvi {
         &self.region_name
     }
 
-    pub(crate) fn percentile(&self) -> &str {
+    pub(crate) fn percentile(&self) -> &Percentile {
         &self.percentile
     }
 
@@ -276,9 +367,9 @@ fn read_mid_city_all_homes(mid_city_all_homes_path: &str) -> Result<Zhvis, Error
             prices.push(ZhviPrice { date, value });
         }
         let home_type = HomeType::AllHomes;
-        let region_type = "City".to_string();
+        let region_type = RegionType::City;
         let region_name = entry.0[2].clone();
-        let percentile = "Middle".to_string();
+        let percentile = Percentile::Middle;
         mid_all_homes.push(Zhvi {
             home_type,
             region_type,
@@ -317,9 +408,9 @@ fn read_mid_county_all_homes(mid_county_all_homes_path: &str) -> Result<Zhvis, E
             prices.push(ZhviPrice { date, value });
         }
         let home_type = HomeType::AllHomes;
-        let region_type = "County".to_string();
+        let region_type = RegionType::County;
         let region_name = entry.0[2].clone();
-        let percentile = "Middle".to_string();
+        let percentile = Percentile::Middle;
         mid_all_homes.push(Zhvi {
             home_type,
             region_type,
@@ -358,9 +449,9 @@ fn read_mid_zip_all_homes(mid_zip_all_homes_path: &str) -> Result<Zhvis, Error> 
             prices.push(ZhviPrice { date, value });
         }
         let home_type = HomeType::AllHomes;
-        let region_type = "Zipcode".to_string();
+        let region_type = RegionType::FiveZip;
         let region_name = entry.0[2].clone();
-        let percentile = "Middle".to_string();
+        let percentile = Percentile::Middle;
         mid_all_homes.push(Zhvi {
             home_type,
             region_type,

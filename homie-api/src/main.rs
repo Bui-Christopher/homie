@@ -9,9 +9,10 @@ use axum::{Json, Router};
 use chrono::{Datelike, NaiveDate};
 use error::AppError;
 use homie_core::adapter::repository::{Config, Repository};
+use homie_core::domain::common::DateInterval;
 use homie_core::domain::hpi::{Hpi, HpiQuery, Hpis};
 use homie_core::domain::t_yield::{TYield, TYieldQuery, TYields};
-use homie_core::domain::zhvi::{Zhvi, ZhviQuery, Zhvis};
+use homie_core::domain::zhvi::{HomeType, Percentile, Zhvi, ZhviQuery, Zhvis};
 use serde::Deserialize;
 
 mod error;
@@ -79,11 +80,10 @@ async fn read_zhvis(
 
 #[derive(Debug, Default, Deserialize)]
 struct HpiParam {
+    // region_type: String,
     region_name: String,
     start_date: String,
     end_date: String,
-    // interval_date: String,
-    // region_type: String,
     // annual_change: bool,
     // base_2000: bool,
 }
@@ -107,7 +107,7 @@ impl TryFrom<HpiParam> for HpiQuery {
 struct TYieldParam {
     start_date: String,
     end_date: String,
-    interval_date: String, // Day, Month, Year
+    date_interval: String,
 }
 
 impl TryFrom<TYieldParam> for TYieldQuery {
@@ -116,8 +116,8 @@ impl TryFrom<TYieldParam> for TYieldQuery {
     fn try_from(param: TYieldParam) -> Result<Self, Self::Error> {
         let start_date = parse_naive_date(&param.start_date)?;
         let end_date = parse_naive_date(&param.end_date)?;
-        let interval_date = param.interval_date.clone(); // Day, Month, Year
-        Ok(TYieldQuery::new(start_date, end_date, interval_date))
+        let date_interval = parse_date_interval(&param.date_interval)?;
+        Ok(TYieldQuery::new(start_date, end_date, date_interval))
     }
 }
 
@@ -125,7 +125,7 @@ impl TryFrom<TYieldParam> for TYieldQuery {
 struct ZhviParam {
     start_date: String,
     end_date: String,
-    interval_date: String,
+    date_interval: String,
     home_type: String,
     region_type: String,
     region_name: String,
@@ -138,15 +138,15 @@ impl TryFrom<ZhviParam> for ZhviQuery {
     fn try_from(param: ZhviParam) -> Result<Self, Self::Error> {
         let start_date = parse_naive_date(&param.start_date)?;
         let end_date = parse_naive_date(&param.end_date)?;
-        let interval_date = param.interval_date.clone(); // Day, Month, Year
-        let home_type = homie_core::domain::zhvi::HomeType::AllHomes;
+        let date_interval = parse_date_interval(&param.date_interval)?;
+        let home_type = parse_home_type(&param.home_type)?;
         let region_type = param.region_type.clone();
         let region_name = param.region_name.clone();
-        let percentile = param.percentile.clone();
+        let percentile = parse_percentile(&param.percentile)?;
         Ok(Self::new(
             start_date,
             end_date,
-            interval_date,
+            date_interval,
             home_type,
             region_type,
             region_name,
@@ -155,6 +155,21 @@ impl TryFrom<ZhviParam> for ZhviQuery {
     }
 }
 
+fn parse_home_type(input: &str) -> Result<HomeType, AppError> {
+    HomeType::try_from(input.to_ascii_lowercase().as_str())
+        .map_err(|_| AppError::InvalidQuery("Failed to read home type".to_string()))
+}
+
+fn parse_date_interval(input: &str) -> Result<DateInterval, AppError> {
+    DateInterval::try_from(input.to_ascii_lowercase().as_str())
+        .map_err(|_| AppError::InvalidQuery("Failed to read date interval".to_string()))
+}
+
 fn parse_naive_date(input: &str) -> Result<NaiveDate, AppError> {
     Ok(NaiveDate::parse_from_str(input, "%Y-%m-%d")?)
+}
+
+fn parse_percentile(input: &str) -> Result<Percentile, AppError> {
+    Percentile::try_from(input.to_ascii_lowercase().as_str())
+        .map_err(|_| AppError::InvalidQuery("Failed to read percentile".to_string()))
 }

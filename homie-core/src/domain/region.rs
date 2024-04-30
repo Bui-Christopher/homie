@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::common::CsvRecord;
+use crate::domain::util::CsvRecord;
 use crate::error::Error;
 
 #[derive(Debug, Serialize, Deserialize)]

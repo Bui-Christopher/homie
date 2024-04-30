@@ -1,14 +1,27 @@
-use chrono::NaiveDate;
-use serde::{Deserialize, Serialize};
-
 use crate::error::Error;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct CsvRecord(pub(crate) Vec<String>);
+#[derive(Clone, Debug, PartialEq)]
+pub enum DateInterval {
+    Day,
+    Month,
+    Year,
+}
 
-pub(crate) fn to_ymd_date(year: u32, month: u32, day: u32) -> Result<NaiveDate, Error> {
-    // If day is not present, default to 15
-    let year = year as i32;
-    NaiveDate::from_ymd_opt(year, month, day)
-        .ok_or_else(|| Error::Parse("Invalid date".to_string()))
+impl Default for DateInterval {
+    fn default() -> Self {
+        Self::Year
+    }
+}
+
+impl TryFrom<&str> for DateInterval {
+    type Error = crate::error::Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "day" => Ok(DateInterval::Day),
+            "month" => Ok(DateInterval::Month),
+            "year" => Ok(DateInterval::Year),
+            _ => Err(Error::Parse("Failed to parse DateInterval".to_string())),
+        }
+    }
 }

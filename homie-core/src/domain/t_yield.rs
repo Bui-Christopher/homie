@@ -4,8 +4,9 @@ use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use sqlx::Type;
 
+use super::common::DateInterval;
 use crate::adapter::repository::Persist;
-use crate::domain::common::{to_ymd_date, CsvRecord};
+use crate::domain::util::{to_ymd_date, CsvRecord};
 use crate::error::Error;
 
 #[derive(Clone, Debug, Deserialize, Serialize, Type)]
@@ -59,15 +60,15 @@ pub type TYields = Vec<TYield>;
 pub struct TYieldQuery {
     start_date: NaiveDate,
     end_date: NaiveDate,
-    interval_date: String, // Day, Month, Year
+    date_interval: DateInterval,
 }
 
 impl TYieldQuery {
-    pub fn new(start_date: NaiveDate, end_date: NaiveDate, interval_date: String) -> Self {
+    pub fn new(start_date: NaiveDate, end_date: NaiveDate, date_interval: DateInterval) -> Self {
         Self {
             start_date,
             end_date,
-            interval_date,
+            date_interval,
         }
     }
 
@@ -79,8 +80,8 @@ impl TYieldQuery {
         &self.end_date
     }
 
-    pub(crate) fn interval_date(&self) -> &str {
-        &self.interval_date
+    pub(crate) fn date_interval(&self) -> &DateInterval {
+        &self.date_interval
     }
 }
 
