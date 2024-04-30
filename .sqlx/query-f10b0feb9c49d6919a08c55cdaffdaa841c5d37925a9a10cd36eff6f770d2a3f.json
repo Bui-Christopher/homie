@@ -1,0 +1,48 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO tyields\n                (term, date, yield_return)\n                VALUES ($1, $2, $3)\n                ON CONFLICT (term, date) DO NOTHING\n                RETURNING term AS \"term: Term\", date;\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "term: Term",
+        "type_info": {
+          "Custom": {
+            "name": "term",
+            "kind": {
+              "Enum": [
+                "tenyear"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "term",
+            "kind": {
+              "Enum": [
+                "tenyear"
+              ]
+            }
+          }
+        },
+        "Date",
+        "Float4"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "f10b0feb9c49d6919a08c55cdaffdaa841c5d37925a9a10cd36eff6f770d2a3f"
+}

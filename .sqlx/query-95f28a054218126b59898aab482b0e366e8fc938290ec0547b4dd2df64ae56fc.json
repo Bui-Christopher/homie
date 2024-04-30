@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT term AS \"term: Term\", date, yield_return\n                FROM tyields\n                WHERE term = $1 AND date = $2\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "term: Term",
+        "type_info": {
+          "Custom": {
+            "name": "term",
+            "kind": {
+              "Enum": [
+                "tenyear"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 2,
+        "name": "yield_return",
+        "type_info": "Float4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "term",
+            "kind": {
+              "Enum": [
+                "tenyear"
+              ]
+            }
+          }
+        },
+        "Date"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "95f28a054218126b59898aab482b0e366e8fc938290ec0547b4dd2df64ae56fc"
+}

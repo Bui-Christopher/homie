@@ -1,18 +1,20 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                UPDATE zhvi_metadata\n                SET percentile = $1 WHERE home_type = $2 AND region_type = $3 AND region_name = $4\n            ",
+  "query": "\n                INSERT INTO zhvi_metadata\n                (region_name, region_type, home_type, percentile)\n                VALUES ($1, $2, $3, $4)\n            ",
   "describe": {
     "columns": [],
     "parameters": {
       "Left": [
+        "Text",
         {
           "Custom": {
-            "name": "percentile",
+            "name": "region_type",
             "kind": {
               "Enum": [
-                "bottom",
-                "middle",
-                "top"
+                "threezip",
+                "fivezip",
+                "city",
+                "county"
               ]
             }
           }
@@ -31,21 +33,19 @@
         },
         {
           "Custom": {
-            "name": "region_type",
+            "name": "percentile",
             "kind": {
               "Enum": [
-                "threezip",
-                "fivezip",
-                "city",
-                "county"
+                "bottom",
+                "middle",
+                "top"
               ]
             }
           }
-        },
-        "Text"
+        }
       ]
     },
     "nullable": []
   },
-  "hash": "8c6565e13d31b25c8dadc76ab62a299926294144fda1a3019e8d9abdfb6bc731"
+  "hash": "0f535962d1efa399a72805d0f5fa06e2a1fa5859407afe6e0ae5e4330434f737"
 }

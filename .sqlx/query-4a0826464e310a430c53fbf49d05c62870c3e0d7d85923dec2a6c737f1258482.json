@@ -1,10 +1,11 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                DELETE FROM tyields\n                WHERE term = $1 AND date = $2\n            ",
+  "query": "\n                UPDATE tyields\n                SET yield_return = $1\n                WHERE term = $2 AND date = $3\n            ",
   "describe": {
     "columns": [],
     "parameters": {
       "Left": [
+        "Float4",
         {
           "Custom": {
             "name": "term",
@@ -20,5 +21,5 @@
     },
     "nullable": []
   },
-  "hash": "5fac5bf15c767736650f4070830d880dd9bd5a03fa147318d0e2354b1dddd5ff"
+  "hash": "4a0826464e310a430c53fbf49d05c62870c3e0d7d85923dec2a6c737f1258482"
 }

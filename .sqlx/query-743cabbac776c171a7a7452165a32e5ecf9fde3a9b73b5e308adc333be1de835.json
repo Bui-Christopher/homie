@@ -1,0 +1,125 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT region_name, region_type AS \"region_type: RegionType\", home_type AS \"home_type: HomeType\", percentile AS \"percentile: Percentile\", date, value\n                        FROM zhvi_prices \n                        WHERE region_name = $1 AND region_type = $2 AND home_type = $3 AND percentile = $4\n                        AND date >= $5 AND date <= $6\n                    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "region_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "region_type: RegionType",
+        "type_info": {
+          "Custom": {
+            "name": "region_type",
+            "kind": {
+              "Enum": [
+                "threezip",
+                "fivezip",
+                "city",
+                "county"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "home_type: HomeType",
+        "type_info": {
+          "Custom": {
+            "name": "home_type",
+            "kind": {
+              "Enum": [
+                "allhomes",
+                "condococops",
+                "singlefamilyhomes"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "percentile: Percentile",
+        "type_info": {
+          "Custom": {
+            "name": "percentile",
+            "kind": {
+              "Enum": [
+                "bottom",
+                "middle",
+                "top"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 5,
+        "name": "value",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        {
+          "Custom": {
+            "name": "region_type",
+            "kind": {
+              "Enum": [
+                "threezip",
+                "fivezip",
+                "city",
+                "county"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "home_type",
+            "kind": {
+              "Enum": [
+                "allhomes",
+                "condococops",
+                "singlefamilyhomes"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "percentile",
+            "kind": {
+              "Enum": [
+                "bottom",
+                "middle",
+                "top"
+              ]
+            }
+          }
+        },
+        "Date",
+        "Date"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "743cabbac776c171a7a7452165a32e5ecf9fde3a9b73b5e308adc333be1de835"
+}
