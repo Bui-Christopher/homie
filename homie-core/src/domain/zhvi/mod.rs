@@ -167,7 +167,7 @@ pub struct ZhviQuery {
     end_date: NaiveDate,
     date_interval: DateInterval,
     home_type: HomeType,
-    region_type: String,
+    region_type: RegionType,
     region_name: String,
     percentile: Percentile,
 }
@@ -178,7 +178,7 @@ impl ZhviQuery {
         end_date: NaiveDate,
         date_interval: DateInterval,
         home_type: HomeType,
-        region_type: String,
+        region_type: RegionType,
         region_name: String,
         percentile: Percentile,
     ) -> Self {
@@ -209,7 +209,7 @@ impl ZhviQuery {
         &self.home_type
     }
 
-    pub(crate) fn region_type(&self) -> &str {
+    pub(crate) fn region_type(&self) -> &RegionType {
         &self.region_type
     }
 
@@ -282,6 +282,7 @@ impl Zhvi {
 // }
 // Unit Tests
 
+#[derive(Clone, Debug)]
 pub(crate) struct ZhviConfig {
     mid_zip_all_homes_path: Option<String>,
     mid_city_all_homes_path: Option<String>,

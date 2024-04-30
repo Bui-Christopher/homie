@@ -8,6 +8,11 @@ pub enum AppError {
     Fetch(String),
 }
 
+#[derive(Serialize)]
+struct ErrorResponse {
+    message: String,
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
@@ -15,10 +20,6 @@ impl IntoResponse for AppError {
             AppError::Fetch(err) => (StatusCode::INTERNAL_SERVER_ERROR, err),
         };
 
-        #[derive(Serialize)]
-        struct ErrorResponse {
-            message: String,
-        }
         (status, Json(ErrorResponse { message })).into_response()
     }
 }

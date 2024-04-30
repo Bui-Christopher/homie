@@ -30,7 +30,7 @@ Please check http://localhost:3000.
     - [x] Convert to Application Domain
     - [ ] Store into repository (Postgres)
         - [ ] Regions (cities/counties/zipcodes)
-- [ ] homie-api
+- [x] homie-api
     - [x] Handle Request
     - [x] Retrieve Data
     - [x] Return Response
@@ -49,15 +49,15 @@ Please check http://localhost:3000.
 - [ ] Refactor
     - [x] Reduce public struct/fn exposure
     - [ ] Read Bulder Pattern
-    - [ ] Enums instead of Strings [Example](https://github.com/launchbadge/sqlx/discussions/3041)
-    - [ ] Repo/Import calls into Config
+    - [x] Enums instead of Strings [Example](https://github.com/launchbadge/sqlx/discussions/3041)
+    - [x] Repo/Import calls into Config
 - [ ] Error Handling
     - [ ] Optimize ZHVI (batch insert prices)
     - [ ] ThisError and Anyhow
 - [ ] Deployment
     - [ ] Dockerize
     - [ ] Push to dockerhub
-    - [ ] Read from Zhvi from Zillow API
+    - [ ] Read Zhvi from Zillow API
 - [ ] Testing 
     - [ ] Unit tests :sob:
     - [ ] E2E tests :sob:

@@ -133,7 +133,8 @@ impl Hpi {
 // impl From<Entry> for RegionHPI
 // Unit tests
 
-pub struct HpiConfig {
+#[derive(Clone, Debug)]
+pub(crate) struct HpiConfig {
     three_zip_hpis_path: Option<String>,
     five_zip_hpis_path: Option<String>,
     county_hpis_path: Option<String>,

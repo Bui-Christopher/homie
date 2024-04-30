@@ -1,4 +1,5 @@
 use self::database::postgres::PostgresClient;
+use crate::adapter::config::Config;
 use crate::adapter::repository::database::http::HttpClient;
 use crate::domain::hpi::HpiPersist;
 use crate::domain::t_yield::TYieldPersist;
@@ -22,7 +23,7 @@ impl Repository {
 
     // Method to establish session using the provided config
     async fn establish_session(config: &Config) -> Result<Box<dyn Persist>, Error> {
-        if config.use_db {
+        if config.is_db_enabled() {
             println!("Using PostgreSQL client.");
             Ok(Box::new(PostgresClient::new(config).await?))
         } else {
@@ -34,17 +35,5 @@ impl Repository {
     // Getter method to access the client
     pub fn session(&self) -> &dyn Persist {
         &*self.client
-    }
-}
-
-// TODO: Refactor out
-// Maybe create RepositoryConfig trait
-pub struct Config {
-    use_db: bool,
-}
-
-impl Config {
-    pub fn load_config() -> Config {
-        Config { use_db: true }
     }
 }

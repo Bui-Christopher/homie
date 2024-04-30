@@ -129,6 +129,7 @@ impl Default for TYield {
     }
 }
 
+#[derive(Clone, Debug)]
 pub(crate) struct TYieldConfig {
     ten_year_yield_path: Option<String>,
 }

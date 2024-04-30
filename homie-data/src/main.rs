@@ -3,8 +3,9 @@
 use std::error::Error;
 use std::sync::OnceLock;
 
+use homie_core::adapter::config::Config;
 use homie_core::adapter::importer::Importer;
-use homie_core::adapter::repository::{Config, Repository};
+use homie_core::adapter::repository::Repository;
 
 use crate::util::read_and_write_datasets;
 
