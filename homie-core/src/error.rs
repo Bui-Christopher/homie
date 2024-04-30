@@ -1,6 +1,4 @@
-use std::fmt::{Debug, Display};
-
-#[derive(Debug)]
+#[derive(std::fmt::Debug)]
 pub enum Error {
     Config(String),
     ConvertDomain(String),
@@ -8,7 +6,7 @@ pub enum Error {
     Parse(String),
 }
 
-impl Display for Error {
+impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
             Error::Config(ref message) => write!(f, "Config error: {}", message),

@@ -5,13 +5,24 @@ start_time=$(date +%s)
 
 # Clean up old containers
 echo -n "Preparing local deployment... "
-docker-compose down --volumes > /dev/null 2>&1
+docker stop postgres_db &> /dev/null
+docker rm postgres_db &> /dev/null
+docker volume rm database_data &> /dev/null
 tput sc
 tput rc; tput el; echo "(done)"
 
 # Prepare the PostgreSQL Instance
 echo -n "Waiting on PostgreSQL to start... "
-docker-compose up -d > /dev/null 2>&1
+docker run -d \
+  --name postgres_db \
+  -p 5433:5432 \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_DB=homie \
+  -v database_data:/var/lib/postgresql/data \
+  postgres:16.2-alpine3.19 \
+  &> /dev/null
+
 tput sc
 time=1
 cols=$(tput cols)

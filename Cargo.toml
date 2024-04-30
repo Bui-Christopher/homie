@@ -2,7 +2,6 @@
 members = [
     "homie-api", "homie-core",
     "homie-data", "homie-webapp",
-    "sqlx-poc",
 ]
 resolver = "2"
 

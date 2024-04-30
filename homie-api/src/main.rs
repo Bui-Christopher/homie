@@ -1,5 +1,4 @@
 #![deny(clippy::all)]
-use std::error::Error;
 use std::sync::{Arc, OnceLock};
 
 use axum::extract::{Query, State};
@@ -20,7 +19,7 @@ mod util;
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<(), AppError> {
     let config = CONFIG.get_or_init(Config::load_config);
 
     let repo = Repository::new(config).await?;

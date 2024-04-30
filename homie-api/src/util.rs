@@ -85,17 +85,17 @@ impl TryFrom<ZhviParam> for ZhviQuery {
         let start_date = parse_naive_date(&param.start_date)?;
         let end_date = parse_naive_date(&param.end_date)?;
         let date_interval = parse_date_interval(&param.date_interval)?;
-        let home_type = parse_home_type(&param.home_type)?;
-        let region_type = parse_region_type(&param.region_type)?;
         let region_name = param.region_name.clone();
+        let region_type = parse_region_type(&param.region_type)?;
+        let home_type = parse_home_type(&param.home_type)?;
         let percentile = parse_percentile(&param.percentile)?;
         Ok(Self::new(
             start_date,
             end_date,
             date_interval,
-            home_type,
-            region_type,
             region_name,
+            region_type,
+            home_type,
             percentile,
         ))
     }

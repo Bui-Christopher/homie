@@ -5,11 +5,11 @@ use crate::domain::t_yield::TYieldConfig;
 use crate::domain::zhvi::ZhviConfig;
 
 pub struct Config {
-    use_db: bool,
-    t_yield_config: TYieldConfig,
+    use_zillow_api: bool,
     hpi_config: HpiConfig,
-    zhvi_config: ZhviConfig,
     // region_config: RegionConfig,
+    t_yield_config: TYieldConfig,
+    zhvi_config: ZhviConfig,
 }
 
 impl Config {
@@ -31,15 +31,15 @@ impl Config {
             mid_county_all_homes_path,
         );
         Config {
-            use_db: true,
+            use_zillow_api: false,
             t_yield_config,
             hpi_config,
             zhvi_config,
         }
     }
 
-    pub fn is_db_enabled(&self) -> bool {
-        self.use_db
+    pub fn is_zillow_api_enabled(&self) -> bool {
+        self.use_zillow_api
     }
 
     pub(crate) fn hpi_config(&self) -> HpiConfig {

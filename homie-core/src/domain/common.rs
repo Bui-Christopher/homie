@@ -1,16 +1,11 @@
 use crate::error::Error;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub enum DateInterval {
     Day,
     Month,
+    #[default]
     Year,
-}
-
-impl Default for DateInterval {
-    fn default() -> Self {
-        Self::Year
-    }
 }
 
 impl TryFrom<&str> for DateInterval {

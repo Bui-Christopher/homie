@@ -1,34 +1,28 @@
 use async_trait::async_trait;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use sqlx::Type;
 
 use crate::adapter::repository::Persist;
 use crate::domain::common::DateInterval;
 use crate::domain::util::{to_ymd_date, CsvRecord};
 use crate::error::Error;
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Zhvi {
-    pub(crate) home_type: HomeType,
-    pub(crate) region_type: RegionType,
     pub(crate) region_name: String,
+    pub(crate) region_type: RegionType,
+    pub(crate) home_type: HomeType,
     pub(crate) percentile: Percentile,
     pub(crate) prices: ZhviPrices,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type)]
 #[sqlx(type_name = "home_type", rename_all = "lowercase")]
 pub enum HomeType {
+    #[default]
     AllHomes,
     CondoCoOps,
     SingleFamilyHomes,
-}
-
-impl Default for HomeType {
-    fn default() -> Self {
-        Self::AllHomes
-    }
 }
 
 impl TryFrom<&str> for HomeType {
@@ -54,19 +48,14 @@ impl std::fmt::Display for HomeType {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type)]
 #[sqlx(type_name = "region_type", rename_all = "lowercase")]
 pub enum RegionType {
     ThreeZip,
     FiveZip,
+    #[default]
     City,
     County,
-}
-
-impl Default for RegionType {
-    fn default() -> Self {
-        Self::City
-    }
 }
 
 impl TryFrom<&str> for RegionType {
@@ -94,18 +83,13 @@ impl std::fmt::Display for RegionType {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type)]
 #[sqlx(type_name = "percentile", rename_all = "lowercase")]
 pub enum Percentile {
     Bottom,
+    #[default]
     Middle,
     Top,
-}
-
-impl Default for Percentile {
-    fn default() -> Self {
-        Self::Middle
-    }
 }
 
 impl TryFrom<&str> for Percentile {
@@ -131,7 +115,7 @@ impl std::fmt::Display for Percentile {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct ZhviPrice {
     pub(crate) date: NaiveDate,
     pub(crate) value: f64,
@@ -140,7 +124,7 @@ pub struct ZhviPrice {
 pub type ZhviPrices = Vec<ZhviPrice>;
 pub type Zhvis = Vec<Zhvi>;
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct ZhviData {
     all_homes_zhvis: Zhvis,
     condo_coops_zhvis: Zhvis,
@@ -161,14 +145,14 @@ impl ZhviData {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct ZhviQuery {
     start_date: NaiveDate,
     end_date: NaiveDate,
     date_interval: DateInterval,
-    home_type: HomeType,
-    region_type: RegionType,
     region_name: String,
+    region_type: RegionType,
+    home_type: HomeType,
     percentile: Percentile,
 }
 
@@ -177,18 +161,18 @@ impl ZhviQuery {
         start_date: NaiveDate,
         end_date: NaiveDate,
         date_interval: DateInterval,
-        home_type: HomeType,
-        region_type: RegionType,
         region_name: String,
+        region_type: RegionType,
+        home_type: HomeType,
         percentile: Percentile,
     ) -> Self {
         ZhviQuery {
             start_date,
             end_date,
             date_interval,
-            home_type,
-            region_type,
             region_name,
+            region_type,
+            home_type,
             percentile,
         }
     }
@@ -205,16 +189,16 @@ impl ZhviQuery {
         &self.date_interval
     }
 
-    pub(crate) fn home_type(&self) -> &HomeType {
-        &self.home_type
+    pub(crate) fn region_name(&self) -> &str {
+        &self.region_name
     }
 
     pub(crate) fn region_type(&self) -> &RegionType {
         &self.region_type
     }
 
-    pub(crate) fn region_name(&self) -> &str {
-        &self.region_name
+    pub(crate) fn home_type(&self) -> &HomeType {
+        &self.home_type
     }
 
     pub(crate) fn percentile(&self) -> &Percentile {
@@ -233,16 +217,16 @@ pub trait ZhviPersist: Send + Sync {
 }
 
 impl Zhvi {
-    pub(crate) fn home_type(&self) -> &HomeType {
-        &self.home_type
+    pub(crate) fn region_name(&self) -> &str {
+        &self.region_name
     }
 
     pub(crate) fn region_type(&self) -> &RegionType {
         &self.region_type
     }
 
-    pub(crate) fn region_name(&self) -> &str {
-        &self.region_name
+    pub(crate) fn home_type(&self) -> &HomeType {
+        &self.home_type
     }
 
     pub(crate) fn percentile(&self) -> &Percentile {
@@ -253,6 +237,7 @@ impl Zhvi {
         &self.prices
     }
 
+    // Persist fn's
     pub async fn create(&self, client: &dyn Persist) -> Result<(), Error> {
         client.create_zhvi(self).await
     }
@@ -274,15 +259,7 @@ impl Zhvi {
     }
 }
 
-// TODO:
-// impl Zhvi {
-//     fn from_entry_to_all_homes() -> Self {},
-//     fn from_entry_to_condo_coops() -> Self {},
-//     fn from_entry_to_single_family_homes() -> Self {},
-// }
-// Unit Tests
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct ZhviConfig {
     mid_zip_all_homes_path: Option<String>,
     mid_city_all_homes_path: Option<String>,

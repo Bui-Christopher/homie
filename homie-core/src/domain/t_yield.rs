@@ -1,19 +1,20 @@
 use async_trait::async_trait;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
-use sqlx::Type;
 
 use super::common::DateInterval;
 use crate::adapter::repository::Persist;
 use crate::domain::util::{to_ymd_date, CsvRecord};
 use crate::error::Error;
 
-#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type)]
 #[sqlx(type_name = "term", rename_all = "lowercase")]
 pub enum Term {
+    #[default]
     TenYear,
 }
+
+// TODO: TryFrom?
 
 impl std::fmt::Display for Term {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -23,7 +24,7 @@ impl std::fmt::Display for Term {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
 pub struct TYield {
     pub(crate) term: Term,
     pub(crate) date: NaiveDate,
@@ -43,7 +44,7 @@ impl TYield {
         &self.yield_return
     }
 }
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct TYieldData {
     ten_year_yields: TYields,
 }
@@ -56,7 +57,7 @@ impl TYieldData {
 
 pub type TYields = Vec<TYield>;
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct TYieldQuery {
     start_date: NaiveDate,
     end_date: NaiveDate,
@@ -119,17 +120,7 @@ impl TYield {
     }
 }
 
-impl Default for TYield {
-    fn default() -> Self {
-        TYield {
-            term: Term::TenYear,
-            date: NaiveDate::default(),
-            yield_return: Some(0.0),
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct TYieldConfig {
     ten_year_yield_path: Option<String>,
 }
@@ -145,10 +136,6 @@ impl TYieldConfig {
         self.ten_year_yield_path.as_deref()
     }
 }
-
-// TODO:
-// impl From<Entry> for TenTreasuryYield
-// Unit tests
 
 pub(crate) fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldData, Error> {
     let mut t_yield_data = TYieldData::default();

@@ -15,24 +15,21 @@ pub struct Repository {
 }
 
 impl Repository {
-    // Define a new function taking Config as a parameter
     pub async fn new(config: &Config) -> Result<Self, Error> {
         let client = Repository::establish_session(config).await?;
         Ok(Repository { client })
     }
 
-    // Method to establish session using the provided config
     async fn establish_session(config: &Config) -> Result<Box<dyn Persist>, Error> {
-        if config.is_db_enabled() {
-            println!("Using PostgreSQL client.");
-            Ok(Box::new(PostgresClient::new(config).await?))
-        } else {
+        if config.is_zillow_api_enabled() {
             println!("Using HTTP client.");
             Ok(Box::new(HttpClient))
+        } else {
+            println!("Using PostgreSQL client.");
+            Ok(Box::new(PostgresClient::new(config).await?))
         }
     }
 
-    // Getter method to access the client
     pub fn session(&self) -> &dyn Persist {
         &*self.client
     }

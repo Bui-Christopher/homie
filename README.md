@@ -16,7 +16,7 @@ Before getting started, make sure you have Docker installed on your system.
 
 ### Running
 ```
-./scripts/local_dev.sh
+./local/run.sh
 ```
 This script will pull and run the required images. It will locally deploy with a database, backend, and frontend.
 Please check http://localhost:3000.
@@ -46,14 +46,15 @@ Please check http://localhost:3000.
     - [x] Reduce local datasets size
         - [x] HPI
         - [x] Region
+- [ ] Optimize ZHVI (batch insert prices)
 - [ ] Refactor
     - [x] Reduce public struct/fn exposure
     - [ ] Read Bulder Pattern
     - [x] Enums instead of Strings [Example](https://github.com/launchbadge/sqlx/discussions/3041)
     - [x] Repo/Import calls into Config
 - [ ] Error Handling
-    - [ ] Optimize ZHVI (batch insert prices)
     - [ ] ThisError and Anyhow
+    - [ ] Logging
 - [ ] Deployment
     - [ ] Dockerize
     - [ ] Push to dockerhub

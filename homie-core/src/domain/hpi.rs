@@ -1,15 +1,15 @@
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
 
 use crate::adapter::repository::Persist;
 use crate::domain::util::CsvRecord;
 use crate::error::Error;
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, FromRow)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
 pub struct Hpi {
-    // TODO: Should region_name/region_type be used?
-    pub(crate) region: String, // ZIP3, ZIP5, County
+    // TODO: Use region_name/region_type
+    // pub(crate) region_type: RegionType
+    pub(crate) region: String, // ThreeZip, FiveZip, County
     pub(crate) year: i32,
     pub(crate) hpi: Option<f32>,
     pub(crate) annual_change: Option<f32>,
@@ -43,7 +43,7 @@ impl Hpi {
     }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct HpiData {
     three_zip_hpis: Hpis,
     five_zip_hpis: Hpis,
@@ -66,10 +66,10 @@ impl HpiData {
 
 pub type Hpis = Vec<Hpi>;
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct HpiQuery {
-    // region_type
-    region_name: String, // ThreeZip, FiveZip, County
+    // region_type: RegionType
+    region_name: String,
     start_date: i32,
     end_date: i32,
     // annual_change: Option<bool>,
@@ -128,10 +128,6 @@ impl Hpi {
         client.read_hpi_by_query(query).await
     }
 }
-
-// TODO:
-// impl From<Entry> for RegionHPI
-// Unit tests
 
 #[derive(Clone, Debug)]
 pub(crate) struct HpiConfig {
