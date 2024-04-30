@@ -1,16 +1,7 @@
 [config]
 default_to_workspace = false
 
-[tasks.build]
-dependencies = ["format"]
-command = "cargo"
-args = [
-    "build",
-    "--bins",
-    "--release",
-    "--locked",
-]
-
+# Tasks
 [tasks.format]
 command = "cargo"
 toolchain = "nightly"
@@ -36,20 +27,15 @@ args = [
 [tasks.local]
 command = "sh"
 args = [
-    "local_dev/run.sh",
+    "local/run.sh",
 ]
 
-[tasks.b]
-alias = "build"
-
+# Shortcuts
 [tasks.t]
 alias = "test"
 
-[tasks.c]
-alias = "clippy"
-
-[tasks.f]
-alias = "format"
-
 [tasks.l]
 alias = "local"
+
+[tasks.cf]
+dependencies = ["clippy", "format"]

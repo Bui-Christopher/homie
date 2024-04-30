@@ -22,7 +22,10 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
 async fn main() -> Result<(), AppError> {
     let config = CONFIG.get_or_init(Config::load_config);
 
-    let repo = Repository::new(config).await?;
+    let repo = Repository::new(config).await.map_err(|e| {
+        println!("{e}");
+        AppError::Fetch(e.to_string())
+    })?;
     let state = Arc::new(AppState::new(repo));
 
     let app = Router::new()
@@ -32,8 +35,17 @@ async fn main() -> Result<(), AppError> {
         .route("/tyields", get(read_tyields))
         .route("/zhvis", get(read_zhvis))
         .with_state(state);
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:8080").await?;
-    Ok(axum::serve(listener, app).await?)
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:8080")
+        .await
+        .map_err(|e| {
+            println!("{e}");
+            AppError::Fetch(e.to_string())
+        })?;
+    axum::serve(listener, app).await.map_err(|e| {
+        println!("{e}");
+        AppError::Fetch(e.to_string())
+    })?;
+    Ok(())
 }
 
 async fn health() -> &'static str {

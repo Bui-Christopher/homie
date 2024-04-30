@@ -5,16 +5,32 @@ start_time=$(date +%s)
 
 # Clean up old containers
 echo -n "Preparing local deployment... "
+tput sc
 docker stop postgres_db &> /dev/null
 docker rm postgres_db &> /dev/null
 docker volume rm database_data &> /dev/null
+
+docker stop homie_data &> /dev/null
+docker rm homie_data &> /dev/null
+
+docker stop homie_api &> /dev/null
+docker rm homie_api &> /dev/null
+
+# Clean up old network bridge
+docker network rm homie_network &> /dev/null
+tput rc; tput el; echo "(done)"
+
+# Create a user-defined bridge network
+echo -n "Creating Docker network... "
 tput sc
+docker network create homie_network &> /dev/null
 tput rc; tput el; echo "(done)"
 
 # Prepare the PostgreSQL Instance
 echo -n "Waiting on PostgreSQL to start... "
 docker run -d \
   --name postgres_db \
+  --network homie_network \
   -p 5433:5432 \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=password \
@@ -40,19 +56,22 @@ DB_NAME=homie
 docker exec -i postgres_db psql -U postgres -d "$DB_NAME" < migrations/20240424014039_init_tables.sql > /dev/null 2>&1
 
 # Write datasets to Postgres
-# Source the CSV file paths that are imported into DB
-source .env
-
-cd ..
 echo -n "Running homie-data and importing datasets... "
+docker run -d \
+  --name homie_data \
+  --network homie_network \
+  --env-file .docker.env \
+  -v "$DIR"/datasets:/datasets \
+  homie/homie-data:0.1.0 \
+  &> /dev/null
+sleep 2
+
 tput sc
-# TODO: Run a docker container instead
-cargo run --bin homie-data  > /dev/null 2>&1 &
-cargo_pid=$!
 time=1
 cols=$(tput cols)
-while ps -p $cargo_pid > /dev/null; do
+until [ "$(docker inspect -f '{{.State.Running}}' homie_data)" = "false" ]; do
     tput rc; tput el
+    time_position=$((cols - ${#time}))
     printf "(%s)" "$time"
     sleep 1
     time=$(expr $time + 1)
@@ -89,14 +108,17 @@ echo -e "\tNumber of rows in tyields table: $TYIELDS_COUNT"
 echo -e "\tNumber of rows in zhvi_metadata table: $ZHVI_METADATA_COUNT"
 echo -e "\tNumber of rows in zhvi_prices table: $ZHVI_PRICES_COUNT"
 
-unset TEN_YEAR_YIELD_PATH
-unset THREE_ZIP_HPIS_PATH
-unset FIVE_ZIP_HPIS_PATH
-unset COUNTY_HPIS_PATH
-unset MID_ZIP_ALL_HOMES_PATH
-unset MID_CITY_ALL_HOMES_PATH
-unset MID_COUNTY_ALL_HOMES_PATH
-unset DATABASE_URL
+echo -n "Running homie-api to serve datasets... "
+docker run -d \
+  --name homie_api \
+  --network homie_network \
+  --env-file .docker.env \
+  -p 8080:8080 \
+  homie/homie-api:0.1.0 \
+  # &> /dev/null
+
+echo "Curling and checking its health:"
+curl -s -X GET 'http://127.0.0.1:8080/health'
 
 end_time=$(date +%s)
 execution_time=$((end_time - start_time))
