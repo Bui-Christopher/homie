@@ -33,6 +33,7 @@ while true; do
     sleep 1
     time=$(expr $time + 1)
 done &
+loop_pid=$!
 
 docker stop postgres_db &> /dev/null
 docker rm postgres_db &> /dev/null
@@ -45,9 +46,9 @@ docker stop homie_api &> /dev/null
 docker rm homie_api &> /dev/null
 
 docker network rm homie_network &> /dev/null
-kill %1 >/dev/null 2>&1
+kill -TERM $loop_pid >/dev/null 2>&1
+wait $loop_pid 2>/dev/null
 tput rc; tput el; echo -e "(${GREEN}done${NC})"
-
 
 # Check if homie images exist
 echo "Checking if homie images exist... "
@@ -71,8 +72,10 @@ if ! docker images | grep -q "homie/homie-api"; then
         sleep 1
         time=$(expr $time + 1)
     done &
+    loop_pid=$!
     ./../docker/homie-api/build.sh &> /dev/null
-    kill %1 >/dev/null 2>&1
+    kill -TERM $loop_pid >/dev/null 2>&1
+    wait $loop_pid 2>/dev/null
     # Restore cursor position
     tput rc; tput el; echo -e "(${GREEN}done${NC})"
 fi
@@ -95,8 +98,10 @@ if ! docker images | grep -q "homie/homie-data"; then
         sleep 1
         time=$(expr $time + 1)
     done &
+    loop_pid=$!
     ./../docker/homie-data/build.sh &> /dev/null
-    kill %1 >/dev/null 2>&1
+    kill -TERM $loop_pid >/dev/null 2>&1
+    wait $loop_pid 2>/dev/null
     # Restore cursor position
     tput rc; tput el; echo -e "(${GREEN}done${NC})"
 fi
@@ -201,7 +206,7 @@ docker run -d \
     homie/homie-api:0.1.0 \
     &> /dev/null
 
-echo -e "\tHost Curl Response: $(curl -s -X GET 'http://127.0.0.1:8080/health')"
+echo -e "\tHost Curl Response: $(curl -s -X GET 'http://localhost:8080/health')"
 
 end_time=$(date +%s)
 execution_time=$((end_time - start_time))
