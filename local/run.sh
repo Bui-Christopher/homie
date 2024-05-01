@@ -57,9 +57,9 @@ row=0
 if ! docker images | grep -q "homie/homie-api"; then
     row=$(expr $row + 1)
     tput sc
-    tput cuu $row; tput cuf $col; tput el; printf "(${YELLOW}building${NC})"
+    tput cuu $row; tput cuf $col; tput el; printf "(${YELLOW}not found${NC})"
     tput rc
-    echo -en "\thomie-api image not found... "
+    echo -en "\thomie-api image building... "
     # Save cursor position
     tput sc
     time=0
@@ -83,9 +83,9 @@ fi
 if ! docker images | grep -q "homie/homie-data"; then
     row=$(expr $row + 1)
     tput sc
-    tput cuu $row; tput cuf $col; tput el; printf "(${YELLOW}building${NC})"
+    tput cuu $row; tput cuf $col; tput el; printf "(${YELLOW}not found${NC})"
     tput rc
-    echo -en "\thomie-data image not found... "
+    echo -en "\thomie-data image building... "
     # Save cursor position
     tput sc
     time=1
@@ -197,7 +197,8 @@ echo -e "\tNumber of rows in tyields table: $TYIELDS_COUNT"
 echo -e "\tNumber of rows in zhvi_metadata table: $ZHVI_METADATA_COUNT"
 echo -e "\tNumber of rows in zhvi_prices table: $ZHVI_PRICES_COUNT"
 
-echo "Running homie-api to serve datasets... "
+echo -n "Running homie-api to serve datasets... "
+tput sc
 docker run -d \
     --name homie_api \
     --network homie_network \
@@ -206,8 +207,14 @@ docker run -d \
     homie/homie-api:0.1.0 \
     &> /dev/null
 
-echo -e "\tHost Curl Response: $(curl -s -X GET 'http://localhost:8080/health')"
-
+sleep 2
+response=$(curl -s -X GET 'http://localhost:8080/health')
+expected_response="Service is running."
+if [ $? -eq 0 ] && [ "$response" = "$expected_response" ]; then
+    tput rc; tput el; echo -e "(${GREEN}success${NC})"
+else
+    tput rc; tput el; echo -e "(${RED}failed${NC})"
+fi
 end_time=$(date +%s)
 execution_time=$((end_time - start_time))
 echo -e "\nTotal execution time: $execution_time seconds"
