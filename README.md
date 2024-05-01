@@ -53,7 +53,7 @@ Please check http://localhost:3000.
     - [x] Enums instead of Strings [Example](https://github.com/launchbadge/sqlx/discussions/3041)
     - [x] Repo/Import calls into Config
 - [ ] Error Handling
-    - [ ] ThisError and Anyhow
+    - [x] ~ThisError and Anyhow~ Created a custom enum instead
     - [ ] Logging
 - [ ] Deployment
     - [x] [Dockerize](https://itnext.io/a-practical-guide-to-containerize-your-rust-application-with-docker-77e8a391b4a8)
