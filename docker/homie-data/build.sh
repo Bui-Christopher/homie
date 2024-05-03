@@ -12,6 +12,7 @@ else
     DOCKERFILE="$DIR/Dockerfile"
 fi
 
+echo "Using dockerfile: $DOCKERFILE"
 docker build \
     -f "$DOCKERFILE" "$REPO_ROOT" \
     -t "$TAG" \

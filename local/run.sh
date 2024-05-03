@@ -2,6 +2,8 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "$DIR" 
 
+docker info > /dev/null 2>&1 || { echo "Docker is not running"; exit 1; }
+
 # Function to clean up and exit
 cleanup_and_exit() {
     echo -e "\nCleaning up and exiting..."
