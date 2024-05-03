@@ -215,6 +215,13 @@ if [ $? -eq 0 ] && [ "$response" = "$expected_response" ]; then
 else
     tput rc; tput el; echo -e "(${RED}failed${NC})"
 fi
+
+echo -n "Removing homie-data (finished importing)... "
+tput sc
+docker stop homie_data &> /dev/null
+docker rm homie_data &> /dev/null
+tput rc; tput el; echo -e "(${GREEN}done${NC})"
+
 end_time=$(date +%s)
 execution_time=$((end_time - start_time))
 echo -e "\nTotal execution time: $execution_time seconds"

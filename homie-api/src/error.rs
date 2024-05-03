@@ -3,6 +3,8 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde::Serialize;
 
+use crate::trace_err;
+
 #[derive(Debug)]
 pub enum AppError {
     InvalidQuery(String),
@@ -28,19 +30,35 @@ impl IntoResponse for AppError {
 }
 
 impl From<chrono::ParseError> for AppError {
-    fn from(_: chrono::ParseError) -> Self {
-        AppError::InvalidQuery("Failed to parse from \"%Y-%m-%d\"".to_string())
+    fn from(err: chrono::ParseError) -> Self {
+        trace_err!(
+            AppError::InvalidQuery,
+            "Failed to parse from \"%Y-%m-%d\"",
+            err
+        )
     }
 }
 
 impl From<std::io::Error> for AppError {
-    fn from(_: std::io::Error) -> Self {
-        AppError::Serve("Failed to start server".to_string())
+    fn from(err: std::io::Error) -> Self {
+        trace_err!(AppError::Serve, "Failed to start server", err)
     }
 }
 
 impl From<homie_core::error::Error> for AppError {
-    fn from(_: homie_core::error::Error) -> Self {
-        AppError::Fetch("Something unexpected happened when fetching the data".to_string())
+    fn from(err: homie_core::error::Error) -> Self {
+        trace_err!(
+            AppError::Fetch,
+            "Something unexpected happened when fetching the data",
+            err
+        )
     }
+}
+
+#[macro_export]
+macro_rules! trace_err {
+    ($err_type:expr, $error_msg:expr, $err:expr) => {{
+        tracing::error!("{}", $err);
+        $err_type($error_msg.to_string())
+    }};
 }

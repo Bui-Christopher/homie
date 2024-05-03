@@ -7,6 +7,8 @@ use homie_core::domain::hpi::HpiQuery;
 use homie_core::domain::t_yield::TYieldQuery;
 use homie_core::domain::zhvi::{HomeType, Percentile, RegionType, ZhviQuery};
 use serde::Deserialize;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 
 use crate::error::AppError;
 
@@ -123,4 +125,14 @@ fn parse_percentile(input: &str) -> Result<Percentile, AppError> {
 fn parse_region_type(input: &str) -> Result<RegionType, AppError> {
     RegionType::try_from(input.to_ascii_lowercase().as_str())
         .map_err(|_| AppError::InvalidQuery("Failed to read region type".to_string()))
+}
+
+pub(crate) fn init_tracing() {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "homie=debug".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 }
