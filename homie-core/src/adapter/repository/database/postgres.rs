@@ -4,7 +4,7 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::{query, query_as, FromRow, Pool, Postgres};
 
 use crate::adapter::repository::{Config, Persist};
-use crate::domain::common::DateInterval;
+use crate::domain::common::{DateInterval, RegionType};
 use crate::domain::hpi::*;
 use crate::domain::t_yield::*;
 use crate::domain::zhvi::*;
@@ -36,12 +36,13 @@ impl HpiPersist for PostgresClient {
         let record = query!(
             r#"
                 INSERT INTO hpis
-                (region, year, hpi, annual_change, hpi_1990_base, hpi_2000_base)
-                VALUES ($1, $2, $3, $4, $5, $6)
-                ON CONFLICT (region, year) DO NOTHING
-                RETURNING region, year;
+                (region_name, region_type, year, hpi, annual_change, hpi_1990_base, hpi_2000_base)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                ON CONFLICT (region_name, year) DO NOTHING
+                RETURNING region_name, year;
             "#,
-            &hpi.region(),
+            &hpi.region_name(),
+            &hpi.region_type() as _,
             &hpi.year(),
             hpi.hpi() as Option<f32>,
             hpi.annual_change() as Option<f32>,
@@ -50,16 +51,16 @@ impl HpiPersist for PostgresClient {
         )
         .fetch_one(self.pool())
         .await?;
-        Ok((record.region, record.year))
+        Ok((record.region_name, record.year))
     }
 
     async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Error> {
         let record = query_as!(
             Hpi,
             r#"
-                SELECT *
+                SELECT region_name, region_type AS "region_type: RegionType", year, hpi, annual_change, hpi_1990_base, hpi_2000_base
                 FROM hpis
-                WHERE region = $1 AND year = $2
+                WHERE region_name = $1 AND year = $2
             "#,
             id.0,
             id.1,
@@ -74,11 +75,11 @@ impl HpiPersist for PostgresClient {
             r#"
                 UPDATE hpis 
                 SET hpi = $1
-                WHERE region = $2 AND year = $3
-                RETURNING region, year
+                WHERE region_name = $2 AND year = $3
+                RETURNING region_name, year
             "#,
             hpi.hpi() as Option<f32>,
-            hpi.region(),
+            hpi.region_name(),
             hpi.year(),
         )
         .fetch_one(self.pool())
@@ -90,8 +91,8 @@ impl HpiPersist for PostgresClient {
         query!(
             r#"
                 DELETE FROM hpis 
-                WHERE region = $1 AND year = $2
-                RETURNING region, year;
+                WHERE region_name = $1 AND year = $2
+                RETURNING region_name, year;
             "#,
             id.0,
             id.1,
@@ -104,7 +105,7 @@ impl HpiPersist for PostgresClient {
     async fn read_hpi_by_query(&self, hpi_query: &HpiQuery) -> Result<Hpis, Error> {
         let query = r#"
             SELECT * FROM hpis
-            WHERE region = $1
+            WHERE region_name = $1
             AND year >= $2
             AND year <= $3
         "#;

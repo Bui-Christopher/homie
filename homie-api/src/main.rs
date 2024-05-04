@@ -22,11 +22,12 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
     let config = CONFIG.get_or_init(Config::load_config);
-    init_tracing();
+    init_tracing()?;
 
-    let repo = Repository::new(config)
-        .await
-        .map_err(|e| AppError::Fetch(e.to_string()))?;
+    let repo = Repository::new(config).await.map_err(|e| {
+        tracing::warn!("Failed to set up repository");
+        AppError::Fetch(e.to_string())
+    })?;
     let state = Arc::new(AppState::new(repo));
 
     let app = Router::new()
@@ -47,12 +48,10 @@ async fn main() -> Result<(), AppError> {
                         .map(|matched_path| matched_path.as_str());
                     tracing::debug_span!("request", %method, %uri, matched_path)
                 })
-                // By default `TraceLayer` will log 5xx responses but we're doing our specific
-                // logging of errors so disable that
                 .on_failure(()),
         );
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await?;
-    tracing::info!("listening on {:?}", listener);
+    tracing::info!("listening on {:?}", listener.local_addr()?);
     axum::serve(listener, app).await?;
     Ok(())
 }
@@ -65,6 +64,7 @@ async fn read_hpis(
     State(state): State<Arc<AppState>>,
     Query(param): Query<HpiParam>,
 ) -> Result<Json<Hpis>, AppError> {
+    tracing::debug!("Reading HPIs with {:?}", serde_json::to_string(&param)?);
     let query = param.try_into()?;
     let hpis = Hpi::read_by_query(state.session(), &query).await?;
     Ok(Json(hpis))
@@ -74,6 +74,7 @@ async fn read_tyields(
     State(state): State<Arc<AppState>>,
     Query(param): Query<TYieldParam>,
 ) -> Result<Json<TYields>, AppError> {
+    tracing::debug!("Reading TYields with {:?}", serde_json::to_string(&param)?);
     let query = param.try_into()?;
     let t_yields = TYield::read_by_query(state.session(), &query).await?;
     Ok(Json(t_yields))
@@ -83,6 +84,7 @@ async fn read_zhvis(
     State(state): State<Arc<AppState>>,
     Query(param): Query<ZhviParam>,
 ) -> Result<Json<Zhvis>, AppError> {
+    tracing::debug!("Reading Zhvis with {:?}", serde_json::to_string(&param)?);
     let query = param.try_into()?;
     let zhvis = Zhvi::read_by_query(state.session(), &query).await?;
     Ok(Json(zhvis))

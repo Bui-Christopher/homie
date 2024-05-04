@@ -1,15 +1,15 @@
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
+use super::common::RegionType;
 use crate::adapter::repository::Persist;
 use crate::domain::util::CsvRecord;
 use crate::error::Error;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
 pub struct Hpi {
-    // TODO: Use region_name/region_type
-    // pub(crate) region_type: RegionType
-    pub(crate) region: String, // ThreeZip, FiveZip, County
+    pub(crate) region_type: RegionType,
+    pub(crate) region_name: String,
     pub(crate) year: i32,
     pub(crate) hpi: Option<f32>,
     pub(crate) annual_change: Option<f32>,
@@ -18,8 +18,12 @@ pub struct Hpi {
 }
 
 impl Hpi {
-    pub(crate) fn region(&self) -> &str {
-        &self.region
+    pub(crate) fn region_type(&self) -> &RegionType {
+        &self.region_type
+    }
+
+    pub(crate) fn region_name(&self) -> &String {
+        &self.region_name
     }
 
     pub(crate) fn year(&self) -> i32 {
@@ -185,14 +189,16 @@ fn read_three_zip_fhfa_hpis(three_zip_path: &str) -> Result<Hpis, Error> {
     Ok(entries
         .into_iter()
         .map(|entry| {
-            let region = entry.0[0].clone();
+            let region_type = RegionType::ThreeZip;
+            let region_name = entry.0[0].clone();
             let year = entry.0[1].parse().unwrap();
             let annual_change = entry.0[2].parse().ok();
             let hpi = entry.0[3].parse().ok();
             let hpi_1990_base = entry.0[4].parse().ok();
             let hpi_2000_base = entry.0[5].parse().ok();
             Hpi {
-                region,
+                region_type,
+                region_name,
                 year,
                 annual_change,
                 hpi,
@@ -212,14 +218,16 @@ fn read_five_zip_fhfa_hpis(five_zip_path: &str) -> Result<Hpis, Error> {
     Ok(entries
         .into_iter()
         .map(|entry| {
-            let region = entry.0[0].clone();
+            let region_type = RegionType::FiveZip;
+            let region_name = entry.0[0].clone();
             let year = entry.0[1].parse().unwrap();
             let annual_change = entry.0[2].parse().ok();
             let hpi = entry.0[3].parse().ok();
             let hpi_1990_base = entry.0[4].parse().ok();
             let hpi_2000_base = entry.0[5].parse().ok();
             Hpi {
-                region,
+                region_type,
+                region_name,
                 year,
                 annual_change,
                 hpi,
@@ -239,14 +247,16 @@ fn read_county_fhfa_hpis(county_path: &str) -> Result<Hpis, Error> {
     Ok(entries
         .into_iter()
         .map(|entry| {
-            let region = entry.0[1].clone();
+            let region_type = RegionType::County;
+            let region_name = entry.0[1].clone();
             let year = entry.0[3].parse().unwrap();
             let annual_change = entry.0[4].parse().ok();
             let hpi = entry.0[5].parse().ok();
             let hpi_1990_base = entry.0[6].parse().ok();
             let hpi_2000_base = entry.0[7].parse().ok();
             Hpi {
-                region,
+                region_type,
+                region_name,
                 year,
                 annual_change,
                 hpi,

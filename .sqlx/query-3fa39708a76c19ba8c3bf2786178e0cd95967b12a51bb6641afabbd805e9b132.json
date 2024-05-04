@@ -1,11 +1,11 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                DELETE FROM hpis \n                WHERE region = $1 AND year = $2\n                RETURNING region, year;\n            ",
+  "query": "\n                DELETE FROM hpis \n                WHERE region_name = $1 AND year = $2\n                RETURNING region_name, year;\n            ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "region",
+        "name": "region_name",
         "type_info": "Text"
       },
       {
@@ -25,5 +25,5 @@
       false
     ]
   },
-  "hash": "1cbd737a41d565ee6cb7b8ab23e493f042d3df9695eb67d51d53474ccbb3a5b1"
+  "hash": "3fa39708a76c19ba8c3bf2786178e0cd95967b12a51bb6641afabbd805e9b132"
 }

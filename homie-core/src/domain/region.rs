@@ -1,41 +1,27 @@
+use std::collections::HashSet;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 use serde::{Deserialize, Serialize};
 
 use crate::domain::util::CsvRecord;
 use crate::error::Error;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum Region {
-    County {
-        county: String,
-        zipcode: String,
-        city: String,
-        // Ratio of Residential Addresses
-        // Ratio of Business Addresses
-        res_ratio: f64,
-        bus_ratio: f64,
-    },
-    Zipcode {
-        zipcode: String,
-        county: String,
-        city: String,
-        // Ratio of Residential Addresses
-        // Ratio of Business Addresses
-        res_ratio: f64,
-        bus_ratio: f64,
-    },
+type City = String;
+type Zipcode = String;
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
+pub struct Region {
+    pub(crate) city: City,
+    pub(crate) zipcode: Zipcode,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct RegionData {
-    pub counties: Regions,
-    pub zipcodes: Regions,
+    pub regions: Regions,
 }
 
 pub type Regions = Vec<Region>;
-
-// TODO:
-// impl From<Entry> for RegionCossData
-// Unit tests
 
 pub trait RegionPersist: Send + Sync {
     // fn create_region(&self, region: &Region) -> Result<bool,
@@ -46,63 +32,75 @@ pub trait RegionPersist: Send + Sync {
     // Error>;
 }
 
-pub fn read_huduser_regions() -> Result<RegionData, Error> {
-    let counties = read_county_zipcodes()?;
-    let zipcodes = read_zip_counties()?;
-
-    Ok(RegionData { counties, zipcodes })
+#[derive(Clone, Debug, Default)]
+pub struct RegionConfig {
+    cities_path: Option<String>,
+    zip_county_path: Option<String>,
 }
 
-fn read_county_zipcodes() -> Result<Regions, Error> {
-    let huduser_crosswalk = "datasets/huduser-crosswalk/COUNTY_ZIP_122023.csv";
-
-    let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(true)
-        .from_path(huduser_crosswalk)?;
-
-    let mut counties = vec![];
-    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
-    for entry in entries.into_iter() {
-        let county = entry.0[0].clone();
-        let zip = entry.0[1].clone();
-        let city = entry.0[2].clone();
-        let res_ratio = entry.0[4].parse()?;
-        let bus_ratio = entry.0[5].parse()?;
-        counties.push(Region::County {
-            zipcode: zip,
-            county,
-            city,
-            res_ratio,
-            bus_ratio,
-        });
+impl RegionConfig {
+    pub(crate) fn new(cities_path: Option<String>, zip_county_path: Option<String>) -> Self {
+        RegionConfig {
+            cities_path,
+            zip_county_path,
+        }
     }
 
-    Ok(counties)
+    fn cities_path(&self) -> Option<&str> {
+        self.cities_path.as_deref()
+    }
+
+    fn zip_county_path(&self) -> Option<&str> {
+        self.zip_county_path.as_deref()
+    }
 }
 
-fn read_zip_counties() -> Result<Regions, Error> {
-    let huduser_crosswalk = "datasets/huduser-crosswalk/ZIP_COUNTY_122023.csv";
+pub fn read_huduser_regions(region_config: &RegionConfig) -> Result<RegionData, Error> {
+    let mut region_data = RegionData::default();
 
-    let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(true)
-        .from_path(huduser_crosswalk)?;
+    if let (Some(cities_path), Some(zip_county_path)) =
+        (region_config.cities_path(), region_config.zip_county_path())
+    {
+        let cities = read_select_cities(cities_path);
+        let cities_map: HashSet<_> = cities.iter().collect();
 
-    let mut zipcodes = vec![];
-    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
-    for entry in entries.into_iter() {
-        let zip = entry.0[0].clone();
-        let county = entry.0[1].clone();
-        let city = entry.0[2].clone();
-        let res_ratio = entry.0[4].parse()?;
-        let bus_ratio = entry.0[5].parse()?;
-        zipcodes.push(Region::Zipcode {
-            county,
-            zipcode: zip,
-            city,
-            res_ratio,
-            bus_ratio,
-        });
+        let zip_city_pairs = read_csv_city_zip_pairs(zip_county_path)?;
+        let mut regions = vec![];
+        for pair in zip_city_pairs {
+            if cities_map.contains(&pair.0) {
+                regions.push(Region {
+                    city: pair.0,
+                    zipcode: pair.1,
+                })
+            }
+        }
+        region_data.regions = regions;
     }
 
-    Ok(zipcodes)
+    Ok(region_data)
+}
+
+fn read_select_cities(cities_path: &str) -> Vec<String> {
+    let mut cities: Vec<String> = Vec::new();
+    if let Ok(file) = File::open(cities_path) {
+        let reader = BufReader::new(file);
+        for line in reader.lines().map_while(Result::ok) {
+            cities.push(line.to_uppercase());
+        }
+    }
+    cities
+}
+
+fn read_csv_city_zip_pairs(zip_county_path: &str) -> Result<Vec<(String, String)>, Error> {
+    let mut rdr = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .from_path(zip_county_path)?;
+    let mut pairs = vec![];
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
+    for entry in entries.into_iter() {
+        let zipcode = entry.0[0].clone();
+        let city = entry.0[2].clone();
+        pairs.push((city, zipcode));
+    }
+    Ok(pairs)
 }

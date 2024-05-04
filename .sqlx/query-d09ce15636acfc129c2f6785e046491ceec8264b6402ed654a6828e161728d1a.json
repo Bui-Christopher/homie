@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT region_name, region_type AS \"region_type: RegionType\", year, hpi, annual_change, hpi_1990_base, hpi_2000_base\n                FROM hpis\n                WHERE region_name = $1 AND year = $2\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "region_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "region_type: RegionType",
+        "type_info": {
+          "Custom": {
+            "name": "region_type",
+            "kind": {
+              "Enum": [
+                "threezip",
+                "fivezip",
+                "city",
+                "county"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "hpi",
+        "type_info": "Float4"
+      },
+      {
+        "ordinal": 4,
+        "name": "annual_change",
+        "type_info": "Float4"
+      },
+      {
+        "ordinal": 5,
+        "name": "hpi_1990_base",
+        "type_info": "Float4"
+      },
+      {
+        "ordinal": 6,
+        "name": "hpi_2000_base",
+        "type_info": "Float4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "d09ce15636acfc129c2f6785e046491ceec8264b6402ed654a6828e161728d1a"
+}

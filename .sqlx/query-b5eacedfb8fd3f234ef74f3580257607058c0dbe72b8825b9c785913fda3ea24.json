@@ -1,11 +1,11 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                UPDATE hpis \n                SET hpi = $1\n                WHERE region = $2 AND year = $3\n                RETURNING region, year\n            ",
+  "query": "\n                UPDATE hpis \n                SET hpi = $1\n                WHERE region_name = $2 AND year = $3\n                RETURNING region_name, year\n            ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "region",
+        "name": "region_name",
         "type_info": "Text"
       },
       {
@@ -26,5 +26,5 @@
       false
     ]
   },
-  "hash": "7ebcfe7a99bf4fa0a1d030a438b1a2d853cce84585003362489ad1da64e710e6"
+  "hash": "b5eacedfb8fd3f234ef74f3580257607058c0dbe72b8825b9c785913fda3ea24"
 }

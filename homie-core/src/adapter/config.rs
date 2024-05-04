@@ -1,13 +1,14 @@
 use std::env;
 
 use crate::domain::hpi::HpiConfig;
+use crate::domain::region::RegionConfig;
 use crate::domain::t_yield::TYieldConfig;
 use crate::domain::zhvi::ZhviConfig;
 
 pub struct Config {
     use_zillow_api: bool,
     hpi_config: HpiConfig,
-    // region_config: RegionConfig,
+    region_config: RegionConfig,
     t_yield_config: TYieldConfig,
     zhvi_config: ZhviConfig,
 }
@@ -22,6 +23,10 @@ impl Config {
         let county_hpis_path = env::var("COUNTY_HPIS_PATH").ok();
         let hpi_config = HpiConfig::new(three_zip_hpis_path, five_zip_hpis_path, county_hpis_path);
 
+        let cities_path = env::var("CITIES_PATH").ok();
+        let zip_county_path = env::var("ZIP_COUNTY_PATH").ok();
+        let region_config = RegionConfig::new(cities_path, zip_county_path);
+
         let mid_zip_all_homes_path = env::var("MID_ZIP_ALL_HOMES_PATH").ok();
         let mid_city_all_homes_path = env::var("MID_CITY_ALL_HOMES_PATH").ok();
         let mid_county_all_homes_path = env::var("MID_COUNTY_ALL_HOMES_PATH").ok();
@@ -31,9 +36,10 @@ impl Config {
             mid_county_all_homes_path,
         );
         Config {
-            use_zillow_api: false,
-            t_yield_config,
             hpi_config,
+            use_zillow_api: false,
+            region_config,
+            t_yield_config,
             zhvi_config,
         }
     }
@@ -44,6 +50,10 @@ impl Config {
 
     pub(crate) fn hpi_config(&self) -> HpiConfig {
         self.hpi_config.clone()
+    }
+
+    pub(crate) fn region_config(&self) -> RegionConfig {
+        self.region_config.clone()
     }
 
     pub(crate) fn t_yield_config(&self) -> TYieldConfig {

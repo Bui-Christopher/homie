@@ -25,7 +25,6 @@ impl Repository {
             println!("Using HTTP client.");
             Ok(Box::new(HttpClient))
         } else {
-            println!("Using PostgreSQL client.");
             Ok(Box::new(PostgresClient::new(config).await?))
         }
     }

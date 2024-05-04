@@ -40,9 +40,9 @@ async fn read_and_write_hpi(importer: &Importer, repo: &Repository) -> Result<()
     Ok(())
 }
 
-fn read_and_write_region(_importer: &Importer, _repo: &Repository) -> Result<(), Error> {
-    // TODO: Handle what zipcodes/cities will be stored and its mappings
-    // let region_data = importer.read_huduser_regions()?;
+fn read_and_write_region(importer: &Importer, _repo: &Repository) -> Result<(), Error> {
+    let region_data = importer.read_huduser_regions()?;
+    println!("{region_data:#?}");
     // for region in region_data
     //     region.create(repo.session()).await?;
     Ok(())

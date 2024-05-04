@@ -8,6 +8,7 @@ pub(crate) struct CsvRecord(pub(crate) Vec<String>);
 
 // TODO:
 // impl From<Entry> for HPI
+// impl From<Entry> for Region
 // impl From<Entry> for TYield
 // impl From<Entry> for Zhvi
 // Unit tests

@@ -11,13 +11,14 @@ CREATE TABLE tyields (
 );
 
 CREATE TABLE hpis (
-    region TEXT NOT NULL,
+    region_type region_type NOT NULL,
+    region_name TEXT NOT NULL,
     year INTEGER NOT NULL,
     hpi FLOAT4,
     annual_change FLOAT4,
     hpi_1990_base FLOAT4,
     hpi_2000_base FLOAT4,
-    PRIMARY KEY (region, year)
+    PRIMARY KEY (region_name, year)
 );
 
 CREATE TABLE zhvi_metadata (

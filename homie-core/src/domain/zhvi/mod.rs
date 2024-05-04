@@ -3,7 +3,7 @@ use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
 use crate::adapter::repository::Persist;
-use crate::domain::common::DateInterval;
+use crate::domain::common::{DateInterval, RegionType};
 use crate::domain::util::{to_ymd_date, CsvRecord};
 use crate::error::Error;
 
@@ -44,41 +44,6 @@ impl std::fmt::Display for HomeType {
             HomeType::AllHomes => write!(f, "allhomes"),
             HomeType::CondoCoOps => write!(f, "condocoops"),
             HomeType::SingleFamilyHomes => write!(f, "singlefamilyhomes"),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type)]
-#[sqlx(type_name = "region_type", rename_all = "lowercase")]
-pub enum RegionType {
-    ThreeZip,
-    FiveZip,
-    #[default]
-    City,
-    County,
-}
-
-impl TryFrom<&str> for RegionType {
-    type Error = crate::error::Error;
-
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        match s {
-            "threezip" => Ok(RegionType::ThreeZip),
-            "fivezip" => Ok(RegionType::FiveZip),
-            "city" => Ok(RegionType::City),
-            "county" => Ok(RegionType::County),
-            _ => Err(Error::Parse("Failed to parse RegionType".to_string())),
-        }
-    }
-}
-
-impl std::fmt::Display for RegionType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            RegionType::ThreeZip => write!(f, "threezip"),
-            RegionType::FiveZip => write!(f, "fivezip"),
-            RegionType::City => write!(f, "city"),
-            RegionType::County => write!(f, "county"),
         }
     }
 }

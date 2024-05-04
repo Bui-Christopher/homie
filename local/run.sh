@@ -199,8 +199,11 @@ echo -e "\tNumber of rows in tyields table: $TYIELDS_COUNT"
 echo -e "\tNumber of rows in zhvi_metadata table: $ZHVI_METADATA_COUNT"
 echo -e "\tNumber of rows in zhvi_prices table: $ZHVI_PRICES_COUNT"
 
-echo -n "Running homie-api to serve datasets... "
-tput sc
+# Run with cargo
+# echo -n "Running homie-api to serve datasets... "
+# tput sc
+# source .dev.env
+# cargo run --bin homie-api --release
 docker run -d \
     --name homie_api \
     --network homie_network \

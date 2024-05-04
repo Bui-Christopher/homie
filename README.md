@@ -54,7 +54,7 @@ Please check http://localhost:3000.
     - [x] Repo/Import calls into Config
 - [ ] Error Handling
     - [x] ~ThisError and Anyhow~ Created a custom enum instead
-    - [ ] Logging
+    - [x] Logging
 - [ ] Deployment
     - [x] [Dockerize](https://itnext.io/a-practical-guide-to-containerize-your-rust-application-with-docker-77e8a391b4a8)
     - [x] ~Push to dockerhub~ Going to use bash script to build and deploy

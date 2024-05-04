@@ -2,11 +2,11 @@ use std::fmt::Debug;
 
 use chrono::{Datelike, NaiveDate};
 use homie_core::adapter::repository::{Persist, Repository};
-use homie_core::domain::common::DateInterval;
+use homie_core::domain::common::{DateInterval, RegionType};
 use homie_core::domain::hpi::HpiQuery;
 use homie_core::domain::t_yield::TYieldQuery;
-use homie_core::domain::zhvi::{HomeType, Percentile, RegionType, ZhviQuery};
-use serde::Deserialize;
+use homie_core::domain::zhvi::{HomeType, Percentile, ZhviQuery};
+use serde::{Deserialize, Serialize};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
@@ -26,7 +26,7 @@ impl AppState {
     }
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct HpiParam {
     // region_type: String,
     region_name: String,
@@ -51,7 +51,7 @@ impl TryFrom<HpiParam> for HpiQuery {
     }
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct TYieldParam {
     start_date: String,
     end_date: String,
@@ -69,7 +69,7 @@ impl TryFrom<TYieldParam> for TYieldQuery {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct ZhviParam {
     start_date: String,
     end_date: String,
@@ -127,12 +127,14 @@ fn parse_region_type(input: &str) -> Result<RegionType, AppError> {
         .map_err(|_| AppError::InvalidQuery("Failed to read region type".to_string()))
 }
 
-pub(crate) fn init_tracing() {
+pub(crate) fn init_tracing() -> Result<(), AppError> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "homie=debug".into()),
+                .unwrap_or_else(|_| "homie_api=warn".into())
+                .add_directive("sqlx::query=warn".parse()?), // Silence SQLx calls
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
+    Ok(())
 }
