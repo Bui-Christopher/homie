@@ -616,7 +616,6 @@ dependencies = [
  "async-trait",
  "chrono",
  "csv",
- "rand",
  "serde",
  "sqlx",
 ]

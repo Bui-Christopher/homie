@@ -3,6 +3,7 @@ use chrono::NaiveDate;
 
 use crate::adapter::repository::Persist;
 use crate::domain::hpi::{Hpi, HpiPersist, HpiQuery, Hpis};
+use crate::domain::region::{Region, RegionPersist, Regions, Zipcode};
 use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
 use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviQuery, Zhvis};
 use crate::error::Error;
@@ -52,6 +53,29 @@ impl HpiPersist for HttpClient {
 }
 
 #[async_trait]
+impl RegionPersist for HttpClient {
+    async fn create_region(&self, region: &Region) -> Result<Zipcode, Error> {
+        println!("Calling region create for: {:?} from HttpClient.", region);
+        Ok(Zipcode::default())
+    }
+
+    async fn read_region_by_id(&self, id: &str) -> Result<Region, Error> {
+        println!("Calling region read for: {:?} from HttpClient.", id);
+        Ok(Region::default())
+    }
+
+    async fn read_regions_by_city(&self, id: &str) -> Result<Regions, Error> {
+        println!("Calling region read with id: {:?} from HttpClient.", id);
+        Ok(Regions::default())
+    }
+
+    async fn delete_region_by_id(&self, id: &str) -> Result<Zipcode, Error> {
+        println!("Calling region delete with id: {:?} from HttpClient.", id);
+        Ok(Zipcode::default())
+    }
+}
+
+#[async_trait]
 impl TYieldPersist for HttpClient {
     async fn create_t_yield(&self, t_yield: &TYield) -> Result<(String, NaiveDate), Error> {
         println!("Calling t_yield create for: {:?} from HttpClient.", t_yield);
@@ -73,7 +97,7 @@ impl TYieldPersist for HttpClient {
         Ok(())
     }
 
-    async fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYields, Error> {
+    async fn read_t_yields_by_query(&self, query: &TYieldQuery) -> Result<TYields, Error> {
         println!("Calling t_yield read by: {:?} from HttpClient.", query);
         Ok(vec![TYield::default()])
     }

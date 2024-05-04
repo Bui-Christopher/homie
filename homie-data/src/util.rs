@@ -8,7 +8,7 @@ pub(crate) async fn read_and_write_datasets(
 ) -> Result<(), Error> {
     read_and_write_t_yields(importer, repo).await?;
     read_and_write_hpi(importer, repo).await?;
-    read_and_write_region(importer, repo)?;
+    read_and_write_region(importer, repo).await?;
     read_and_write_zhvi(importer, repo).await?;
 
     Ok(())
@@ -40,11 +40,12 @@ async fn read_and_write_hpi(importer: &Importer, repo: &Repository) -> Result<()
     Ok(())
 }
 
-fn read_and_write_region(importer: &Importer, _repo: &Repository) -> Result<(), Error> {
+async fn read_and_write_region(importer: &Importer, repo: &Repository) -> Result<(), Error> {
     let region_data = importer.read_huduser_regions()?;
     println!("{region_data:#?}");
-    // for region in region_data
-    //     region.create(repo.session()).await?;
+    for region in region_data.regions() {
+        region.create(repo.session()).await?;
+    }
     Ok(())
 }
 

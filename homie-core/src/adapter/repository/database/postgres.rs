@@ -6,6 +6,7 @@ use sqlx::{query, query_as, FromRow, Pool, Postgres};
 use crate::adapter::repository::{Config, Persist};
 use crate::domain::common::{DateInterval, RegionType};
 use crate::domain::hpi::*;
+use crate::domain::region::{Region, RegionPersist, Regions, Zipcode};
 use crate::domain::t_yield::*;
 use crate::domain::zhvi::*;
 use crate::error::Error;
@@ -73,7 +74,7 @@ impl HpiPersist for PostgresClient {
     async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Error> {
         query!(
             r#"
-                UPDATE hpis 
+                UPDATE hpis
                 SET hpi = $1
                 WHERE region_name = $2 AND year = $3
                 RETURNING region_name, year
@@ -90,7 +91,7 @@ impl HpiPersist for PostgresClient {
     async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Error> {
         query!(
             r#"
-                DELETE FROM hpis 
+                DELETE FROM hpis
                 WHERE region_name = $1 AND year = $2
                 RETURNING region_name, year;
             "#,
@@ -116,6 +117,58 @@ impl HpiPersist for PostgresClient {
             .fetch_all(self.pool())
             .await?;
         Ok(hpis)
+    }
+}
+
+#[async_trait]
+impl RegionPersist for PostgresClient {
+    async fn create_region(&self, region: &Region) -> Result<Zipcode, Error> {
+        let record = query!(
+            r#"
+                INSERT INTO regions
+                (city, zipcode)
+                VALUES ($1, $2)
+                ON CONFLICT (zipcode) DO NOTHING
+                RETURNING zipcode;
+            "#,
+            region.city(),
+            region.zipcode(),
+        )
+        .fetch_one(self.pool())
+        .await?;
+        Ok(record.zipcode.to_string())
+    }
+
+    async fn read_region_by_id(&self, id: &str) -> Result<Region, Error> {
+        let record = query_as!(
+            Region,
+            r#"
+                SELECT city, zipcode
+                FROM regions
+                WHERE zipcode = $1
+            "#,
+            id,
+        )
+        .fetch_one(self.pool())
+        .await?;
+        Ok(record)
+    }
+
+    async fn read_regions_by_city(&self, id: &str) -> Result<Regions, Error> {
+        let query = r#"
+            SELECT * FROM regions
+            WHERE city = $1
+        "#;
+        let regions = query_as(query).bind(id).fetch_all(self.pool()).await?;
+        Ok(regions)
+    }
+
+    async fn delete_region_by_id(&self, id: &str) -> Result<Zipcode, Error> {
+        println!(
+            "Calling region delete with id: {:?} from PostgresClient.",
+            id
+        );
+        Ok(Zipcode::default())
     }
 }
 
@@ -185,7 +238,7 @@ impl TYieldPersist for PostgresClient {
         Ok(())
     }
 
-    async fn read_t_yield_by_query(&self, t_yield_query: &TYieldQuery) -> Result<TYields, Error> {
+    async fn read_t_yields_by_query(&self, t_yield_query: &TYieldQuery) -> Result<TYields, Error> {
         let query = match t_yield_query.date_interval() {
             DateInterval::Day => {
                 "SELECT term, CAST(date AS DATE) AS date, CAST(AVG(yield_return) AS FLOAT4) AS \
@@ -295,7 +348,7 @@ impl ZhviPersist for PostgresClient {
             ZhviMetadataPgRow,
             r#"
                 SELECT region_name, region_type AS "region_type: RegionType", home_type AS "home_type: HomeType", percentile AS "percentile: Percentile"
-                FROM zhvi_metadata 
+                FROM zhvi_metadata
                 WHERE region_name = $1 AND region_type = $2 AND home_type = $3 AND percentile = $4
             "#,
             id.0,
@@ -310,7 +363,7 @@ impl ZhviPersist for PostgresClient {
             ZhviPricePgRow,
             r#"
                 SELECT region_name, region_type AS "region_type: RegionType", home_type AS "home_type: HomeType", percentile AS "percentile: Percentile", date, value
-                FROM zhvi_prices 
+                FROM zhvi_prices
                 WHERE region_name = $1 AND region_type = $2 AND home_type = $3 AND percentile = $4
             "#,
             id.0,
@@ -439,7 +492,7 @@ impl ZhviPersist for PostgresClient {
             ZhviMetadataPgRow,
             r#"
                 SELECT region_name, region_type AS "region_type: RegionType", home_type AS "home_type: HomeType", percentile AS "percentile: Percentile"
-                FROM zhvi_metadata 
+                FROM zhvi_metadata
                 WHERE region_name = $1 AND region_type = $2 AND home_type = $3 AND percentile = $4
             "#,
             query.region_name(),
@@ -457,7 +510,7 @@ impl ZhviPersist for PostgresClient {
                     ZhviPricePgRow,
                     r#"
                         SELECT region_name, region_type AS "region_type: RegionType", home_type AS "home_type: HomeType", percentile AS "percentile: Percentile", date, value
-                        FROM zhvi_prices 
+                        FROM zhvi_prices
                         WHERE region_name = $1 AND region_type = $2 AND home_type = $3 AND percentile = $4
                         AND date >= $5 AND date <= $6
                     "#,
@@ -478,7 +531,7 @@ impl ZhviPersist for PostgresClient {
                     ZhviPricePgRow,
                     r#"
                         SELECT region_name, region_type AS "region_type: RegionType", home_type AS "home_type: HomeType", percentile AS "percentile: Percentile", date, value
-                        FROM zhvi_prices 
+                        FROM zhvi_prices
                         WHERE region_name = $1 AND region_type = $2 AND home_type = $3 AND percentile = $4
                         AND date >= $5 AND date <= $6
                         AND EXTRACT(MONTH FROM date) = 1

@@ -1,12 +1,12 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                UPDATE hpis \n                SET hpi = $1\n                WHERE region_name = $2 AND year = $3\n                RETURNING region_name, year\n            ",
+  "query": "\n                DELETE FROM hpis\n                WHERE region_name = $1 AND year = $2\n                RETURNING region_name, year;\n            ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
         "name": "region_name",
-        "type_info": "Text"
+        "type_info": "Varchar"
       },
       {
         "ordinal": 1,
@@ -16,7 +16,6 @@
     ],
     "parameters": {
       "Left": [
-        "Float4",
         "Text",
         "Int4"
       ]
@@ -26,5 +25,5 @@
       false
     ]
   },
-  "hash": "b5eacedfb8fd3f234ef74f3580257607058c0dbe72b8825b9c785913fda3ea24"
+  "hash": "93ab5f1881d8ac738475f8a6f3864ac2c56efb6c3442778d6ae0852fadffc20c"
 }

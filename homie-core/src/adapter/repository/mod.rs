@@ -2,13 +2,14 @@ use self::database::postgres::PostgresClient;
 use crate::adapter::config::Config;
 use crate::adapter::repository::database::http::HttpClient;
 use crate::domain::hpi::HpiPersist;
+use crate::domain::region::RegionPersist;
 use crate::domain::t_yield::TYieldPersist;
 use crate::domain::zhvi::ZhviPersist;
 use crate::error::Error;
 
 pub mod database;
 
-pub trait Persist: HpiPersist + TYieldPersist + ZhviPersist {}
+pub trait Persist: HpiPersist + RegionPersist + TYieldPersist + ZhviPersist {}
 
 pub struct Repository {
     client: Box<dyn Persist>,

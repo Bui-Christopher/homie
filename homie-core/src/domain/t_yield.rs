@@ -90,7 +90,7 @@ pub trait TYieldPersist: Send + Sync {
     async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Error>;
     async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), Error>;
     async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), Error>;
-    async fn read_t_yield_by_query(&self, query: &TYieldQuery) -> Result<TYields, Error>;
+    async fn read_t_yields_by_query(&self, query: &TYieldQuery) -> Result<TYields, Error>;
 }
 
 impl TYield {
@@ -114,7 +114,7 @@ impl TYield {
         client: &dyn Persist,
         query: &TYieldQuery,
     ) -> Result<TYields, Error> {
-        client.read_t_yield_by_query(query).await
+        client.read_t_yields_by_query(query).await
     }
 }
 

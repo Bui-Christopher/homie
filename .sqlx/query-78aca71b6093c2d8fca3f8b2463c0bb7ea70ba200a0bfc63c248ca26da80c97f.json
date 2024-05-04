@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT region_name, region_type AS \"region_type: RegionType\", home_type AS \"home_type: HomeType\", percentile AS \"percentile: Percentile\"\n                FROM zhvi_metadata \n                WHERE region_name = $1 AND region_type = $2 AND home_type = $3 AND percentile = $4\n            ",
+  "query": "\n                SELECT region_name, region_type AS \"region_type: RegionType\", home_type AS \"home_type: HomeType\", percentile AS \"percentile: Percentile\"\n                FROM zhvi_metadata\n                WHERE region_name = $1 AND region_type = $2 AND home_type = $3 AND percentile = $4\n            ",
   "describe": {
     "columns": [
       {
@@ -107,5 +107,5 @@
       false
     ]
   },
-  "hash": "309e67bf584d3f996f385737d2badbd4b11507e830836a7df9633d140fcacc58"
+  "hash": "78aca71b6093c2d8fca3f8b2463c0bb7ea70ba200a0bfc63c248ca26da80c97f"
 }

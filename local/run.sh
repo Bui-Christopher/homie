@@ -1,6 +1,6 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-cd "$DIR" 
+cd "$DIR"
 
 docker info > /dev/null 2>&1 || { echo "Docker is not running"; exit 1; }
 
@@ -224,7 +224,7 @@ fi
 echo -n "Removing homie-data (finished importing)... "
 tput sc
 docker stop homie_data &> /dev/null
-docker rm homie_data &> /dev/null
+# docker rm homie_data &> /dev/null
 tput rc; tput el; echo -e "(${GREEN}done${NC})"
 
 end_time=$(date +%s)

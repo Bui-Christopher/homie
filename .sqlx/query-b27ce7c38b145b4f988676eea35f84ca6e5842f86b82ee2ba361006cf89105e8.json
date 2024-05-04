@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT city, zipcode\n                FROM regions\n                WHERE zipcode = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "city",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "zipcode",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "b27ce7c38b145b4f988676eea35f84ca6e5842f86b82ee2ba361006cf89105e8"
+}

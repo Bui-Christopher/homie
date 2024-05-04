@@ -2,13 +2,15 @@ use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
+use crate::adapter::repository::Persist;
 use crate::domain::util::CsvRecord;
 use crate::error::Error;
 
-type City = String;
-type Zipcode = String;
+pub type City = String;
+pub type Zipcode = String;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
 pub struct Region {
@@ -21,15 +23,56 @@ pub struct RegionData {
     pub regions: Regions,
 }
 
+impl RegionData {
+    pub fn regions(&self) -> &Regions {
+        &self.regions
+    }
+}
+
 pub type Regions = Vec<Region>;
 
+#[async_trait]
 pub trait RegionPersist: Send + Sync {
-    // fn create_region(&self, region: &Region) -> Result<bool,
+    async fn create_region(&self, region: &Region) -> Result<Zipcode, Error>;
+    async fn read_region_by_id(&self, id: &str) -> Result<Region, Error>;
+    async fn read_regions_by_city(&self, id: &str) -> Result<Regions, Error>;
+    // async fn read_regions_by_query(&self, query: &RegionQuery) -> Result<Regions,
+    // Error>; fn update_region(&self, region: &Region) -> Result<bool,
     // Error>;
-    fn read_region_by_id(&self, id: &str) -> Result<bool, Error>;
-    // fn update_region(&self, region: &Region) -> Result<bool,
-    // Error>; fn delete_by_id(&self, id: &str) -> Result<bool,
-    // Error>;
+    async fn delete_region_by_id(&self, id: &str) -> Result<Zipcode, Error>;
+}
+
+impl Region {
+    pub async fn create(&self, client: &dyn Persist) -> Result<Zipcode, Error> {
+        client.create_region(self).await
+    }
+
+    pub async fn read(client: &dyn Persist, id: &str) -> Result<Regions, Error> {
+        client.read_regions_by_city(id).await
+    }
+
+    // pub async fn update(&self, client: &dyn Persist) -> Result<(), Error> {
+    //     client.update_region(self).await
+    // }
+    //
+    // pub async fn read_by_query(
+    //     client: &dyn Persist,
+    //     query: &RegionQuery,
+    // ) -> Result<Regions, Error> {
+    //     client.read_regions_by_query(query).await
+    // }
+
+    pub async fn delete(client: &dyn Persist, id: &str) -> Result<Zipcode, Error> {
+        client.delete_region_by_id(id).await
+    }
+
+    pub fn city(&self) -> &str {
+        &self.city
+    }
+
+    pub fn zipcode(&self) -> &str {
+        &self.zipcode
+    }
 }
 
 #[derive(Clone, Debug, Default)]
