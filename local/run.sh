@@ -182,8 +182,8 @@ DB_SIZE=$(docker exec postgres_db psql -U postgres -d "$DB_NAME" -tAc "SELECT pg
 HPIS_COUNT=$(docker exec postgres_db psql -U postgres -d "$DB_NAME" -tAc "SELECT count(*) FROM hpis;")
 # Count "tyields"
 TYIELDS_COUNT=$(docker exec postgres_db psql -U postgres -d "$DB_NAME" -tAc "SELECT count(*) FROM tyields;")
-# TODO: Count Regions
-# REGIONS_COUNT=$(docker exec postgres_db psql -U postgres -d "$DB_NAME" -tAc "SELECT count(*) FROM regions;")
+# Count "regions"
+REGIONS_COUNT=$(docker exec postgres_db psql -U postgres -d "$DB_NAME" -tAc "SELECT count(*) FROM regions;")
 # Count "zhvi_metadata"
 ZHVI_METADATA_COUNT=$(docker exec postgres_db psql -U postgres -d "$DB_NAME" -tAc "SELECT count(*) FROM zhvi_metadata;")
 # Count "zhvi_prices"
@@ -194,7 +194,7 @@ tput rc; tput el; echo -e "(${GREEN}done${NC})"
 echo -e "\tDatabase name: $NAME"
 echo -e "\tDatabase size: ${DB_SIZE} MB"
 echo -e "\tNumber of rows in hpis table: $HPIS_COUNT"
-# echo -e "\tNumber of rows in regions table: $REGIONS_COUNT"
+echo -e "\tNumber of rows in regions table: $REGIONS_COUNT"
 echo -e "\tNumber of rows in tyields table: $TYIELDS_COUNT"
 echo -e "\tNumber of rows in zhvi_metadata table: $ZHVI_METADATA_COUNT"
 echo -e "\tNumber of rows in zhvi_prices table: $ZHVI_PRICES_COUNT"

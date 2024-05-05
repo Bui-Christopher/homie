@@ -16,4 +16,3 @@ echo "Using dockerfile: $DOCKERFILE"
 docker build \
     -f "$DOCKERFILE" "$REPO_ROOT" \
     -t "$TAG" \
-    --no-cache

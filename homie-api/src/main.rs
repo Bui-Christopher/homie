@@ -2,12 +2,14 @@
 use std::sync::{Arc, OnceLock};
 
 use axum::extract::{MatchedPath, Query, Request, State};
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::{Json, Router};
+use axum_extra::extract::Form;
 use error::AppError;
 use homie_core::adapter::config::Config;
 use homie_core::adapter::repository::Repository;
 use homie_core::domain::hpi::{Hpi, Hpis};
+use homie_core::domain::region::{Region, Regions};
 use homie_core::domain::t_yield::{TYield, TYields};
 use homie_core::domain::zhvi::{Zhvi, Zhvis};
 use tower_http::trace::TraceLayer;
@@ -33,7 +35,7 @@ async fn main() -> Result<(), AppError> {
     let app = Router::new()
         .route("/health", get(health))
         .route("/hpis", get(read_hpis))
-        // .route("/regions", get(read_regions))
+        .route("/regions", post(read_regions))
         .route("/tyields", get(read_tyields))
         .route("/zhvis", get(read_zhvis))
         .with_state(state)
@@ -68,6 +70,16 @@ async fn read_hpis(
     let query = param.try_into()?;
     let hpis = Hpi::read_by_query(state.session(), &query).await?;
     Ok(Json(hpis))
+}
+
+async fn read_regions(
+    State(state): State<Arc<AppState>>,
+    Form(param): Form<RegionParam>,
+) -> Result<Json<Regions>, AppError> {
+    tracing::debug!("Reading Regions with {:?}", serde_json::to_string(&param)?);
+    let query = param.into();
+    let regions = Region::read_by_query(state.session(), &query).await?;
+    Ok(Json(regions))
 }
 
 async fn read_tyields(

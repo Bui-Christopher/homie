@@ -42,7 +42,6 @@ async fn read_and_write_hpi(importer: &Importer, repo: &Repository) -> Result<()
 
 async fn read_and_write_region(importer: &Importer, repo: &Repository) -> Result<(), Error> {
     let region_data = importer.read_huduser_regions()?;
-    println!("{region_data:#?}");
     for region in region_data.regions() {
         region.create(repo.session()).await?;
     }

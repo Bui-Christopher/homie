@@ -4,6 +4,7 @@ use chrono::{Datelike, NaiveDate};
 use homie_core::adapter::repository::{Persist, Repository};
 use homie_core::domain::common::{DateInterval, RegionType};
 use homie_core::domain::hpi::HpiQuery;
+use homie_core::domain::region::RegionQuery;
 use homie_core::domain::t_yield::TYieldQuery;
 use homie_core::domain::zhvi::{HomeType, Percentile, ZhviQuery};
 use serde::{Deserialize, Serialize};
@@ -48,6 +49,29 @@ impl TryFrom<HpiParam> for HpiQuery {
             start_date.year(),
             end_date.year(),
         ))
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct RegionParam {
+    #[serde(default)]
+    cities: Vec<String>,
+    #[serde(default)]
+    zipcodes: Vec<String>,
+}
+
+impl From<RegionParam> for RegionQuery {
+    fn from(param: RegionParam) -> Self {
+        let cities = param
+            .cities
+            .into_iter()
+            .map(|mut city| {
+                city.make_ascii_lowercase();
+                city
+            })
+            .collect();
+        let zipcodes = param.zipcodes;
+        RegionQuery::new(cities, zipcodes)
     }
 }
 

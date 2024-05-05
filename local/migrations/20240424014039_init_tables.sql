@@ -43,7 +43,6 @@ CREATE TABLE zhvi_prices (
     date DATE NOT NULL,
     value FLOAT8 NOT NULL,
     PRIMARY KEY (home_type, region_type, region_name, percentile, date),
-    FOREIGN KEY (home_type, region_type, region_name, percentile) 
+    FOREIGN KEY (home_type, region_type, region_name, percentile)
         REFERENCES zhvi_metadata(home_type, region_type, region_name, percentile)
 );
-

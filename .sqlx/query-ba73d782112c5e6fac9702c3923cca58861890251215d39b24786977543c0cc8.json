@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO regions\n                (city, zipcode)\n                VALUES ($1, $2)\n                ON CONFLICT (zipcode) DO UPDATE\n                SET city = $1\n                RETURNING zipcode;\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "zipcode",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "ba73d782112c5e6fac9702c3923cca58861890251215d39b24786977543c0cc8"
+}

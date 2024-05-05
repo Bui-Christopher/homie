@@ -6,7 +6,7 @@ use sqlx::{query, query_as, FromRow, Pool, Postgres};
 use crate::adapter::repository::{Config, Persist};
 use crate::domain::common::{DateInterval, RegionType};
 use crate::domain::hpi::*;
-use crate::domain::region::{Region, RegionPersist, Regions, Zipcode};
+use crate::domain::region::{Region, RegionPersist, RegionQuery, Regions, Zipcode};
 use crate::domain::t_yield::*;
 use crate::domain::zhvi::*;
 use crate::error::Error;
@@ -128,7 +128,8 @@ impl RegionPersist for PostgresClient {
                 INSERT INTO regions
                 (city, zipcode)
                 VALUES ($1, $2)
-                ON CONFLICT (zipcode) DO NOTHING
+                ON CONFLICT (zipcode) DO UPDATE
+                SET city = $1
                 RETURNING zipcode;
             "#,
             region.city(),
@@ -160,6 +161,54 @@ impl RegionPersist for PostgresClient {
             WHERE city = $1
         "#;
         let regions = query_as(query).bind(id).fetch_all(self.pool()).await?;
+        Ok(regions)
+    }
+
+    async fn read_regions_by_query(&self, region_query: &RegionQuery) -> Result<Regions, Error> {
+        let mut query = "SELECT * FROM regions".to_string();
+        let mut params = Vec::<&str>::new();
+        let mut where_clause = String::new();
+
+        if !region_query.cities().is_empty() {
+            let mut city_placeholders = String::new();
+            for (index, city) in region_query.cities().iter().enumerate() {
+                if index != 0 {
+                    city_placeholders.push_str(", ");
+                }
+                city_placeholders.push_str(&format!("${}", params.len() + 1));
+                params.push(city);
+            }
+            where_clause.push_str(&format!(" city = {}", city_placeholders));
+        }
+
+        if !region_query.zipcodes().is_empty() {
+            if !where_clause.is_empty() {
+                where_clause.push_str(" OR");
+            }
+            let mut zipcodes_placeholders = String::new();
+            for (index, zipcode) in region_query.zipcodes().iter().enumerate() {
+                if index != 0 {
+                    zipcodes_placeholders.push_str(", ");
+                }
+                zipcodes_placeholders.push_str(&format!("${}", params.len() + 1));
+                params.push(zipcode);
+            }
+            where_clause.push_str(&format!(" zipcode = {}", zipcodes_placeholders));
+        }
+
+        if !where_clause.is_empty() {
+            query.push_str(&format!(" WHERE{}", where_clause));
+        }
+        println!("{query}");
+        let mut query = query_as(&query);
+        for i in 0..region_query.cities().len() {
+            query = query.bind(region_query.cities()[i].clone());
+        }
+        for i in 0..region_query.zipcodes().len() {
+            query = query.bind(region_query.zipcodes()[i].clone());
+        }
+        let regions = query.fetch_all(self.pool()).await?;
+
         Ok(regions)
     }
 
@@ -257,7 +306,7 @@ impl TYieldPersist for PostgresClient {
             }
         };
 
-        let yields: Vec<TYield> = query_as(query)
+        let yields: TYields = query_as(query)
             .bind(t_yield_query.start_date())
             .bind(t_yield_query.end_date())
             .fetch_all(self.pool())

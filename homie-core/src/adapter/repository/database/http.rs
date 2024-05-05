@@ -3,7 +3,7 @@ use chrono::NaiveDate;
 
 use crate::adapter::repository::Persist;
 use crate::domain::hpi::{Hpi, HpiPersist, HpiQuery, Hpis};
-use crate::domain::region::{Region, RegionPersist, Regions, Zipcode};
+use crate::domain::region::{Region, RegionPersist, RegionQuery, Regions, Zipcode};
 use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
 use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviQuery, Zhvis};
 use crate::error::Error;
@@ -66,6 +66,14 @@ impl RegionPersist for HttpClient {
 
     async fn read_regions_by_city(&self, id: &str) -> Result<Regions, Error> {
         println!("Calling region read with id: {:?} from HttpClient.", id);
+        Ok(Regions::default())
+    }
+
+    async fn read_regions_by_query(&self, query: &RegionQuery) -> Result<Regions, Error> {
+        println!(
+            "Calling region read with query: {:?} from HttpClient.",
+            query
+        );
         Ok(Regions::default())
     }
 

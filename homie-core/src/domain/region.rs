@@ -30,15 +30,35 @@ impl RegionData {
 }
 
 pub type Regions = Vec<Region>;
+pub type Zipcodes = Vec<Zipcode>;
+pub type Cities = Vec<City>;
+
+#[derive(Clone, Debug, Default)]
+pub struct RegionQuery {
+    cities: Cities,
+    zipcodes: Zipcodes,
+}
+
+impl RegionQuery {
+    pub fn new(cities: Cities, zipcodes: Zipcodes) -> Self {
+        Self { cities, zipcodes }
+    }
+
+    pub(crate) fn cities(&self) -> &Cities {
+        &self.cities
+    }
+
+    pub(crate) fn zipcodes(&self) -> &Zipcodes {
+        &self.zipcodes
+    }
+}
 
 #[async_trait]
 pub trait RegionPersist: Send + Sync {
     async fn create_region(&self, region: &Region) -> Result<Zipcode, Error>;
     async fn read_region_by_id(&self, id: &str) -> Result<Region, Error>;
     async fn read_regions_by_city(&self, id: &str) -> Result<Regions, Error>;
-    // async fn read_regions_by_query(&self, query: &RegionQuery) -> Result<Regions,
-    // Error>; fn update_region(&self, region: &Region) -> Result<bool,
-    // Error>;
+    async fn read_regions_by_query(&self, query: &RegionQuery) -> Result<Regions, Error>;
     async fn delete_region_by_id(&self, id: &str) -> Result<Zipcode, Error>;
 }
 
@@ -51,16 +71,12 @@ impl Region {
         client.read_regions_by_city(id).await
     }
 
-    // pub async fn update(&self, client: &dyn Persist) -> Result<(), Error> {
-    //     client.update_region(self).await
-    // }
-    //
-    // pub async fn read_by_query(
-    //     client: &dyn Persist,
-    //     query: &RegionQuery,
-    // ) -> Result<Regions, Error> {
-    //     client.read_regions_by_query(query).await
-    // }
+    pub async fn read_by_query(
+        client: &dyn Persist,
+        query: &RegionQuery,
+    ) -> Result<Regions, Error> {
+        client.read_regions_by_query(query).await
+    }
 
     pub async fn delete(client: &dyn Persist, id: &str) -> Result<Zipcode, Error> {
         client.delete_region_by_id(id).await
@@ -128,7 +144,7 @@ fn read_select_cities(cities_path: &str) -> Vec<String> {
     if let Ok(file) = File::open(cities_path) {
         let reader = BufReader::new(file);
         for line in reader.lines().map_while(Result::ok) {
-            cities.push(line.to_uppercase());
+            cities.push(line.to_lowercase());
         }
     }
     cities
@@ -141,9 +157,11 @@ fn read_csv_city_zip_pairs(zip_county_path: &str) -> Result<Vec<(String, String)
     let mut pairs = vec![];
     let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
     for entry in entries.into_iter() {
-        let zipcode = entry.0[0].clone();
-        let city = entry.0[2].clone();
-        pairs.push((city, zipcode));
+        if entry.0[3] == "CA" {
+            let zipcode = entry.0[0].clone();
+            let city = entry.0[2].clone();
+            pairs.push((city, zipcode));
+        }
     }
     Ok(pairs)
 }

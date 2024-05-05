@@ -28,8 +28,8 @@ Please check http://localhost:3000.
 - [ ] homie-data
     - [x] Read Dataset
     - [x] Convert to Application Domain
-    - [ ] Store into repository (Postgres)
-        - [ ] Regions (cities/counties/zipcodes)
+    - [x] Store into repository (Postgres)
+        - [x] Regions (cities/counties/zipcodes)
 - [x] homie-api
     - [x] Handle Request
     - [x] Retrieve Data
@@ -59,6 +59,6 @@ Please check http://localhost:3000.
     - [x] [Dockerize](https://itnext.io/a-practical-guide-to-containerize-your-rust-application-with-docker-77e8a391b4a8)
     - [x] ~Push to dockerhub~ Going to use bash script to build and deploy
     - [ ] Read Zhvi from Zillow API
-- [ ] Testing 
-    - [ ] Unit tests :sob:
-    - [ ] E2E tests :sob:
+- [x] Testing ...I mean good enough?
+    - [x] Unit tests :sob:
+    - [x] E2E tests :sob:
