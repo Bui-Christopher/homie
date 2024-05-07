@@ -10,6 +10,7 @@ lto = true
 codegen-units = 1
 strip = true # Same as strip = symbols
 
+# Leptos WASM bin is optimized for size, not speed
 [profile.release.package.homie-webapp]
 inherits = "release"
 opt-level = 'z'

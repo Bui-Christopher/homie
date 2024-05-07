@@ -30,12 +30,21 @@ args = [
     "local/run.sh",
 ]
 
+[tasks.unit]
+command = "sh"
+args = [
+    "local/unit.sh",
+]
+
 # Shortcuts
 [tasks.t]
 alias = "test"
 
 [tasks.l]
 alias = "local"
+
+[tasks.u]
+alias = "unit"
 
 [tasks.cf]
 dependencies = ["clippy", "format"]

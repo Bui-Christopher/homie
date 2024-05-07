@@ -9,7 +9,8 @@ It answers two vital questions:
 2. What value of a mortgage interest rate is fair? 📈
 
 ### Diagram
-![Architecture Diagram](./docs/arch-diagram.png)
+![System Architecture Diagram](./docs/sys-arch.png)
+![Software Architecture Diagram](./docs/soft-arch.png)
 
 The technology stack was chosen by stacks I'm unfamiliar or interested in.
 
