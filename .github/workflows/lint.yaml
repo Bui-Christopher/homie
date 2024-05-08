@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_and_test:
+  test_and_clippy:
     strategy:
       fail-fast: false
       matrix:
@@ -35,16 +35,13 @@ jobs:
         with:
           toolchain: ${{ matrix.version.version }}
 
-      - name: Check with Cargo Test
-        run: rustc --version
-
-      - name: Check with Cargo Test
+      - name: Unit test with Cargo Test
         run: cargo test --lib --tests
 
-      - name: clippy
+      - name: Lint with Clippy
         run: cargo clippy
 
-  rustdoc:
+  format:
     name: format
     runs-on: ubuntu-latest
     steps:
@@ -56,5 +53,5 @@ jobs:
           toolchain: nightly
           components: rustfmt
 
-      - name: Check with Rustfmt
+      - name: Format with Rustfmt
         run: cargo +nightly fmt --all -- --check
