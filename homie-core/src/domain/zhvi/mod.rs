@@ -9,11 +9,11 @@ use crate::error::Error;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Zhvi {
-    pub(crate) region_name: String,
-    pub(crate) region_type: RegionType,
-    pub(crate) home_type: HomeType,
-    pub(crate) percentile: Percentile,
-    pub(crate) prices: ZhviPrices,
+    pub region_name: String,
+    pub region_type: RegionType,
+    pub home_type: HomeType,
+    pub percentile: Percentile,
+    pub prices: ZhviPrices,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type)]
@@ -82,8 +82,8 @@ impl std::fmt::Display for Percentile {
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct ZhviPrice {
-    pub(crate) date: NaiveDate,
-    pub(crate) value: f64,
+    pub date: NaiveDate,
+    pub value: f64,
 }
 
 pub type ZhviPrices = Vec<ZhviPrice>;
@@ -182,23 +182,23 @@ pub trait ZhviPersist: Send + Sync {
 }
 
 impl Zhvi {
-    pub(crate) fn region_name(&self) -> &str {
+    pub fn region_name(&self) -> &str {
         &self.region_name
     }
 
-    pub(crate) fn region_type(&self) -> &RegionType {
+    pub fn region_type(&self) -> &RegionType {
         &self.region_type
     }
 
-    pub(crate) fn home_type(&self) -> &HomeType {
+    pub fn home_type(&self) -> &HomeType {
         &self.home_type
     }
 
-    pub(crate) fn percentile(&self) -> &Percentile {
+    pub fn percentile(&self) -> &Percentile {
         &self.percentile
     }
 
-    pub(crate) fn prices(&self) -> &ZhviPrices {
+    pub fn prices(&self) -> &ZhviPrices {
         &self.prices
     }
 

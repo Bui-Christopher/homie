@@ -159,7 +159,7 @@ fn read_csv_city_zip_pairs(zip_county_path: &str) -> Result<Vec<(String, String)
     for entry in entries.into_iter() {
         if entry.0[3] == "CA" {
             let zipcode = entry.0[0].clone();
-            let city = entry.0[2].clone();
+            let city = entry.0[2].to_lowercase().clone();
             pairs.push((city, zipcode));
         }
     }
