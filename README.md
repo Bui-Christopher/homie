@@ -72,11 +72,12 @@ Please check http://localhost:3000.
         - [x] HPI
         - [x] Region
 - [ ] Optimize ZHVI (batch insert prices)
-- [x] Refactor
+- [ ] Refactor
     - [x] Reduce public struct/fn exposure
     - [x] ~Read Bulder Pattern~ Won't use it, but I understand it
     - [x] Enums instead of Strings [Example](https://github.com/launchbadge/sqlx/discussions/3041)
     - [x] Repo/Import calls into Config
+    - [ ] Remove getters on public objects
 - [x] Error Handling
     - [x] ~ThisError and Anyhow~ Created a custom enum instead
     - [x] Logging

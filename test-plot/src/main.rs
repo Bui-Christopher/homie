@@ -1,25 +1,44 @@
 use std::error::Error;
 
+use chrono::NaiveDate;
 use homie_core::domain::zhvi::Zhvis;
+use plotly::{Plot, Scatter};
 use reqwest::Client;
+
+struct Line {
+    dates: Vec<NaiveDate>,
+    prices: Vec<f64>,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let zhvis = read_zestimates().await?;
-    let prices = zhvis.first().unwrap().prices();
-    let mut x_axis = vec![];
-    let mut y_axis = vec![];
 
-    for price in prices {
-        x_axis.push(price.date);
-        y_axis.push(price.value);
+    let mut lines = vec![];
+    for zhvi in zhvis {
+        let mut dates = vec![];
+        let mut prices = vec![];
+        for price in zhvi.prices() {
+            dates.push(price.date);
+            prices.push(price.value);
+        }
+        let line = Line { dates, prices };
+        lines.push(line);
     }
-    // TODO: Create graph from axes
-    // TODO: Convert to WASM binary
 
     // Print the JSON to the console
-    println!("X-Axis:{:?}", x_axis);
-    println!("Y-Axis:{:?}", y_axis);
+    // Create graph from axes
+    for line in lines {
+        let mut plot = Plot::new();
+        let trace = Scatter::new(line.dates, line.prices);
+        plot.add_trace(trace);
+        plot.show();
+        // let name = "graph_name";
+        // plot.use_local_plotly();
+        // plot.write_html(format!("{name}.html"));
+    }
+
+    // TODO: Convert to WASM binary
 
     Ok(())
 }

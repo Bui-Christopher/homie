@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "homie-api", "homie-core",
-    "homie-data", "homie-webapp", "test-plot",
+    "homie-data", "homie-webapp", "test-csr", "test-plot",
 ]
 resolver = "2"
 
