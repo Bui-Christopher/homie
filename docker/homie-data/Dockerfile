@@ -14,7 +14,7 @@ COPY homie-webapp homie-webapp
 COPY .sqlx .sqlx
 
 ENV SQLX_OFFLINE true
-RUN cargo build --release --bin homie-data --target x86_64-unknown-linux-musl 
+RUN cargo build --release --bin homie-data --target x86_64-unknown-linux-musl
 
 ## Runner
 FROM scratch as runner
