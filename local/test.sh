@@ -31,3 +31,4 @@ curl -s -X GET 'http://127.0.0.1:8080/zhvis?start_date=2023-1-1&end_date=2024-12
 echo >> tmp.txt
 
 echo "Output saved to homie/local/tmp.txt"
+cat tmp.txt
