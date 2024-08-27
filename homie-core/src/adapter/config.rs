@@ -35,6 +35,7 @@ impl Config {
             mid_city_all_homes_path,
             mid_county_all_homes_path,
         );
+
         Config {
             hpi_config,
             use_zillow_api: false,
