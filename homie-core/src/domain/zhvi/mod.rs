@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::adapter::repository::Persist;
 use crate::domain::common::{DateInterval, RegionType};
 use crate::domain::util::{to_ymd_date, CsvRecord};
-use crate::error::Error;
+use crate::error::DomainError;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Zhvi {
@@ -26,14 +26,14 @@ pub enum HomeType {
 }
 
 impl TryFrom<&str> for HomeType {
-    type Error = crate::error::Error;
+    type Error = crate::error::DomainError;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
             "allhomes" => Ok(HomeType::AllHomes),
             "condocoops" => Ok(HomeType::CondoCoOps),
             "singlefamilyhomes" => Ok(HomeType::SingleFamilyHomes),
-            _ => Err(Error::Parse("Failed to parse HomeType".to_string())),
+            _ => Err(DomainError::Parse("Failed to parse HomeType".to_string())),
         }
     }
 }
@@ -58,14 +58,14 @@ pub enum Percentile {
 }
 
 impl TryFrom<&str> for Percentile {
-    type Error = crate::error::Error;
+    type Error = crate::error::DomainError;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
             "bottom" => Ok(Percentile::Bottom),
             "middle" => Ok(Percentile::Middle),
             "top" => Ok(Percentile::Top),
-            _ => Err(Error::Parse("Failed to parse Percentile".to_string())),
+            _ => Err(DomainError::Parse("Failed to parse Percentile".to_string())),
         }
     }
 }
@@ -174,11 +174,11 @@ impl ZhviQuery {
 #[async_trait]
 pub trait ZhviPersist: Send + Sync {
     // TODO: Return Keys instead of unit type
-    async fn create_zhvi(&self, zhvi: &Zhvi) -> Result<(), Error>;
-    async fn read_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<Zhvi, Error>;
-    async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), Error>;
-    async fn delete_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<(), Error>;
-    async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Error>;
+    async fn create_zhvi(&self, zhvi: &Zhvi) -> Result<(), DomainError>;
+    async fn read_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<Zhvi, DomainError>;
+    async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), DomainError>;
+    async fn delete_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<(), DomainError>;
+    async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, DomainError>;
 }
 
 impl Zhvi {
@@ -203,23 +203,32 @@ impl Zhvi {
     }
 
     // Persist fn's
-    pub async fn create(&self, client: &dyn Persist) -> Result<(), Error> {
+    pub async fn create(&self, client: &dyn Persist) -> Result<(), DomainError> {
         client.create_zhvi(self).await
     }
 
-    pub async fn read(client: &dyn Persist, id: (&str, &str, &str, &str)) -> Result<Zhvi, Error> {
+    pub async fn read(
+        client: &dyn Persist,
+        id: (&str, &str, &str, &str),
+    ) -> Result<Zhvi, DomainError> {
         client.read_zhvi_by_id(id).await
     }
 
-    pub async fn update(&self, client: &dyn Persist) -> Result<(), Error> {
+    pub async fn update(&self, client: &dyn Persist) -> Result<(), DomainError> {
         client.update_zhvi(self).await
     }
 
-    pub async fn delete(client: &dyn Persist, id: (&str, &str, &str, &str)) -> Result<(), Error> {
+    pub async fn delete(
+        client: &dyn Persist,
+        id: (&str, &str, &str, &str),
+    ) -> Result<(), DomainError> {
         client.delete_zhvi_by_id(id).await
     }
 
-    pub async fn read_by_query(client: &dyn Persist, query: &ZhviQuery) -> Result<Zhvis, Error> {
+    pub async fn read_by_query(
+        client: &dyn Persist,
+        query: &ZhviQuery,
+    ) -> Result<Zhvis, DomainError> {
         client.read_zhvi_by_query(query).await
     }
 }
@@ -257,7 +266,7 @@ impl ZhviConfig {
     }
 }
 
-pub(crate) fn read_zillow_zhvis(zhvi_config: &ZhviConfig) -> Result<ZhviData, Error> {
+pub(crate) fn read_zillow_zhvis(zhvi_config: &ZhviConfig) -> Result<ZhviData, DomainError> {
     let zhvi_data = ZhviData {
         all_homes_zhvis: read_all_homes_zhvis(zhvi_config)?,
         // condo_coops_zhvis = read_condo_coops_zhvis(zhvi_config)?;
@@ -268,7 +277,7 @@ pub(crate) fn read_zillow_zhvis(zhvi_config: &ZhviConfig) -> Result<ZhviData, Er
     Ok(zhvi_data)
 }
 
-fn read_all_homes_zhvis(zhvi_config: &ZhviConfig) -> Result<Zhvis, Error> {
+fn read_all_homes_zhvis(zhvi_config: &ZhviConfig) -> Result<Zhvis, DomainError> {
     let mut all_homes = Zhvis::default();
     if let Some(mid_zip_all_homes_path) = zhvi_config.mid_zip_all_homes_path() {
         all_homes.append(&mut read_mid_zip_all_homes(mid_zip_all_homes_path)?);
@@ -284,7 +293,7 @@ fn read_all_homes_zhvis(zhvi_config: &ZhviConfig) -> Result<Zhvis, Error> {
     Ok(all_homes)
 }
 
-fn read_mid_city_all_homes(mid_city_all_homes_path: &str) -> Result<Zhvis, Error> {
+fn read_mid_city_all_homes(mid_city_all_homes_path: &str) -> Result<Zhvis, DomainError> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(mid_city_all_homes_path)?;
@@ -299,7 +308,9 @@ fn read_mid_city_all_homes(mid_city_all_homes_path: &str) -> Result<Zhvis, Error
             let parts: Vec<&str> = headers
                 .iter()
                 .nth(i)
-                .ok_or(Error::Parse("Failed to parse string to date".to_string()))?
+                .ok_or(DomainError::Parse(
+                    "Failed to parse string to date".to_string(),
+                ))?
                 .split('-')
                 .collect();
             let year = parts[0].parse()?;
@@ -325,7 +336,7 @@ fn read_mid_city_all_homes(mid_city_all_homes_path: &str) -> Result<Zhvis, Error
     Ok(mid_all_homes)
 }
 
-fn read_mid_county_all_homes(mid_county_all_homes_path: &str) -> Result<Zhvis, Error> {
+fn read_mid_county_all_homes(mid_county_all_homes_path: &str) -> Result<Zhvis, DomainError> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(mid_county_all_homes_path)?;
@@ -340,7 +351,9 @@ fn read_mid_county_all_homes(mid_county_all_homes_path: &str) -> Result<Zhvis, E
             let parts: Vec<&str> = headers
                 .iter()
                 .nth(i)
-                .ok_or(Error::Parse("Failed to parse string to date".to_string()))?
+                .ok_or(DomainError::Parse(
+                    "Failed to parse string to date".to_string(),
+                ))?
                 .split('-')
                 .collect();
             let year = parts[0].parse()?;
@@ -366,7 +379,7 @@ fn read_mid_county_all_homes(mid_county_all_homes_path: &str) -> Result<Zhvis, E
     Ok(mid_all_homes)
 }
 
-fn read_mid_zip_all_homes(mid_zip_all_homes_path: &str) -> Result<Zhvis, Error> {
+fn read_mid_zip_all_homes(mid_zip_all_homes_path: &str) -> Result<Zhvis, DomainError> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(mid_zip_all_homes_path)?;
@@ -381,7 +394,9 @@ fn read_mid_zip_all_homes(mid_zip_all_homes_path: &str) -> Result<Zhvis, Error> 
             let parts: Vec<&str> = headers
                 .iter()
                 .nth(i)
-                .ok_or(Error::Parse("Failed to parse string to date".to_string()))?
+                .ok_or(DomainError::Parse(
+                    "Failed to parse string to date".to_string(),
+                ))?
                 .split('-')
                 .collect();
             let year = parts[0].parse()?;

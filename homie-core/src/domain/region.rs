@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::adapter::repository::Persist;
 use crate::domain::util::CsvRecord;
-use crate::error::Error;
+use crate::error::DomainError;
 
 pub type City = String;
 pub type Zipcode = String;
@@ -55,30 +55,30 @@ impl RegionQuery {
 
 #[async_trait]
 pub trait RegionPersist: Send + Sync {
-    async fn create_region(&self, region: &Region) -> Result<Zipcode, Error>;
-    async fn read_region_by_id(&self, id: &str) -> Result<Region, Error>;
-    async fn read_regions_by_city(&self, id: &str) -> Result<Regions, Error>;
-    async fn read_regions_by_query(&self, query: &RegionQuery) -> Result<Regions, Error>;
-    async fn delete_region_by_id(&self, id: &str) -> Result<Zipcode, Error>;
+    async fn create_region(&self, region: &Region) -> Result<Zipcode, DomainError>;
+    async fn read_region_by_id(&self, id: &str) -> Result<Region, DomainError>;
+    async fn read_regions_by_city(&self, id: &str) -> Result<Regions, DomainError>;
+    async fn read_regions_by_query(&self, query: &RegionQuery) -> Result<Regions, DomainError>;
+    async fn delete_region_by_id(&self, id: &str) -> Result<Zipcode, DomainError>;
 }
 
 impl Region {
-    pub async fn create(&self, client: &dyn Persist) -> Result<Zipcode, Error> {
+    pub async fn create(&self, client: &dyn Persist) -> Result<Zipcode, DomainError> {
         client.create_region(self).await
     }
 
-    pub async fn read(client: &dyn Persist, id: &str) -> Result<Regions, Error> {
+    pub async fn read(client: &dyn Persist, id: &str) -> Result<Regions, DomainError> {
         client.read_regions_by_city(id).await
     }
 
     pub async fn read_by_query(
         client: &dyn Persist,
         query: &RegionQuery,
-    ) -> Result<Regions, Error> {
+    ) -> Result<Regions, DomainError> {
         client.read_regions_by_query(query).await
     }
 
-    pub async fn delete(client: &dyn Persist, id: &str) -> Result<Zipcode, Error> {
+    pub async fn delete(client: &dyn Persist, id: &str) -> Result<Zipcode, DomainError> {
         client.delete_region_by_id(id).await
     }
 
@@ -114,7 +114,7 @@ impl RegionConfig {
     }
 }
 
-pub fn read_huduser_regions(region_config: &RegionConfig) -> Result<RegionData, Error> {
+pub fn read_huduser_regions(region_config: &RegionConfig) -> Result<RegionData, DomainError> {
     let mut region_data = RegionData::default();
 
     if let (Some(cities_path), Some(zip_county_path)) =
@@ -150,7 +150,7 @@ fn read_select_cities(cities_path: &str) -> Vec<String> {
     cities
 }
 
-fn read_csv_city_zip_pairs(zip_county_path: &str) -> Result<Vec<(String, String)>, Error> {
+fn read_csv_city_zip_pairs(zip_county_path: &str) -> Result<Vec<(String, String)>, DomainError> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(zip_county_path)?;

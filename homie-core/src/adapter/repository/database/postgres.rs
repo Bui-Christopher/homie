@@ -9,14 +9,14 @@ use crate::domain::hpi::*;
 use crate::domain::region::{Region, RegionPersist, RegionQuery, Regions, Zipcode};
 use crate::domain::t_yield::*;
 use crate::domain::zhvi::*;
-use crate::error::Error;
+use crate::error::DomainError;
 
 pub struct PostgresClient {
     pool: Pool<Postgres>,
 }
 
 impl PostgresClient {
-    pub async fn new(_config: &Config) -> Result<Self, Error> {
+    pub async fn new(_config: &Config) -> Result<Self, DomainError> {
         let pool = PgPoolOptions::new()
             .max_connections(5)
             .connect(&std::env::var("DATABASE_URL")?)
@@ -33,7 +33,7 @@ impl Persist for PostgresClient {}
 
 #[async_trait]
 impl HpiPersist for PostgresClient {
-    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), Error> {
+    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), DomainError> {
         let record = query!(
             r#"
                 INSERT INTO hpis
@@ -55,7 +55,7 @@ impl HpiPersist for PostgresClient {
         Ok((record.region_name, record.year))
     }
 
-    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Error> {
+    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, DomainError> {
         let record = query_as!(
             Hpi,
             r#"
@@ -71,7 +71,7 @@ impl HpiPersist for PostgresClient {
         Ok(record)
     }
 
-    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Error> {
+    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), DomainError> {
         query!(
             r#"
                 UPDATE hpis
@@ -88,7 +88,7 @@ impl HpiPersist for PostgresClient {
         Ok(())
     }
 
-    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Error> {
+    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), DomainError> {
         query!(
             r#"
                 DELETE FROM hpis
@@ -103,7 +103,7 @@ impl HpiPersist for PostgresClient {
         Ok(())
     }
 
-    async fn read_hpi_by_query(&self, hpi_query: &HpiQuery) -> Result<Hpis, Error> {
+    async fn read_hpi_by_query(&self, hpi_query: &HpiQuery) -> Result<Hpis, DomainError> {
         let query = r#"
             SELECT * FROM hpis
             WHERE region_name = $1
@@ -122,7 +122,7 @@ impl HpiPersist for PostgresClient {
 
 #[async_trait]
 impl RegionPersist for PostgresClient {
-    async fn create_region(&self, region: &Region) -> Result<Zipcode, Error> {
+    async fn create_region(&self, region: &Region) -> Result<Zipcode, DomainError> {
         let record = query!(
             r#"
                 INSERT INTO regions
@@ -140,7 +140,7 @@ impl RegionPersist for PostgresClient {
         Ok(record.zipcode.to_string())
     }
 
-    async fn read_region_by_id(&self, id: &str) -> Result<Region, Error> {
+    async fn read_region_by_id(&self, id: &str) -> Result<Region, DomainError> {
         let record = query_as!(
             Region,
             r#"
@@ -155,7 +155,7 @@ impl RegionPersist for PostgresClient {
         Ok(record)
     }
 
-    async fn read_regions_by_city(&self, id: &str) -> Result<Regions, Error> {
+    async fn read_regions_by_city(&self, id: &str) -> Result<Regions, DomainError> {
         let query = r#"
             SELECT * FROM regions
             WHERE city = $1
@@ -164,7 +164,10 @@ impl RegionPersist for PostgresClient {
         Ok(regions)
     }
 
-    async fn read_regions_by_query(&self, region_query: &RegionQuery) -> Result<Regions, Error> {
+    async fn read_regions_by_query(
+        &self,
+        region_query: &RegionQuery,
+    ) -> Result<Regions, DomainError> {
         let mut query = "SELECT * FROM regions".to_string();
         let mut params = Vec::<&str>::new();
         let mut where_clause = String::new();
@@ -212,7 +215,7 @@ impl RegionPersist for PostgresClient {
         Ok(regions)
     }
 
-    async fn delete_region_by_id(&self, id: &str) -> Result<Zipcode, Error> {
+    async fn delete_region_by_id(&self, id: &str) -> Result<Zipcode, DomainError> {
         println!(
             "Calling region delete with id: {:?} from PostgresClient.",
             id
@@ -223,7 +226,7 @@ impl RegionPersist for PostgresClient {
 
 #[async_trait]
 impl TYieldPersist for PostgresClient {
-    async fn create_t_yield(&self, t_yield: &TYield) -> Result<(String, NaiveDate), Error> {
+    async fn create_t_yield(&self, t_yield: &TYield) -> Result<(String, NaiveDate), DomainError> {
         let record = query!(
             r#"
                 INSERT INTO tyields
@@ -241,7 +244,7 @@ impl TYieldPersist for PostgresClient {
         Ok((record.term.to_string(), record.date))
     }
 
-    async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Error> {
+    async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, DomainError> {
         let record = query_as!(
             TYield,
             r#"
@@ -257,7 +260,7 @@ impl TYieldPersist for PostgresClient {
         Ok(record)
     }
 
-    async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), Error> {
+    async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), DomainError> {
         query!(
             r#"
                 UPDATE tyields
@@ -273,7 +276,7 @@ impl TYieldPersist for PostgresClient {
         Ok(())
     }
 
-    async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), Error> {
+    async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), DomainError> {
         query!(
             r#"
                 DELETE FROM tyields
@@ -287,7 +290,10 @@ impl TYieldPersist for PostgresClient {
         Ok(())
     }
 
-    async fn read_t_yields_by_query(&self, t_yield_query: &TYieldQuery) -> Result<TYields, Error> {
+    async fn read_t_yields_by_query(
+        &self,
+        t_yield_query: &TYieldQuery,
+    ) -> Result<TYields, DomainError> {
         let query = match t_yield_query.date_interval() {
             DateInterval::Day => {
                 "SELECT term, CAST(date AS DATE) AS date, CAST(AVG(yield_return) AS FLOAT4) AS \
@@ -335,12 +341,12 @@ struct ZhviPricePgRow {
 }
 
 impl TryFrom<ZhviPricePgRow> for ZhviPrice {
-    type Error = Error;
+    type Error = DomainError;
 
     fn try_from(row: ZhviPricePgRow) -> Result<Self, Self::Error> {
         let date = row
             .date
-            .ok_or(Error::Database("Date Not Found".to_string()))?;
+            .ok_or(DomainError::Database("Date Not Found".to_string()))?;
         let value = row.value;
         Ok(Self { date, value })
     }
@@ -348,7 +354,7 @@ impl TryFrom<ZhviPricePgRow> for ZhviPrice {
 
 #[async_trait]
 impl ZhviPersist for PostgresClient {
-    async fn create_zhvi(&self, zhvi: &Zhvi) -> Result<(), Error> {
+    async fn create_zhvi(&self, zhvi: &Zhvi) -> Result<(), DomainError> {
         let mut tx = self.pool().begin().await?;
 
         let home_type = zhvi.home_type();
@@ -391,7 +397,7 @@ impl ZhviPersist for PostgresClient {
         Ok(())
     }
 
-    async fn read_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<Zhvi, Error> {
+    async fn read_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<Zhvi, DomainError> {
         let mut tx = self.pool().begin().await?;
         let metadata = query_as!(
             ZhviMetadataPgRow,
@@ -424,7 +430,7 @@ impl ZhviPersist for PostgresClient {
         .await?
         .into_iter()
         .map(ZhviPrice::try_from)
-        .collect::<Result<ZhviPrices, Error>>()?;
+        .collect::<Result<ZhviPrices, DomainError>>()?;
 
         // Commit the transaction
         tx.commit().await?;
@@ -441,7 +447,7 @@ impl ZhviPersist for PostgresClient {
         Ok(zhvi)
     }
 
-    async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), Error> {
+    async fn update_zhvi(&self, zhvi: &Zhvi) -> Result<(), DomainError> {
         let mut tx = self.pool().begin().await?;
         let home_type = zhvi.home_type();
         let region_type = zhvi.region_type();
@@ -500,7 +506,7 @@ impl ZhviPersist for PostgresClient {
         Ok(())
     }
 
-    async fn delete_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<(), Error> {
+    async fn delete_zhvi_by_id(&self, id: (&str, &str, &str, &str)) -> Result<(), DomainError> {
         let mut tx = self.pool().begin().await?;
 
         query!(
@@ -534,7 +540,7 @@ impl ZhviPersist for PostgresClient {
         Ok(())
     }
 
-    async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, Error> {
+    async fn read_zhvi_by_query(&self, query: &ZhviQuery) -> Result<Zhvis, DomainError> {
         let mut tx = self.pool().begin().await?;
 
         let metadata = query_as!(
@@ -574,7 +580,7 @@ impl ZhviPersist for PostgresClient {
                 .await?
                 .into_iter()
                 .map(ZhviPrice::try_from)
-                .collect::<Result<ZhviPrices, Error>>()?
+                .collect::<Result<ZhviPrices, DomainError>>()?
             } else if query.date_interval() == &DateInterval::Year {
                 query_as!(
                     ZhviPricePgRow,
@@ -596,9 +602,9 @@ impl ZhviPersist for PostgresClient {
                 .await?
                 .into_iter()
                 .map(ZhviPrice::try_from)
-                .collect::<Result<ZhviPrices, Error>>()?
+                .collect::<Result<ZhviPrices, DomainError>>()?
             } else {
-                return Err(Error::Parse("Prices not found".to_string()));
+                return Err(DomainError::Parse("Prices not found".to_string()));
             };
 
             let zhvi = Zhvi {

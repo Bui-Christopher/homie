@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::common::DateInterval;
 use crate::adapter::repository::Persist;
 use crate::domain::util::{to_ymd_date, CsvRecord};
-use crate::error::Error;
+use crate::error::DomainError;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type)]
 #[sqlx(type_name = "term", rename_all = "lowercase")]
@@ -86,34 +86,34 @@ impl TYieldQuery {
 
 #[async_trait]
 pub trait TYieldPersist: Send + Sync {
-    async fn create_t_yield(&self, t_yield: &TYield) -> Result<(String, NaiveDate), Error>;
-    async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, Error>;
-    async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), Error>;
-    async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), Error>;
-    async fn read_t_yields_by_query(&self, query: &TYieldQuery) -> Result<TYields, Error>;
+    async fn create_t_yield(&self, t_yield: &TYield) -> Result<(String, NaiveDate), DomainError>;
+    async fn read_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<TYield, DomainError>;
+    async fn update_t_yield(&self, t_yield: &TYield) -> Result<(), DomainError>;
+    async fn delete_t_yield_by_id(&self, id: (&str, &NaiveDate)) -> Result<(), DomainError>;
+    async fn read_t_yields_by_query(&self, query: &TYieldQuery) -> Result<TYields, DomainError>;
 }
 
 impl TYield {
-    pub async fn create(&self, client: &dyn Persist) -> Result<(String, NaiveDate), Error> {
+    pub async fn create(&self, client: &dyn Persist) -> Result<(String, NaiveDate), DomainError> {
         client.create_t_yield(self).await
     }
 
-    pub async fn read(client: &dyn Persist, id: (&str, &NaiveDate)) -> Result<TYield, Error> {
+    pub async fn read(client: &dyn Persist, id: (&str, &NaiveDate)) -> Result<TYield, DomainError> {
         client.read_t_yield_by_id(id).await
     }
 
-    pub async fn update(&self, client: &dyn Persist) -> Result<(), Error> {
+    pub async fn update(&self, client: &dyn Persist) -> Result<(), DomainError> {
         client.update_t_yield(self).await
     }
 
-    pub async fn delete(client: &dyn Persist, id: (&str, &NaiveDate)) -> Result<(), Error> {
+    pub async fn delete(client: &dyn Persist, id: (&str, &NaiveDate)) -> Result<(), DomainError> {
         client.delete_t_yield_by_id(id).await
     }
 
     pub async fn read_by_query(
         client: &dyn Persist,
         query: &TYieldQuery,
-    ) -> Result<TYields, Error> {
+    ) -> Result<TYields, DomainError> {
         client.read_t_yields_by_query(query).await
     }
 }
@@ -135,7 +135,7 @@ impl TYieldConfig {
     }
 }
 
-pub(crate) fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldData, Error> {
+pub(crate) fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldData, DomainError> {
     let mut t_yield_data = TYieldData::default();
     if let Some(ten_year_yield_path) = t_yield_config.ten_year_yield_path() {
         t_yield_data.ten_year_yields = read_fed_ten_yields(ten_year_yield_path)?;
@@ -143,7 +143,7 @@ pub(crate) fn read_fed_yields(t_yield_config: &TYieldConfig) -> Result<TYieldDat
     Ok(t_yield_data)
 }
 
-fn read_fed_ten_yields(fed_h15: &str) -> Result<TYields, Error> {
+fn read_fed_ten_yields(fed_h15: &str) -> Result<TYields, DomainError> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(fed_h15)?;
