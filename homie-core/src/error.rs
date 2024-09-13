@@ -1,6 +1,5 @@
 #[derive(std::fmt::Debug)]
 pub enum DomainError {
-    Config(String),
     ConvertDomain(String),
     Database(String),
     Parse(String),
@@ -9,7 +8,6 @@ pub enum DomainError {
 impl std::fmt::Display for DomainError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
-            DomainError::Config(ref message) => write!(f, "Config error: {}", message),
             DomainError::ConvertDomain(ref message) => write!(f, "Parse error: {}", message),
             DomainError::Database(ref message) => write!(f, "Database error: {}", message),
             DomainError::Parse(ref message) => write!(f, "Parse error: {}", message),
