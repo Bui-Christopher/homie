@@ -3,7 +3,7 @@ use crate::domain::hpi::{read_fhfa_hpis, HpiConfig, HpiData};
 use crate::domain::region::{read_huduser_regions, RegionConfig, RegionData};
 use crate::domain::t_yield::{read_fed_yields, TYieldConfig, TYieldData};
 use crate::domain::zhvi::{read_zillow_zhvis, ZhviConfig, ZhviData};
-use crate::error::Error;
+use crate::error::DomainError;
 
 pub struct Importer {
     hpi_config: HpiConfig,
@@ -29,19 +29,19 @@ impl Importer {
 }
 
 impl Importer {
-    pub fn read_fhfa_hpis(&self) -> Result<HpiData, Error> {
+    pub fn read_fhfa_hpis(&self) -> Result<HpiData, DomainError> {
         read_fhfa_hpis(self.hpi_config())
     }
 
-    pub fn read_fed_yields(&self) -> Result<TYieldData, Error> {
+    pub fn read_fed_yields(&self) -> Result<TYieldData, DomainError> {
         read_fed_yields(self.t_yield_config())
     }
 
-    pub fn read_huduser_regions(&self) -> Result<RegionData, Error> {
+    pub fn read_huduser_regions(&self) -> Result<RegionData, DomainError> {
         read_huduser_regions(self.region_config())
     }
 
-    pub fn read_zillow_zhvis(&self) -> Result<ZhviData, Error> {
+    pub fn read_zillow_zhvis(&self) -> Result<ZhviData, DomainError> {
         read_zillow_zhvis(self.zhvi_config())
     }
 

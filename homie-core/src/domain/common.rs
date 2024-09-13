@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::error::Error;
+use crate::error::DomainError;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub enum DateInterval {
@@ -11,14 +11,16 @@ pub enum DateInterval {
 }
 
 impl TryFrom<&str> for DateInterval {
-    type Error = crate::error::Error;
+    type Error = crate::error::DomainError;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
             "day" => Ok(DateInterval::Day),
             "month" => Ok(DateInterval::Month),
             "year" => Ok(DateInterval::Year),
-            _ => Err(Error::Parse("Failed to parse DateInterval".to_string())),
+            _ => Err(DomainError::Parse(
+                "Failed to parse DateInterval".to_string(),
+            )),
         }
     }
 }
@@ -34,7 +36,7 @@ pub enum RegionType {
 }
 
 impl TryFrom<&str> for RegionType {
-    type Error = crate::error::Error;
+    type Error = crate::error::DomainError;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
@@ -42,7 +44,7 @@ impl TryFrom<&str> for RegionType {
             "fivezip" => Ok(RegionType::FiveZip),
             "city" => Ok(RegionType::City),
             "county" => Ok(RegionType::County),
-            _ => Err(Error::Parse("Failed to parse RegionType".to_string())),
+            _ => Err(DomainError::Parse("Failed to parse RegionType".to_string())),
         }
     }
 }

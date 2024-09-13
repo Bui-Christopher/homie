@@ -7,7 +7,7 @@ use crate::trace_err;
 
 #[derive(Debug)]
 pub enum AppError {
-    Config(String),
+    Start(String),
     Fetch(String),
     InvalidQuery(String),
 }
@@ -20,7 +20,7 @@ struct ErrorResponse {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
-            AppError::Config(err) => (StatusCode::INTERNAL_SERVER_ERROR, err),
+            AppError::Start(err) => (StatusCode::INTERNAL_SERVER_ERROR, err),
             AppError::Fetch(err) => (StatusCode::INTERNAL_SERVER_ERROR, err),
             AppError::InvalidQuery(err) => (StatusCode::BAD_REQUEST, err),
         };
@@ -39,8 +39,8 @@ impl From<chrono::ParseError> for AppError {
     }
 }
 
-impl From<homie_core::error::Error> for AppError {
-    fn from(err: homie_core::error::Error) -> Self {
+impl From<homie_core::error::DomainError> for AppError {
+    fn from(err: homie_core::error::DomainError) -> Self {
         trace_err!(
             AppError::Fetch,
             "Something unexpected happened when fetching the data",
@@ -57,13 +57,13 @@ impl From<serde_json::Error> for AppError {
 
 impl From<std::io::Error> for AppError {
     fn from(err: std::io::Error) -> Self {
-        trace_err!(AppError::Config, "Failed to start server", err)
+        trace_err!(AppError::Start, "Failed to start server", err)
     }
 }
 
 impl From<tracing_subscriber::filter::ParseError> for AppError {
     fn from(err: tracing_subscriber::filter::ParseError) -> Self {
-        trace_err!(AppError::Config, "Failed to parse EnvFilter log", err)
+        trace_err!(AppError::Start, "Failed to parse EnvFilter log", err)
     }
 }
 

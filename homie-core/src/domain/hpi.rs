@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use super::common::RegionType;
 use crate::adapter::repository::Persist;
 use crate::domain::util::CsvRecord;
-use crate::error::Error;
+use crate::error::DomainError;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
 pub struct Hpi {
@@ -104,31 +104,34 @@ impl HpiQuery {
 
 #[async_trait]
 pub trait HpiPersist: Send + Sync {
-    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), Error>;
-    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, Error>;
-    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), Error>;
-    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), Error>;
-    async fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, Error>;
+    async fn create_hpi(&self, hpi: &Hpi) -> Result<(String, i32), DomainError>;
+    async fn read_hpi_by_id(&self, id: (&str, i32)) -> Result<Hpi, DomainError>;
+    async fn update_hpi(&self, hpi: &Hpi) -> Result<(), DomainError>;
+    async fn delete_hpi_by_id(&self, id: (&str, i32)) -> Result<(), DomainError>;
+    async fn read_hpi_by_query(&self, query: &HpiQuery) -> Result<Hpis, DomainError>;
 }
 
 impl Hpi {
-    pub async fn create(&self, client: &dyn Persist) -> Result<(String, i32), Error> {
+    pub async fn create(&self, client: &dyn Persist) -> Result<(String, i32), DomainError> {
         client.create_hpi(self).await
     }
 
-    pub async fn read(client: &dyn Persist, id: (&str, i32)) -> Result<Hpi, Error> {
+    pub async fn read(client: &dyn Persist, id: (&str, i32)) -> Result<Hpi, DomainError> {
         client.read_hpi_by_id(id).await
     }
 
-    pub async fn update(&self, client: &dyn Persist) -> Result<(), Error> {
+    pub async fn update(&self, client: &dyn Persist) -> Result<(), DomainError> {
         client.update_hpi(self).await
     }
 
-    pub async fn delete(client: &dyn Persist, id: (&str, i32)) -> Result<(), Error> {
+    pub async fn delete(client: &dyn Persist, id: (&str, i32)) -> Result<(), DomainError> {
         client.delete_hpi_by_id(id).await
     }
 
-    pub async fn read_by_query(client: &dyn Persist, query: &HpiQuery) -> Result<Hpis, Error> {
+    pub async fn read_by_query(
+        client: &dyn Persist,
+        query: &HpiQuery,
+    ) -> Result<Hpis, DomainError> {
         client.read_hpi_by_query(query).await
     }
 }
@@ -166,7 +169,7 @@ impl HpiConfig {
     }
 }
 
-pub(crate) fn read_fhfa_hpis(hpi_config: &HpiConfig) -> Result<HpiData, Error> {
+pub(crate) fn read_fhfa_hpis(hpi_config: &HpiConfig) -> Result<HpiData, DomainError> {
     let mut hpi_data = HpiData::default();
 
     if let Some(three_zpi_hpi_path) = hpi_config.three_zip_hpi_path() {
@@ -181,7 +184,7 @@ pub(crate) fn read_fhfa_hpis(hpi_config: &HpiConfig) -> Result<HpiData, Error> {
     Ok(hpi_data)
 }
 
-fn read_three_zip_fhfa_hpis(three_zip_path: &str) -> Result<Hpis, Error> {
+fn read_three_zip_fhfa_hpis(three_zip_path: &str) -> Result<Hpis, DomainError> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(three_zip_path)?;
@@ -209,7 +212,7 @@ fn read_three_zip_fhfa_hpis(three_zip_path: &str) -> Result<Hpis, Error> {
         .collect())
 }
 
-fn read_five_zip_fhfa_hpis(five_zip_path: &str) -> Result<Hpis, Error> {
+fn read_five_zip_fhfa_hpis(five_zip_path: &str) -> Result<Hpis, DomainError> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(five_zip_path)?;
@@ -238,7 +241,7 @@ fn read_five_zip_fhfa_hpis(five_zip_path: &str) -> Result<Hpis, Error> {
         .collect())
 }
 
-fn read_county_fhfa_hpis(county_path: &str) -> Result<Hpis, Error> {
+fn read_county_fhfa_hpis(county_path: &str) -> Result<Hpis, DomainError> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(true)
         .from_path(county_path)?;

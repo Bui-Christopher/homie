@@ -59,6 +59,7 @@ Please check http://localhost:3000.
     - [x] Handle Request
     - [x] Retrieve Data
     - [x] Return Response
+    - [ ] `/api/..`
 - [ ] homie-webapp
     - [ ] Get User's Query Params
     - [ ] Submit Request

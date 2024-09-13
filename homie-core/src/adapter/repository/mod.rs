@@ -5,7 +5,7 @@ use crate::domain::hpi::HpiPersist;
 use crate::domain::region::RegionPersist;
 use crate::domain::t_yield::TYieldPersist;
 use crate::domain::zhvi::ZhviPersist;
-use crate::error::Error;
+use crate::error::DomainError;
 
 pub mod database;
 
@@ -16,12 +16,12 @@ pub struct Repository {
 }
 
 impl Repository {
-    pub async fn new(config: &Config) -> Result<Self, Error> {
+    pub async fn new(config: &Config) -> Result<Self, DomainError> {
         let client = Repository::establish_session(config).await?;
         Ok(Repository { client })
     }
 
-    async fn establish_session(config: &Config) -> Result<Box<dyn Persist>, Error> {
+    async fn establish_session(config: &Config) -> Result<Box<dyn Persist>, DomainError> {
         if config.is_zillow_api_enabled() {
             println!("Using HTTP client.");
             Ok(Box::new(HttpClient))
