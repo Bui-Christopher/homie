@@ -10,6 +10,7 @@ use homie_core::domain::zhvi::{HomeType, Percentile, ZhviQuery};
 use serde::{Deserialize, Serialize};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use utoipa::IntoParams;
 
 use crate::error::AppError;
 
@@ -52,7 +53,7 @@ impl TryFrom<HpiParam> for HpiQuery {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, IntoParams)]
 pub(crate) struct RegionParam {
     #[serde(default)]
     cities: Vec<String>,
@@ -93,7 +94,7 @@ impl TryFrom<TYieldParam> for TYieldQuery {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, IntoParams)]
 pub(crate) struct ZhviParam {
     start_date: String,
     end_date: String,
@@ -129,12 +130,12 @@ impl TryFrom<ZhviParam> for ZhviQuery {
 
 fn parse_home_type(input: &str) -> Result<HomeType, AppError> {
     HomeType::try_from(input.to_ascii_lowercase().as_str())
-        .map_err(|_| AppError::InvalidQuery("Failed to read home type".to_string()))
+        .map_err(|_| AppError::Request("Failed to read home type".to_string()))
 }
 
 fn parse_date_interval(input: &str) -> Result<DateInterval, AppError> {
     DateInterval::try_from(input.to_ascii_lowercase().as_str())
-        .map_err(|_| AppError::InvalidQuery("Failed to read date interval".to_string()))
+        .map_err(|_| AppError::Request("Failed to read date interval".to_string()))
 }
 
 fn parse_naive_date(input: &str) -> Result<NaiveDate, AppError> {
@@ -143,12 +144,12 @@ fn parse_naive_date(input: &str) -> Result<NaiveDate, AppError> {
 
 fn parse_percentile(input: &str) -> Result<Percentile, AppError> {
     Percentile::try_from(input.to_ascii_lowercase().as_str())
-        .map_err(|_| AppError::InvalidQuery("Failed to read percentile".to_string()))
+        .map_err(|_| AppError::Request("Failed to read percentile".to_string()))
 }
 
 fn parse_region_type(input: &str) -> Result<RegionType, AppError> {
     RegionType::try_from(input.to_ascii_lowercase().as_str())
-        .map_err(|_| AppError::InvalidQuery("Failed to read region type".to_string()))
+        .map_err(|_| AppError::Request("Failed to read region type".to_string()))
 }
 
 pub(crate) fn init_tracing() -> Result<(), AppError> {

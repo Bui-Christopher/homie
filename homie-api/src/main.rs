@@ -8,11 +8,15 @@ use axum_extra::extract::Form;
 use error::AppError;
 use homie_core::adapter::config::Config;
 use homie_core::adapter::repository::Repository;
+use homie_core::domain::common::RegionType;
 use homie_core::domain::hpi::{Hpi, Hpis};
 use homie_core::domain::region::{Region, Regions};
 use homie_core::domain::t_yield::{TYield, TYields};
-use homie_core::domain::zhvi::{Zhvi, Zhvis};
+use homie_core::domain::zhvi::{HomeType, Percentile, Zhvi, ZhviPrice, Zhvis};
+use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 use crate::util::*;
 
@@ -20,6 +24,17 @@ mod error;
 mod util;
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
+
+const ZHVI_TAG: &str = "zhvis";
+#[derive(OpenApi)]
+#[openapi(
+        paths(read_zhvis),
+        components(schemas(Region, RegionType, HomeType, Percentile, ZhviPrice, Zhvi)),
+        tags(
+            (name = "zhvis", description = "ZHVI endpoints.")
+        ),
+)]
+struct ApiDoc;
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
@@ -33,12 +48,15 @@ async fn main() -> Result<(), AppError> {
     let state = Arc::new(AppState::new(repo));
 
     let app = Router::new()
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .route("/health", get(health))
         .route("/hpis", get(read_hpis))
         .route("/regions", post(read_regions))
         .route("/tyields", get(read_tyields))
         .route("/zhvis", get(read_zhvis))
         .with_state(state)
+        // .layer(CorsLayer::n)
+        .layer(CorsLayer::very_permissive())
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(|req: &Request| {
@@ -92,6 +110,7 @@ async fn read_tyields(
     Ok(Json(t_yields))
 }
 
+#[utoipa::path(get, path = "/zhvis", params(ZhviParam),responses((status = 200, description = "Read Zhvis by query", body = [Zhvi])), tag = ZHVI_TAG)]
 async fn read_zhvis(
     State(state): State<Arc<AppState>>,
     Query(param): Query<ZhviParam>,

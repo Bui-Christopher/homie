@@ -4,6 +4,7 @@ use std::io::{BufRead, BufReader};
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::adapter::repository::Persist;
 use crate::domain::util::CsvRecord;
@@ -12,7 +13,7 @@ use crate::error::DomainError;
 pub type City = String;
 pub type Zipcode = String;
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::FromRow, ToSchema)]
 pub struct Region {
     pub(crate) city: City,
     pub(crate) zipcode: Zipcode,

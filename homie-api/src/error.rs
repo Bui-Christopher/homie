@@ -2,14 +2,15 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use crate::trace_err;
 
-#[derive(Debug)]
+#[derive(Debug, ToSchema)]
 pub enum AppError {
     Start(String),
     Fetch(String),
-    InvalidQuery(String),
+    Request(String),
 }
 
 #[derive(Serialize)]
@@ -20,9 +21,10 @@ struct ErrorResponse {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
-            AppError::Start(err) => (StatusCode::INTERNAL_SERVER_ERROR, err),
+            // Maps AppError => ( status_code and error_message )
+            AppError::Start(err) => (StatusCode::IM_A_TEAPOT, err),
             AppError::Fetch(err) => (StatusCode::INTERNAL_SERVER_ERROR, err),
-            AppError::InvalidQuery(err) => (StatusCode::BAD_REQUEST, err),
+            AppError::Request(err) => (StatusCode::BAD_REQUEST, err),
         };
 
         (status, Json(ErrorResponse { message })).into_response()
@@ -31,11 +33,7 @@ impl IntoResponse for AppError {
 
 impl From<chrono::ParseError> for AppError {
     fn from(err: chrono::ParseError) -> Self {
-        trace_err!(
-            AppError::InvalidQuery,
-            "Failed to parse from \"%Y-%m-%d\"",
-            err
-        )
+        trace_err!(AppError::Request, "Failed to parse from \"%Y-%m-%d\"", err)
     }
 }
 
@@ -51,7 +49,7 @@ impl From<homie_core::error::DomainError> for AppError {
 
 impl From<serde_json::Error> for AppError {
     fn from(err: serde_json::Error) -> Self {
-        trace_err!(AppError::InvalidQuery, "Failed to convert json", err)
+        trace_err!(AppError::Request, "Failed to convert json", err)
     }
 }
 

@@ -27,10 +27,12 @@ impl Config {
         let zip_county_path = env::var("ZIP_COUNTY_PATH").ok();
         let region_config = RegionConfig::new(cities_path, zip_county_path);
 
+        let bot_city_all_homes_path = env::var("BOT_CITY_ALL_HOMES_PATH").ok();
         let mid_zip_all_homes_path = env::var("MID_ZIP_ALL_HOMES_PATH").ok();
         let mid_city_all_homes_path = env::var("MID_CITY_ALL_HOMES_PATH").ok();
         let mid_county_all_homes_path = env::var("MID_COUNTY_ALL_HOMES_PATH").ok();
         let zhvi_config = ZhviConfig::new(
+            bot_city_all_homes_path,
             mid_zip_all_homes_path,
             mid_city_all_homes_path,
             mid_county_all_homes_path,
