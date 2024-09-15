@@ -1,13 +1,14 @@
 use async_trait::async_trait;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::adapter::repository::Persist;
 use crate::domain::common::{DateInterval, RegionType};
 use crate::domain::util::{to_ymd_date, CsvRecord};
 use crate::error::DomainError;
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, ToSchema)]
 pub struct Zhvi {
     pub region_name: String,
     pub region_type: RegionType,
@@ -16,7 +17,7 @@ pub struct Zhvi {
     pub prices: ZhviPrices,
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type, ToSchema)]
 #[sqlx(type_name = "home_type", rename_all = "lowercase")]
 pub enum HomeType {
     #[default]
@@ -48,7 +49,7 @@ impl std::fmt::Display for HomeType {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type, ToSchema)]
 #[sqlx(type_name = "percentile", rename_all = "lowercase")]
 pub enum Percentile {
     Bottom,
@@ -80,7 +81,7 @@ impl std::fmt::Display for Percentile {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, ToSchema)]
 pub struct ZhviPrice {
     pub date: NaiveDate,
     pub value: f64,
@@ -235,6 +236,7 @@ impl Zhvi {
 
 #[derive(Clone, Debug, Default)]
 pub(crate) struct ZhviConfig {
+    bot_city_all_homes_path: Option<String>,
     mid_zip_all_homes_path: Option<String>,
     mid_city_all_homes_path: Option<String>,
     mid_county_all_homes_path: Option<String>,
@@ -242,15 +244,21 @@ pub(crate) struct ZhviConfig {
 
 impl ZhviConfig {
     pub fn new(
+        bot_city_all_homes_path: Option<String>,
         mid_zip_all_homes_path: Option<String>,
         mid_city_all_homes_path: Option<String>,
         mid_county_all_homes_path: Option<String>,
     ) -> Self {
         ZhviConfig {
+            bot_city_all_homes_path,
             mid_zip_all_homes_path,
             mid_city_all_homes_path,
             mid_county_all_homes_path,
         }
+    }
+
+    fn bot_city_all_homes_path(&self) -> Option<&str> {
+        self.bot_city_all_homes_path.as_deref()
     }
 
     fn mid_zip_all_homes_path(&self) -> Option<&str> {
@@ -289,6 +297,10 @@ fn read_all_homes_zhvis(zhvi_config: &ZhviConfig) -> Result<Zhvis, DomainError> 
 
     if let Some(mid_county_all_homes_path) = zhvi_config.mid_county_all_homes_path() {
         all_homes.append(&mut read_mid_county_all_homes(mid_county_all_homes_path)?);
+    }
+
+    if let Some(bot_city_all_homes_path) = zhvi_config.bot_city_all_homes_path() {
+        all_homes.append(&mut read_bot_city_all_homes(bot_city_all_homes_path)?);
     }
     Ok(all_homes)
 }
@@ -420,4 +432,47 @@ fn read_mid_zip_all_homes(mid_zip_all_homes_path: &str) -> Result<Zhvis, DomainE
     }
 
     Ok(mid_all_homes)
+}
+
+fn read_bot_city_all_homes(bot_city_all_homes_path: &str) -> Result<Zhvis, DomainError> {
+    let mut rdr = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .from_path(bot_city_all_homes_path)?;
+
+    let mut bot_all_homes = vec![];
+    let entries: Vec<CsvRecord> = rdr.deserialize().filter_map(Result::ok).collect();
+    let headers = rdr.headers()?;
+    for entry in entries.into_iter() {
+        let mut prices = vec![];
+        // start at 8
+        for i in 9..entry.0.len() {
+            let parts: Vec<&str> = headers
+                .iter()
+                .nth(i)
+                .ok_or(DomainError::Parse(
+                    "Failed to parse string to date".to_string(),
+                ))?
+                .split('-')
+                .collect();
+            let year = parts[0].parse()?;
+            let month = parts[1].parse()?;
+            let day = parts[2].parse()?;
+            let date = to_ymd_date(year, month, day)?;
+            let value = entry.0[i].parse().unwrap_or_default();
+            prices.push(ZhviPrice { date, value });
+        }
+        let home_type = HomeType::AllHomes;
+        let region_type = RegionType::City;
+        let region_name = entry.0[2].clone();
+        let percentile = Percentile::Bottom;
+        bot_all_homes.push(Zhvi {
+            home_type,
+            region_type,
+            region_name,
+            percentile,
+            prices,
+        });
+    }
+
+    Ok(bot_all_homes)
 }

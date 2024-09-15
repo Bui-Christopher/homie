@@ -4,6 +4,7 @@ members = [
     "homie-data", "homie-webapp"
 ]
 resolver = "2"
+    # "homie-data", "homie-fe", "homie-webapp"
 
 [profile.release]
 lto = true
