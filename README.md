@@ -50,43 +50,43 @@ Please check http://localhost:3000.
 - [x] homie-core
     - [x] Define Domain
     - [x] Define Adapters
-- [x] homie-data
+    - [ ] Add feature flags to remove SQLX (cannot compile webapp on nightly toolchain)
+- [ ] homie-data
     - [x] Read Dataset
     - [x] Convert to Application Domain
     - [x] Store into repository (Postgres)
         - [x] Regions (cities/counties/zipcodes)
-- [x] homie-api
+    - [ ] Optimize ZHVI (batch insert prices)
+- [ ] homie-api
     - [x] Handle Request
     - [x] Retrieve Data
     - [x] Return Response
-    - [ ] `/api/..`
+    - [ ] Rename API and doc endpoints: `/api/..`
+    - [ ] Add Zillow API integration
 - [ ] homie-webapp
-    - [ ] Get User's Query Params
-    - [ ] Submit Request
-    - [ ] Display Data in Graph
-
-## Improvements
-- [x] Local Development
-    - [x] Automate creating database
-        - [x] Can also initialize with `docker exec`
-    - [x] Reduce local datasets size
-        - [x] HPI
-        - [x] Region
-- [ ] Optimize ZHVI (batch insert prices)
-- [ ] Refactor
-    - [x] Reduce public struct/fn exposure
-    - [x] ~Read Bulder Pattern~ Won't use it, but I understand it
-    - [x] Enums instead of Strings [Example](https://github.com/launchbadge/sqlx/discussions/3041)
-    - [x] Repo/Import calls into Config
-    - [ ] Remove getters on public objects
-- [x] Error Handling
-    - [x] ~ThisError and Anyhow~ Created a custom enum instead
-    - [x] Logging
+    - [x] Get User's Query Params
+    - [x] Submit Request
+    - [x] Display Data in Graph
+    - [ ] Optimize frontend rendering
+    - [ ] Handle edge case bugs
+    - [ ] Swap to Server Sided Rendering (SSR)
 - [ ] Deployment
-    - [x] [Dockerize](https://itnext.io/a-practical-guide-to-containerize-your-rust-application-with-docker-77e8a391b4a8)
-    - [x] ~Push to dockerhub~ Going to use bash script to build and deploy
-    - [ ] Read Zhvi from Zillow API
-    - [ ] CI/CD
-- [x] Testing ...I mean good enough?
-    - [x] Unit tests :sob:
-    - [x] E2E tests :sob:
+    - [ ] Test
+        - [x] Unit
+        - [x] End-to-End
+        - [ ] Frontend
+    - [ ] Build
+        - [ ] Local
+            - [x] [Docker](https://itnext.io/a-practical-guide-to-containerize-your-rust-application-with-docker-77e8a391b4a8)
+            - [ ] NixOS
+            - [ ] Remove build from run
+        - [ ] GitHub Actions
+    - [ ] Run
+        - [x] Local Development
+            - [x] Automate creating database
+                - [x] Can also initialize with `docker exec`
+            - [x] Reduce local datasets size
+                - [x] HPI
+                - [x] Region
+            - [ ] Pull if images don't exist (not build)
+        - [ ] GitHub Pages Deployment

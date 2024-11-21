@@ -18,8 +18,9 @@
                 rustToolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
                 nativeBuildInputs = with pkgs; [
-                    rustToolchain
                     pkg-config
+                    podman
+                    rustToolchain
                     sqlx-cli
                 ];
             in
