@@ -13,22 +13,21 @@ else
     echo "Neither Podman or Docker found, exiting..."
     exit 1
 fi
-CONTAINER_REGISTRY="ghcr.io/Bui-Christopher/homie/"
 
 API_TAG="latest"
-API_IMAGE="homie-api:$API_TAG"
+API_IMAGE="ghcr.io/bui-christopher/homie-api:$API_TAG"
 
 DATA_TAG="latest"
-DATA_IMAGE="homie-data:$DATA_TAG"
+DATA_IMAGE="ghcr.io/bui-christopher/homie-data:$DATA_TAG"
 
 POSTGRES_TAG="16.2-alpine3.19"
 POSTGRES_IMAGE="postgres:$POSTGRES_TAG"
 
 # Pull Images
 echo "Pulling images..."
-"$CONTAINER_TOOL" pull "$CONTAINER_REGISTRY/$API_IMAGE"
-"$CONTAINER_TOOL" pull "$CONTAINER_REGISTRY/$DATA_IMAGE"
-"$CONTAINER_TOOL" pull "$CONTAINER_REGISTRY/$POSTGRES_IMAGE"
+"$CONTAINER_TOOL" pull "$API_IMAGE"
+"$CONTAINER_TOOL" pull "$DATA_IMAGE"
+"$CONTAINER_TOOL" pull "$POSTGRES_IMAGE"
 
 # Declare and Clean Up Previous Environment
 POSTGRES="postgres_db"
@@ -86,8 +85,7 @@ echo "Starting data import..."
     --network $NETWORK \
     --env-file .container.env \
     -v "$SCRIPT_DIR"/datasets:/datasets \
-    "$DATA_IMAGE" \
-    &> /dev/null
+    "$DATA_IMAGE"
 
 # Start Endpoints
 echo "Starting API endpoints..."
@@ -96,7 +94,11 @@ echo "Starting API endpoints..."
     --network $NETWORK \
     --env-file .container.env \
     -p 8080:8080 \
-    "$API_IMAGE" \
-    &> /dev/null
+    "$API_IMAGE"
 
+until [ "$("$CONTAINER_TOOL" inspect -f '{{.State.Running}}' $DATA)" = "false" ]; do
+    sleep 3
+done
+
+"$CONTAINER_TOOL" stop "$DATA"
 echo "All services have been started successfully."

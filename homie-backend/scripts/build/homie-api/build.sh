@@ -15,11 +15,15 @@ fi
 
 IMAGE="homie-api"
 BACKEND_DIR="$(git rev-parse --show-toplevel)/homie-backend"
-
 VERSION=$(grep -E '^version\s*=' "$BACKEND_DIR/$IMAGE/Cargo.toml" | awk -F'"' '{print $2}')
-TAG="$IMAGE:$VERSION"
-DOCKERFILE="Dockerfile"
+
+REGISTRY="ghcr.io/bui-christopher/"
+TAG="$REGISTRY$IMAGE:$VERSION"
 
 "$CONTAINER_TOOL" build \
-    -f "$DOCKERFILE" "$BACKEND_DIR" \
+    -f Dockerfile "$BACKEND_DIR" \
     -t "$TAG" \
+    --label "org.opencontainers.image.source=https://github.com/Bui-Christopher/homie" \
+    --label "org.opencontainers.image.description=homie-api image"
+
+"$CONTAINER_TOOL" tag "$TAG" "$REGISTRY$IMAGE:latest"
