@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "docs")]
 use utoipa::ToSchema;
 
 use crate::error::DomainError;
@@ -26,8 +27,13 @@ impl TryFrom<&str> for DateInterval {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize, sqlx::Type, ToSchema)]
-#[sqlx(type_name = "region_type", rename_all = "lowercase")]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[cfg_attr(feature = "db", derive(sqlx::Type))]
+#[cfg_attr(
+    feature = "db",
+    sqlx(type_name = "region_type", rename_all = "lowercase")
+)]
+#[cfg_attr(feature = "docs", derive(ToSchema))]
 pub enum RegionType {
     ThreeZip,
     FiveZip,

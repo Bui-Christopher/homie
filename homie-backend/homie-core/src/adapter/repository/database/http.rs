@@ -2,10 +2,14 @@ use async_trait::async_trait;
 use chrono::NaiveDate;
 
 use crate::adapter::repository::Persist;
-use crate::domain::hpi::{Hpi, HpiPersist, HpiQuery, Hpis};
-use crate::domain::region::{Region, RegionPersist, RegionQuery, Regions, Zipcode};
-use crate::domain::t_yield::{TYield, TYieldPersist, TYieldQuery, TYields};
-use crate::domain::zhvi::{Zhvi, ZhviPersist, ZhviQuery, Zhvis};
+use crate::domain::hpi::persist::HpiPersist;
+use crate::domain::hpi::{Hpi, HpiQuery, Hpis};
+use crate::domain::region::persist::RegionPersist;
+use crate::domain::region::{Region, RegionQuery, Regions, Zipcode};
+use crate::domain::t_yield::persist::{TYieldPersist, TYieldQuery};
+use crate::domain::t_yield::{TYield, TYields};
+use crate::domain::zhvi::persist::{ZhviPersist, ZhviQuery};
+use crate::domain::zhvi::{Zhvi, Zhvis};
 use crate::error::DomainError;
 
 pub struct HttpClient;

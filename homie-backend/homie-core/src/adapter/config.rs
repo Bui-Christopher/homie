@@ -1,9 +1,9 @@
 use std::env;
 
-use crate::domain::hpi::HpiConfig;
-use crate::domain::region::RegionConfig;
-use crate::domain::t_yield::TYieldConfig;
-use crate::domain::zhvi::ZhviConfig;
+use crate::domain::hpi::local::HpiConfig;
+use crate::domain::region::local::RegionConfig;
+use crate::domain::t_yield::local::TYieldConfig;
+use crate::domain::zhvi::local::ZhviConfig;
 
 pub struct Config {
     use_zillow_api: bool,

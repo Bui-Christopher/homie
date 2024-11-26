@@ -15,12 +15,14 @@ impl std::fmt::Display for DomainError {
     }
 }
 
+#[cfg(feature = "db")]
 impl From<csv::Error> for DomainError {
     fn from(value: csv::Error) -> Self {
         DomainError::Parse(format!("Failed to read from csv: {}", value))
     }
 }
 
+#[cfg(feature = "db")]
 impl From<sqlx::Error> for DomainError {
     fn from(value: sqlx::Error) -> Self {
         DomainError::Database(format!("Failed DB request: {}", value))

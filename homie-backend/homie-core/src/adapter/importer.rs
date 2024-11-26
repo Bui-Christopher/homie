@@ -1,8 +1,12 @@
 use crate::adapter::config::Config;
-use crate::domain::hpi::{read_fhfa_hpis, HpiConfig, HpiData};
-use crate::domain::region::{read_huduser_regions, RegionConfig, RegionData};
-use crate::domain::t_yield::{read_fed_yields, TYieldConfig, TYieldData};
-use crate::domain::zhvi::{read_zillow_zhvis, ZhviConfig, ZhviData};
+use crate::domain::hpi::local::{read_fhfa_hpis, HpiConfig};
+use crate::domain::hpi::HpiData;
+use crate::domain::region::local::{read_huduser_regions, RegionConfig};
+use crate::domain::region::RegionData;
+use crate::domain::t_yield::local::{read_fed_yields, TYieldConfig};
+use crate::domain::t_yield::TYieldData;
+use crate::domain::zhvi::local::{read_zillow_zhvis, ZhviConfig};
+use crate::domain::zhvi::ZhviData;
 use crate::error::DomainError;
 
 pub struct Importer {

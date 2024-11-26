@@ -1,12 +1,30 @@
+use chrono::NaiveDate;
+use homie_core::domain::zhvi::Zhvi;
+use homie_core::domain::zhvi::Zhvis;
 use leptos::*;
-use model::{Line, Zhvi, Zhvis};
+// use model::{Line, Zhvi, Zhvis};
 use plotly::Layout;
 use plotly::Plot;
 use plotly::Scatter;
 use reqwest::Client;
 use std::error::Error;
 
-mod model;
+// mod model;
+pub struct Line {
+    pub name: String,
+    pub x: Vec<NaiveDate>,
+    pub y: Vec<f64>,
+}
+
+impl Line {
+    pub fn from_zhvi(name: &str, zhvi: &Zhvi) -> Line {
+        Line {
+            name: name.to_string(),
+            x: zhvi.prices.iter().map(|price| price.date).collect(),
+            y: zhvi.prices.iter().map(|price| price.value).collect(),
+        }
+    }
+}
 
 fn main() {
     _ = console_log::init_with_level(log::Level::Debug);

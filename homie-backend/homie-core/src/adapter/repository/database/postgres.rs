@@ -5,10 +5,14 @@ use sqlx::{query, query_as, FromRow, Pool, Postgres};
 
 use crate::adapter::repository::{Config, Persist};
 use crate::domain::common::{DateInterval, RegionType};
-use crate::domain::hpi::*;
-use crate::domain::region::{Region, RegionPersist, RegionQuery, Regions, Zipcode};
-use crate::domain::t_yield::*;
-use crate::domain::zhvi::*;
+use crate::domain::hpi::persist::HpiPersist;
+use crate::domain::hpi::{Hpi, HpiQuery, Hpis};
+use crate::domain::region::persist::RegionPersist;
+use crate::domain::region::{Region, RegionQuery, Regions, Zipcode};
+use crate::domain::t_yield::persist::{TYieldPersist, TYieldQuery};
+use crate::domain::t_yield::{TYield, TYields, Term};
+use crate::domain::zhvi::persist::{ZhviPersist, ZhviQuery};
+use crate::domain::zhvi::{HomeType, Percentile, Zhvi, ZhviPrice, ZhviPrices, Zhvis};
 use crate::error::DomainError;
 
 pub struct PostgresClient {

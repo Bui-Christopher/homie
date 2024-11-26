@@ -1,10 +1,10 @@
 use self::database::postgres::PostgresClient;
 use crate::adapter::config::Config;
 use crate::adapter::repository::database::http::HttpClient;
-use crate::domain::hpi::HpiPersist;
-use crate::domain::region::RegionPersist;
-use crate::domain::t_yield::TYieldPersist;
-use crate::domain::zhvi::ZhviPersist;
+use crate::domain::hpi::persist::HpiPersist;
+use crate::domain::region::persist::RegionPersist;
+use crate::domain::t_yield::persist::TYieldPersist;
+use crate::domain::zhvi::persist::ZhviPersist;
 use crate::error::DomainError;
 
 pub mod database;
