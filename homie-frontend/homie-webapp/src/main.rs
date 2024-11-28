@@ -2,14 +2,12 @@ use chrono::NaiveDate;
 use homie_core::domain::zhvi::Zhvi;
 use homie_core::domain::zhvi::Zhvis;
 use leptos::*;
-// use model::{Line, Zhvi, Zhvis};
 use plotly::Layout;
 use plotly::Plot;
 use plotly::Scatter;
 use reqwest::Client;
 use std::error::Error;
 
-// mod model;
 pub struct Line {
     pub name: String,
     pub x: Vec<NaiveDate>,
@@ -41,7 +39,8 @@ async fn read_zhvi(
     // Construct the URL with the region_name and percentile parameters
     let url = format!(
         "http://127.0.0.1:8080/zhvis?start_date={}&end_date={}&date_interval=month&home_type=AllHomes&region_type={}&region_name={}&percentile={}",
-state_date,end_date,
+        state_date,
+        end_date,
         region_type,
         region_name,
         percentile

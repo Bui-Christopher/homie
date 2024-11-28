@@ -5,6 +5,8 @@ use homie_core::adapter::repository::{Persist, Repository};
 use homie_core::domain::common::{DateInterval, RegionType};
 use homie_core::domain::hpi::HpiQuery;
 use homie_core::domain::region::RegionQuery;
+use homie_core::domain::t_yield::persist::TYieldQuery;
+use homie_core::domain::zhvi::persist::ZhviQuery;
 use homie_core::domain::zhvi::{HomeType, Percentile};
 use serde::{Deserialize, Serialize};
 use tracing_subscriber::layer::SubscriberExt;
