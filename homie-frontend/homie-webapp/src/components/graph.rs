@@ -1,6 +1,7 @@
 use chrono::NaiveDate;
 use homie_core::domain::zhvi::{Zhvi, Zhvis};
-use leptos::*;
+use leptos::prelude::*;
+use leptos::task::spawn_local;
 use plotly::{Layout, Plot, Scatter};
 
 pub struct Line {

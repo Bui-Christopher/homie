@@ -1,33 +1,33 @@
 use gloo::net::http::Request;
 use homie_core::domain::zhvi::{Zhvi, Zhvis};
-use leptos::*;
+use leptos::prelude::*;
+use leptos::task::spawn_local;
 
 #[component]
 #[allow(non_snake_case)]
 fn FormInput(input: RwSignal<String>) -> impl IntoView {
     view! {
-        <div class="container">
-            <input
-                type="text"
-                on:input=move |ev| {
-                    input.set(event_target_value(&ev));
-                }
+        <input
+            class="container"
+            type="text"
+            on:input=move |ev| {
+                input.set(event_target_value(&ev));
+            }
 
-                prop:value=input
-            />
-        </div>
+            prop:value=input
+        />
     }
 }
 
 #[component]
 #[allow(non_snake_case)]
-pub fn Form(zhvis: RwSignal<Option<Zhvis>>) -> impl IntoView {
+pub fn Form(zhvis: RwSignal<Zhvis>) -> impl IntoView {
     // Create reactive state variales
-    let start_date = create_rw_signal("2023-01-01".to_string());
-    let end_date = create_rw_signal("2024-12-31".to_string());
-    let region_type = create_rw_signal("City".to_string());
-    let region_name = create_rw_signal("Irvine".to_string());
-    let percentile = create_rw_signal("Middle".to_string());
+    let start_date = RwSignal::new("2023-01-01".to_string());
+    let end_date = RwSignal::new("2024-12-31".to_string());
+    let region_type = RwSignal::new("City".to_string());
+    let region_name = RwSignal::new("Irvine".to_string());
+    let percentile = RwSignal::new("Middle".to_string());
 
     // Handle form submission
     let handle_submit = move || {
@@ -52,14 +52,7 @@ pub fn Form(zhvis: RwSignal<Option<Zhvis>>) -> impl IntoView {
                             percentile.get_untracked()
                         )
                     );
-                    zhvis.update(|current_zhvis| match current_zhvis {
-                        Some(ref mut zhvi_vec) => {
-                            zhvi_vec.push(zhvi_resp);
-                        }
-                        None => {
-                            vec![zhvi_resp];
-                        }
-                    });
+                    zhvis.update(|current_zhvis| current_zhvis.push(zhvi_resp));
                 }
                 None => {
                     log::error!("Failed to fetch");
