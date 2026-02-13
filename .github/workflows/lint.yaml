@@ -1,12 +1,9 @@
 name: CI
 
-env:
-  SQLX_OFFLINE: true
-
 on:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
