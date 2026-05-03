@@ -1,12 +1,11 @@
-name: CI
+name: Rust CI
 
-env:
-  SQLX_OFFLINE: true
+# env:
+#   SQLX_OFFLINE: true
 
 on:
   push:
-    branches:
-      - main
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,6 +24,9 @@ jobs:
 
     name: ${{ matrix.target.name }} / ${{ matrix.version.name }}
     runs-on: ${{ matrix.target.os }}
+    defaults:
+      run:
+        working-directory: ./homie-frontend/homie-webapp
 
     steps:
       - uses: actions/checkout@v4
@@ -43,6 +45,10 @@ jobs:
   format:
     name: format
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./homie-frontend/homie-webapp
+
     steps:
       - uses: actions/checkout@v4
 
