@@ -1,5 +1,18 @@
 package zillow
 
+import (
+	"time"
+)
+
+type Date struct{
+	time.Time
+}
+
+type GrowthPoint struct{
+	Date Date
+	Growth float64
+}
+
 type Listing struct {
 	SizeRank int
 	RegionName string
@@ -9,5 +22,6 @@ type Listing struct {
 	City string
 	Metro string
 	CountyName string
-	Value float64 //date
+
+	History []GrowthPoint
 }
